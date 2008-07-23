@@ -1,0 +1,55 @@
+\documentclass[a4paper,11pt,bibtotoc,idxtotoc]{scrartcl}
+
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage[T1]{fontenc}
+\usepackage[pdftex]{graphicx}
+\usepackage{makeidx}		% index
+\usepackage{listings} 
+\lstset{numbers=left, numberstyle=\small, showstringspaces=false} 
+\lstset{language=Python}
+\lstset{basicstyle=\ttfamily\color{black}\small,
+  keywordstyle=\bfseries\color{blue},
+  identifierstyle=\bfseries\color{black},
+  commentstyle=\color{gray},
+  stringstyle=\itshape\color{darkgreen}}
+\usepackage[colorlinks=true, breaklinks=true, linkcolor=darkgreen, urlcolor=darkblue]{hyperref}
+\usepackage{color}
+\definecolor{darkblue}{rgb}{0,0,.5}
+\definecolor{darkgreen}{rgb}{0,.5,0}
+\definecolor{gray}{rgb}{.5,.5,.5}
+
+\newcommand{\figwidth}{\textwidth}
+
+%\titlehead{Freie Universität Berlin\\
+%    Fachbereich Mathematik und Informatik}
+%\subject{Studienarbeit}
+\title{Pythonic Feedback Framework\\Introduction and Manual}
+\author{Bastian Venthur\\
+  \href{mailto:mail@venthur.de}{mail@venthur.de}}
+\date{2008-01-07}
+%\publishers{betreut durch ??}
+
+\makeindex
+
+
+\begin{document}
+
+
+\maketitle
+
+\begin{abstract}
+This document provides an introduction to the pythonic feedback framework as well as a manual and some examples how to write your own BCI feedbacks using this framework.
+\end{abstract}
+
+\tableofcontents
+
+
+\input{framework-doc-content}
+
+\bibliographystyle{plain}
+\bibliography{literaturvz}
+
+\printindex
+
+\end{document}

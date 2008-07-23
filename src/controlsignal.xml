@@ -1,0 +1,80 @@
+<control-signal version="1.0">
+
+    <boolean>
+        <name>boolean</name>
+        <value>true</value>
+    </boolean>
+    <bool name="bool" value="true" />
+    <b name="b" value="true" />
+
+    <integer>
+        <name>integer</name>
+        <value>42</value>
+    </integer>
+    <int name="int" value="42" />
+    <i name="i" value="42" />
+
+    <float>
+        <name>float</name>
+        <value>66.6</value>
+    </float>
+    <f name="f" value="66.6" />
+
+    <long>
+        <name>long</name>
+        <value>69</value>
+    </long>
+    <l name="l" value="69" />
+
+    <complex>
+        <name>complex</name>
+        <value>1+0.69j</value>
+    </complex>
+    <cmplx name="cmplx" value="1+0.69j" />
+    <c name="c" value="1+0.69j" />
+
+    <string>
+        <name>string</name>
+        <value>foo</value>
+    </string>
+    <str name="str" value="foo" />
+    <s name="s" value="foo" />
+
+    <list name="list">
+        <i name="i-in-list" value="69" />
+        <i name="i-in-list2" value="70" />
+        <list name="list-in-list">
+            <f name="f-in-list-in-list" value=".69" />
+        </list>
+    </list>
+
+    <tuple name="tuple">
+        <i name="i-in-tuple" value="69" />
+        <i name="i-in-tuple2" value="70" />
+        <tuple>
+            <i name="i-in-t-in-t" value="1" />
+            <i name="i-in-t-in-t" value="2" />
+        </tuple>
+    </tuple>
+    
+    <set name="set">
+	<i name="i-in-set" value="69" />
+	<i name="i-in-set2" value="70" />
+    </set>
+
+    <frozenset name="frozenset">
+	<i name="i-in-frozenset" value="69" />
+	<i name="i-in-frozenset2" value="70" />
+    </frozenset>
+
+    <dict name="dict">
+    <tuple>
+		<s value="key" />
+		<s value="value" />
+	</tuple>    
+    </dict>
+
+    
+</control-signal>
+
+
