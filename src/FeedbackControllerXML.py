@@ -20,12 +20,15 @@
 
 import bcinetwork
 import bcixml
+import Feedback
 
 import socket
 import asyncore
 import threading
 import logging
 import sys
+import os
+import traceback
 
 class FeedbackController(object):
     def __init__(self):
@@ -33,6 +36,8 @@ class FeedbackController(object):
         self.logger = logging.getLogger("FeedbackController")
         self.encoder = bcixml.XmlEncoder()
         self.decoder = bcixml.XmlDecoder()
+        self.foo = "bar"
+        self.feedbacks = self.get_feedbacks()
         
         # Listen on the network in a second thread
         Dispatcher(bcinetwork.FC_PORT, self)
@@ -81,7 +86,7 @@ class FeedbackController(object):
         if cmd == bcixml.CMD_GET_FEEDBACKS:
             ip, port = signal.peeraddr[0], bcinetwork.GUI_PORT
             bcinetw = bcinetwork.BciNetwork(ip, port)
-            answer = bcixml.BciSignal({"feedbacks" : ["foo", "bar", "baz", "bratwurst"]}, None, bcixml.INTERACTION_SIGNAL)
+            answer = bcixml.BciSignal({"feedbacks" : self.feedbacks.keys()}, None, bcixml.INTERACTION_SIGNAL)
             self.logger.debug("Sending %s to %s:%s." % (str(answer), str(ip), str(port)))
             bcinetw.send_signal(answer)
             return
@@ -108,6 +113,47 @@ class FeedbackController(object):
             self.feedback._Feedback__on_interaction_event(e.data)
         else:
             self.logger.info("Received generic interaction signal")
+
+            
+    def test_feedback(self, root, file):
+        # remove trailing .py if present
+        if file.lower().endswith(".py"):
+            file2 = file[:-3]
+        root = root.replace("/", ".")
+        while root.startswith("."):
+            root = root[1:]
+        if not root.endswith(".") and not file2.startswith("."):
+            module = root + "." + file2
+        else:
+            module = root + file2
+        valid, name = False, file2
+        mod = None
+        try:
+            mod = __import__(module, fromlist=[None])
+            #print "1/3: loaded module (%s)." % str(module)
+            fb = getattr(mod, file2)(None)
+            #print "2/3: loaded feedback (%s)." % str(file2)
+            if isinstance(fb, Feedback.Feedback):
+                #print "3/3: feedback is valid Feedback()"
+                valid = True
+        except:
+            print "Ooops! Something went wrong loading the feedback"
+            print traceback.format_exc()
+        del mod
+        return valid, name
+
+    
+    def get_feedbacks(self):
+        """Returns the valid feedbacks in this directory."""
+        feedbacks = {}
+        for root, dirs, files in os.walk("./Feedbacks"):
+            for file in files:
+                if file.lower().endswith(".py"):
+                    # ok we found a candidate, check if it's a valid feedback
+                    isFeedback, name = self.test_feedback(root, file)
+                    if isFeedback:
+                        feedbacks[name] = root+file
+        return feedbacks
 
 
 class Dispatcher(asyncore.dispatcher):

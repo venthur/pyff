@@ -52,7 +52,7 @@ def test_feedback(root, file):
 def get_feedbacks():
     """Returns the valid feedbacks in this directory."""
     feedbacks = {}
-    for root, dirs, files in os.walk("."):
+    for root, dirs, files in os.walk("./Feedbacks"):
         for file in files:
             if file.lower().endswith(".py"):
                 # ok we found a candidate, check if it's a valid feedback
