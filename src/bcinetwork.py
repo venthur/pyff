@@ -51,6 +51,21 @@ class BciNetwork(object):
         xml = self.xmlencoder.encode_packet(signal)
         self.send(xml)
 
+    def play(self):
+        signal = bcixml.BciSignal(None, [bcixml.CMD_PLAY], bcixml.INTERACTION_SIGNAL)
+        xml = self.xmlencoder.encode_packet(signal)
+        self.send(xml)
+
+    def pause(self):
+        signal = bcixml.BciSignal(None, [bcixml.CMD_PAUSE], bcixml.INTERACTION_SIGNAL)
+        xml = self.xmlencoder.encode_packet(signal)
+        self.send(xml)
+
+    def stop(self):
+        signal = bcixml.BciSignal(None, [bcixml.CMD_QUIT], bcixml.INTERACTION_SIGNAL)
+        xml = self.xmlencoder.encode_packet(signal)
+        self.send(xml)
+
 
     def send_signal(self, signal):
         xml = self.xmlencoder.encode_packet(signal)

@@ -87,6 +87,7 @@ class FeedbackController(object):
         pass
     
     def _handle_is(self, signal):
+        self.logger.info("Got interaction signal: %s" % str(signal))
         if len(signal.commands) < 1:
             self.logger.warning("Received interaction signal without command, ignoring it.")
             return
@@ -119,7 +120,7 @@ class FeedbackController(object):
             self.load_feedback()
             # Proably a new one!
             self.feedback._Feedback__on_init()
-            self.feedback._Feedback__on_interaction_event(e.data)
+            self.feedback._Feedback__on_interaction_event(signal.data)
         else:
             self.logger.info("Received generic interaction signal")
 
@@ -136,6 +137,8 @@ class FeedbackController(object):
         else:
             module = root + file2
         valid, name = False, file2
+        if name == "__init__":
+            return False, name, module
         mod = None
         try:
             mod = __import__(module, fromlist=[None])
@@ -146,7 +149,7 @@ class FeedbackController(object):
                 #print "3/3: feedback is valid Feedback()"
                 valid = True
         except:
-            print "Ooops! Something went wrong loading the feedback"
+            print "Ooops! Something went wrong loading the feedback: %s from module: %s" % (name, module)
             print traceback.format_exc()
         del mod
         return valid, name, module

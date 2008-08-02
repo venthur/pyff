@@ -88,13 +88,34 @@ class BciGui(QtGui.QMainWindow, Ui_MainWindow):
         
 
     def play(self):
-        pass
+        who = self.__who()
+        if who == -1:
+            return
+        elif who == 0:
+            for i in self.bcinetworks:
+                i.play()
+        else:
+            self.bcinetworks[who-1].play()
     
     def pause(self):
-        pass
+        who = self.__who()
+        if who == -1:
+            return
+        elif who == 0:
+            for i in self.bcinetworks:
+                i.pause()
+        else:
+            self.bcinetworks[who-1].pause()
     
     def stop(self):
-        pass
+        who = self.__who()
+        if who == -1:
+            return
+        elif who == 0:
+            for i in self.bcinetworks:
+                i.stop()
+        else:
+            self.bcinetworks[who-1].stop()
     
     def sendinit(self):
         feedback = unicode(self.comboBox_feedback.currentText())
