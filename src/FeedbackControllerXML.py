@@ -20,7 +20,9 @@
 
 import bcinetwork
 import bcixml
-import Feedback
+from Feedback import Feedback
+
+import parallel
 
 import socket
 import asyncore
@@ -36,8 +38,15 @@ class FeedbackController(object):
         self.logger = logging.getLogger("FeedbackController")
         self.encoder = bcixml.XmlEncoder()
         self.decoder = bcixml.XmlDecoder()
-        self.foo = "bar"
         self.feedbacks = self.get_feedbacks()
+        # Setup the parallel port
+        self.pp = None
+        try:
+            self.pp = parallel.Parallel()
+        except:
+            self.logger.error("Unable to open parallel port!")
+        self.feedback = Feedback(self.pp)
+
         
         # Listen on the network in a second thread
         Dispatcher(bcinetwork.FC_PORT, self)
@@ -131,16 +140,16 @@ class FeedbackController(object):
         try:
             mod = __import__(module, fromlist=[None])
             #print "1/3: loaded module (%s)." % str(module)
-            fb = getattr(mod, file2)(None)
+            fb = getattr(mod, name)(None)
             #print "2/3: loaded feedback (%s)." % str(file2)
-            if isinstance(fb, Feedback.Feedback):
+            if isinstance(fb, Feedback):
                 #print "3/3: feedback is valid Feedback()"
                 valid = True
         except:
             print "Ooops! Something went wrong loading the feedback"
             print traceback.format_exc()
         del mod
-        return valid, name
+        return valid, name, module
 
     
     def get_feedbacks(self):
@@ -150,10 +159,29 @@ class FeedbackController(object):
             for file in files:
                 if file.lower().endswith(".py"):
                     # ok we found a candidate, check if it's a valid feedback
-                    isFeedback, name = self.test_feedback(root, file)
+                    isFeedback, name, module = self.test_feedback(root, file)
                     if isFeedback:
-                        feedbacks[name] = root+file
+                        feedbacks[name] = module
         return feedbacks
+
+
+    def load_feedback(self):
+        """
+        Tries to find and load the feedback in the Feedbacks package. If the
+        desired feedback does not exist, load the dummy feedback as fallback.
+        """
+        name = getattr(self.feedback, self.feedback.PREFIX+"feedback")
+        module = self.feedbacks[name]
+        
+        self.logger.debug("Trying to load feedback: %s from module: %s." % (name, module))
+        
+        try:
+            mod = __import__(module, fromlist=[None])
+            self.feedback = getattr(mod, name)(self.pp)
+        except:
+            self.logger.warning("Unable to load Feedback, falling back to dummy.")
+            self.logger.warning(traceback.format_exc())
+            self.feedback = Feedback(self.pp)
 
 
 class Dispatcher(asyncore.dispatcher):

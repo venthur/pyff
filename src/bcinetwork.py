@@ -44,6 +44,13 @@ class BciNetwork(object):
         answer = self.xmldecoder.decode_packet(data)
         print "Received answer: %s" % str(answer)
         return answer.data.get("feedbacks")
+    
+    
+    def send_init(self, feedback):
+        signal = bcixml.BciSignal({"feedback": str(feedback)}, [bcixml.CMD_SEND_INIT], bcixml.INTERACTION_SIGNAL)
+        xml = self.xmlencoder.encode_packet(signal)
+        self.send(xml)
+
 
     def send_signal(self, signal):
         xml = self.xmlencoder.encode_packet(signal)

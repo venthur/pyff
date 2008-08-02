@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 # mygui.py -
 # Copyright (C) 2007-2008  Bastian Venthur
 #
@@ -18,7 +20,7 @@
 import sys
 
 from PyQt4 import QtCore, QtGui
-from gui import Ui_MainWindow
+from gui.gui import Ui_MainWindow
 import bcinetwork
 
 class BciGui(QtGui.QMainWindow, Ui_MainWindow):
@@ -81,6 +83,7 @@ class BciGui(QtGui.QMainWindow, Ui_MainWindow):
         self.tableView.horizontalHeader().setMovable(True)
         
         self.feedbacks = []
+        self.bcinetworks = []
         self.players = 0
         
 
@@ -94,7 +97,15 @@ class BciGui(QtGui.QMainWindow, Ui_MainWindow):
         pass
     
     def sendinit(self):
-        pass
+        feedback = unicode(self.comboBox_feedback.currentText())
+        who = self.__who()
+        if who == -1:
+            retrn
+        elif who == 0:
+            for i in self.bcinetworks:
+                i.send_init(feedback)
+        else:
+            self.bcinetworks[who-1].send_init(feedback)
     
     def send(self):
         pass
@@ -107,7 +118,7 @@ class BciGui(QtGui.QMainWindow, Ui_MainWindow):
             for i in self.bcinetworks:
                 i.quit()
         else:
-            bcinetwork[who].quit()
+            self.bcinetworks[who-1].quit()
 
         
     def __who(self):
@@ -157,6 +168,7 @@ class BciGui(QtGui.QMainWindow, Ui_MainWindow):
             self.comboBox_player.addItem("All Players")
             for i in xrange(self.players):
                 self.comboBox_player.addItem("Player %s" % str(i+1))
+            self.bcinetworks.append(bcinet)
 
         
     def playerChanged(self, index):
