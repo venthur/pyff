@@ -46,6 +46,7 @@ class FeedbackController(object):
         except:
             self.logger.error("Unable to open parallel port!")
         self.feedback = Feedback(self.pp)
+        self.playEvent = threading.Event()
 
         
         # Listen on the network in a second thread
@@ -79,8 +80,14 @@ class FeedbackController(object):
         
     def main_loop(self):
         while True:
-            #print "main loop."
-            pass
+            # Block until we received a play signal
+            self.logger.debug("Waiting for play-event.")
+            self.playEvent.wait()
+            self.logger.debug("Got play-event, starting Feedback's on_play()")
+            self.playEvent.clear()
+            # run the Feedbacks on_play in our thread
+            self.feedback._Feedback__on_play()
+            self.logger.debug("Feedback's on_play terminated.")
 
 
     def _handle_cs(self, signal):
@@ -104,7 +111,8 @@ class FeedbackController(object):
         self.feedback._Feedback__on_interaction_event(signal.data)
         if cmd == bcixml.CMD_PLAY:
             self.logger.info("Received PLAY signal")
-            self.feedback._Feedback__on_play()
+            self.playEvent.set()
+            #self.feedback._Feedback__on_play()
         elif cmd == bcixml.CMD_PAUSE:
             self.logger.info("Received PAUSE signal")
             self.feedback._Feedback__on_pause()
