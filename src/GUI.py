@@ -18,6 +18,7 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 import sys
+import logging
 
 from PyQt4 import QtCore, QtGui
 from gui.gui import Ui_MainWindow
@@ -120,13 +121,17 @@ class BciGui(QtGui.QMainWindow, Ui_MainWindow):
     def sendinit(self):
         feedback = unicode(self.comboBox_feedback.currentText())
         who = self.__who()
+        d = {}
         if who == -1:
             retrn
         elif who == 0:
             for i in self.bcinetworks:
                 i.send_init(feedback)
+                d = i.get_variables()
         else:
             self.bcinetworks[who-1].send_init(feedback)
+            d = self.bcinetworks[who-1].get_variables()
+        print d
     
     def send(self):
         pass
@@ -172,7 +177,7 @@ class BciGui(QtGui.QMainWindow, Ui_MainWindow):
             port = ipport[1]
             
         # ask feedback controller under given ip for available feedbacks
-        bcinet = bcinetwork.BciNetwork(ip,port)
+        bcinet = bcinetwork.BciNetwork(ip, port, bcinetwork.GUI_PORT)
         feedbacks = bcinet.getAvailableFeedbacks()
         
         if not feedbacks:
@@ -343,6 +348,8 @@ class Entry(object):
     
 
 if __name__ == "__main__":
+    loglevel = logging.DEBUG
+    logging.basicConfig(level=loglevel, format='%(name)-12s %(levelname)-8s %(message)s')
     
     app = QtGui.QApplication(sys.argv)
     gui = BciGui()

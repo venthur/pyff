@@ -15,6 +15,8 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+import logging
+
 import socket
 import bcixml
 
@@ -27,9 +29,17 @@ TIMEOUT = 2.0        # seconds to wait for reply
 
 class BciNetwork(object):
     
-    def __init__(self, ip, port):
+    def __init__(self, ip, port, myport=None):
+        self.logger = logging.getLogger("BciNetwork-%s:%s" % (str(ip), str(port)))
+        self.logger.debug("BciNetwork initialized.")
         self.addr = (ip, port)
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+        self.SEND_ONLY = True
+        if myport != None:
+            self.SEND_ONLY = False
+            self.srvsocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            self.srvsocket.bind(('', myport))
         
         self.xmlencoder = bcixml.XmlEncoder()
         self.xmldecoder = bcixml.XmlDecoder()
@@ -66,6 +76,15 @@ class BciNetwork(object):
         xml = self.xmlencoder.encode_packet(signal)
         self.send(xml)
 
+    def get_variables(self):
+        signal = bcixml.BciSignal(None, [bcixml.CMD_GET_VARIABLES], bcixml.INTERACTION_SIGNAL)
+        xml = self.xmlencoder.encode_packet(signal)
+        self.send(xml)
+
+        data, addr = self.receive(TIMEOUT)
+        answer = self.xmldecoder.decode_packet(data)
+        return answer.data.get("variables")
+
 
     def send_signal(self, signal):
         xml = self.xmlencoder.encode_packet(signal)
@@ -77,17 +96,17 @@ class BciNetwork(object):
         
     
     def receive(self, timeout):
-        srvsocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        srvsocket.bind(('', GUI_PORT))
-        srvsocket.setblocking(False)
-        srvsocket.settimeout(timeout)
+        if self.SEND_ONLY:
+            self.logger.error("Unable to receive data, am in send-only mode!")
+            #FIXME: should throw an exception here!
+            return None, None
+        self.srvsocket.setblocking(False)
+        self.srvsocket.settimeout(timeout)
         data, addr = None, None
         try:
-            data, addr = srvsocket.recvfrom(BUFFER_SIZE)
+            data, addr = self.srvsocket.recvfrom(BUFFER_SIZE)
         except socket.timeout:
             # do something!
-            print "Receiving from FC failed (timeout)."
-            srvsocket.close()
-        srvsocket.close()
+            self.logger.warning("Receiving from FC failed (timeout).")
         return data, addr
         

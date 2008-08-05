@@ -107,6 +107,13 @@ class FeedbackController(object):
             self.logger.debug("Sending %s to %s:%s." % (str(answer), str(ip), str(port)))
             bcinetw.send_signal(answer)
             return
+        elif cmd == bcixml.CMD_GET_VARIABLES:
+            ip, port = signal.peeraddr[0], bcinetwork.GUI_PORT
+            bcinetw = bcinetwork.BciNetwork(ip, port)
+            answer = bcixml.BciSignal({"variables" : self.feedback.__dict__}, None, bcixml.INTERACTION_SIGNAL)
+            self.logger.debug("Sending %s to %s:%s." % (str(answer), str(ip), str(port)))
+            bcinetw.send_signal(answer)
+            return
         
         self.feedback._Feedback__on_interaction_event(signal.data)
         if cmd == bcixml.CMD_PLAY:

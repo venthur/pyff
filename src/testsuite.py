@@ -30,6 +30,7 @@ logging.basicConfig(level=logging.WARNING,
 # Setup the tests
 allTests = unittest.TestSuite()
 allTests.addTest(tests.testUdpDecoder.suite)
+allTests.addTest(tests.testbcixml.suite)
 
 # Run the tests
 unittest.TextTestRunner(verbosity=2).run(allTests)

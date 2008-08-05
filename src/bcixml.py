@@ -50,6 +50,7 @@ TUPLE_TYPE = ("tuple",)
 SET_TYPE = ("set",)
 FROZENSET_TYPE = ("frozenset",)
 DICT_TYPE = ("dict",)
+NONE_TYPE = ("none",)
 COMMAND_TYPE = ("command",)
 
 CMD_GET_FEEDBACKS = "getfeedbacks"        # tell the fc to send the list of available feedbacks
@@ -57,6 +58,7 @@ CMD_PLAY = 'play'
 CMD_PAUSE = 'pause'
 CMD_QUIT = 'quit'
 CMD_SEND_INIT = 'sendinit'
+CMD_GET_VARIABLES = 'getvariables'
 
 class XmlDecoder(object):
     """Parses XML strings and returns BciSignal containing the data of the
@@ -116,7 +118,7 @@ class XmlDecoder(object):
             elif value in FALSE_VALUE:
                 return VARIABLE, (name, bool(False))
             else:
-                print name, value
+                raise DecodingError("Unknown boolean value: %s" % str(value))
         elif type in INTEGER_TYPE: 
             return VARIABLE, (name, int(value))
         elif type in FLOAT_TYPE: 
@@ -159,6 +161,8 @@ class XmlDecoder(object):
                 if node.nodeType == Node.ELEMENT_NODE:
                     l.append(self.__parse_element(node)[-1][-1])
             return VARIABLE, (name, dict(l))
+        elif type in NONE_TYPE:
+            return VARIABLE, (name, None)
         elif type in COMMAND_TYPE:
             return COMMAND, value
                 
@@ -192,6 +196,9 @@ class XmlEncoder(object):
             ...
     """
     
+    def __init__(self):
+        self.logger = logging.getLogger("XmlEncoder")
+    
     def encode_packet(self, signal):
         """Generates an XML packet from a BciSignal object.
         
@@ -215,8 +222,11 @@ class XmlEncoder(object):
             
         # Write the data
         for d in signal.data:
-            self.__write_element(d, signal.data[d], dom, root2)
-            
+            try:
+                self.__write_element(d, signal.data[d], dom, root2)
+            except EncodingError, e:
+                # Ignore elements which are unkknown, just print a warning
+                self.logger.warning("Unable to write element (%s)" % str(e))
         return dom.toxml()
         
         
@@ -243,20 +253,33 @@ class XmlEncoder(object):
             type = FROZENSET_TYPE
         elif isinstance(value, dict):
             type = DICT_TYPE
+        elif value == None:
+            type = NONE_TYPE
         else:
             raise EncodingError("Unknown data type %s!" % value)
+            #self.logger.warning("Unknown data type %s, ignoring it." % value)
+            #return
 
         e = dom.createElement(type[0])
         if name:
             e.setAttribute(NAME, name)
         if type in (LIST_TYPE, TUPLE_TYPE, SET_TYPE, FROZENSET_TYPE):
             for v in value:
-                self.__write_element(None, v, dom, e)
+                #
+                # FIXME: does break unsupported types somehow...
+                #
+                try:
+                    self.__write_element(None, v, dom, e)
+                except EncodingError:
+                    continue
         elif type == DICT_TYPE:
             for i in value.items():
                 # i is a tuple (key, value)
-                self.__write_element(None, i, dom, e)
-        elif value:
+                try:
+                    self.__write_element(None, i, dom, e)
+                except EncodingError:
+                    continue
+        elif value != None:
             e.setAttribute(VALUE, str(value))
         root.appendChild(e)
         
