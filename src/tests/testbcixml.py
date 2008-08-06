@@ -41,7 +41,7 @@ class BcixmlTestCase(unittest.TestCase):
 
     def testLong(self):
         """Should correctly en/decode Long."""
-        self.__convert_and_compare("somename", 1)
+        self.__convert_and_compare("somename", long(1))
 
     def testComplex(self):
         """Should correctly en/decode Complex."""

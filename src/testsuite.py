@@ -18,6 +18,7 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 import tests.testUdpDecoder
+import tests.testbcixml
 
 import unittest
 import logging

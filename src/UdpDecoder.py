@@ -112,7 +112,7 @@ class UdpDecoder:
                 val = tokens.pop(0)
                 d[var] = self.__parse_type(val)
             if len(tokens) > 0 and len(statement.strip()) > 0:
-                self.logger.warning("List of tokens not empty: %s, the statement was «%s», stripped version is «%s»" % (str(tokens), str(string), str(string2)))
+                self.logger.warning("List of tokens not empty: %s, the statement was: %s, stripped version is: %s" % (str(tokens), str(string), str(string2)))
         return d
             
 
