@@ -86,8 +86,8 @@ class FeedbackController(object):
             self.logger.debug("Got play-event, starting Feedback's on_play()")
             self.playEvent.clear()
             # run the Feedbacks on_play in our thread
-            #self.feedback._Feedback__on_play()
-            self.call_method_safely(self.feedback._Feedback__on_play())
+            self.feedback._Feedback__on_play()
+            #self.call_method_safely(self.feedback._Feedback__on_play())
             self.logger.debug("Feedback's on_play terminated.")
 
 
@@ -202,14 +202,15 @@ class FeedbackController(object):
             self.logger.warning(traceback.format_exc())
             self.feedback = Feedback(self.pp)
             
-    
-    def call_method_safely(self, method):
-        """A wrapper which encapsulates the method call in a try block."""
-        try:
-            method()
-        except:
-            self.logger.error("Caught an exception running the method, here is the stack trace. Moving on")
-            self.logger.error(traceback.format_exc())
+        # TODO: Evalutate if this is really a good idea to wrap this method
+        # arounda all Feedback-methods called by the Feedback Controller
+#    def call_method_safely(self, method):
+#        """A wrapper which encapsulates the method call in a try block."""
+#        try:
+#            method()
+#        except:
+#            self.logger.error("Caught an exception running the method, here is the stack trace. Moving on.")
+#            self.logger.error(traceback.format_exc())
             
 
 
