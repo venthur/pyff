@@ -98,7 +98,7 @@ class BcixmlTestCase(unittest.TestCase):
             pass
         f = Foo()
         d = {"foo" : f}
-        d2 = {}
+        d2 = {"foo" : str(f)}
         self.__convert_and_compare("somename", d, d2)
         #self.__convert_and_compare("somename", [f], [])
 
@@ -118,7 +118,7 @@ class BcixmlTestCase(unittest.TestCase):
     def __convert_and_compare(self, name, value, value2=None):
         signal = bcixml.BciSignal({name : value}, None, bcixml.INTERACTION_SIGNAL)
         xml = self.encoder.encode_packet(signal)
-        print xml
+        #print xml
         signal2 = self.decoder.decode_packet(xml)
         if value2 == None:
             value2 = value

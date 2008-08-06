@@ -51,6 +51,7 @@ SET_TYPE = ("set",)
 FROZENSET_TYPE = ("frozenset",)
 DICT_TYPE = ("dict",)
 NONE_TYPE = ("none",)
+UNSUPPORTED_TYPE = ("unsupported",)
 COMMAND_TYPE = ("command",)
 
 CMD_GET_FEEDBACKS = "getfeedbacks"        # tell the fc to send the list of available feedbacks
@@ -163,9 +164,10 @@ class XmlDecoder(object):
             return VARIABLE, (name, dict(l))
         elif type in NONE_TYPE:
             return VARIABLE, (name, None)
+        elif type in UNSUPPORTED_TYPE:
+            return VARIABLE, (name, value)
         elif type in COMMAND_TYPE:
             return COMMAND, value
-                
         raise DecodingError("Unknown type: %s" % str(type))
 
         
@@ -256,7 +258,8 @@ class XmlEncoder(object):
         elif value == None:
             type = NONE_TYPE
         else:
-            raise EncodingError("Unknown data type %s!" % value)
+            type = UNSUPPORTED_TYPE
+            #raise EncodingError("Unknown data type %s!" % value)
             #self.logger.warning("Unknown data type %s, ignoring it." % value)
             #return
 
@@ -268,17 +271,11 @@ class XmlEncoder(object):
                 #
                 # FIXME: does break unsupported types somehow...
                 #
-                try:
-                    self.__write_element(None, v, dom, e)
-                except EncodingError:
-                    continue
+                self.__write_element(None, v, dom, e)
         elif type == DICT_TYPE:
             for i in value.items():
                 # i is a tuple (key, value)
-                try:
-                    self.__write_element(None, i, dom, e)
-                except EncodingError:
-                    continue
+                self.__write_element(None, i, dom, e)
         elif value != None:
             e.setAttribute(VALUE, str(value))
         root.appendChild(e)
