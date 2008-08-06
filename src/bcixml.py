@@ -102,7 +102,7 @@ class XmlDecoder(object):
                         elif type == COMMAND:
                             c.append(value)
                         else:
-                            raise DecodingError("Unknown type")
+                            raise DecodingError("Unknown type (%s)" % str(type))
         return BciSignal(dict(l), c, t)
     
     
@@ -230,9 +230,9 @@ class XmlEncoder(object):
                 # Ignore elements which are unkknown, just print a warning
                 self.logger.warning("Unable to write element (%s)" % str(e))
         return dom.toxml()
-        
-        
-    def __write_element(self, name, value, dom, root):
+    
+    
+    def __get_type(self, value):
         if isinstance(value, bool):
             type = BOOLEAN_TYPE
         elif isinstance(value, int):
@@ -259,9 +259,11 @@ class XmlEncoder(object):
             type = NONE_TYPE
         else:
             type = UNSUPPORTED_TYPE
-            #raise EncodingError("Unknown data type %s!" % value)
-            #self.logger.warning("Unknown data type %s, ignoring it." % value)
-            #return
+        return type
+        
+        
+    def __write_element(self, name, value, dom, root):
+        type = self.__get_type(value)
 
         e = dom.createElement(type[0])
         if name:
@@ -275,7 +277,11 @@ class XmlEncoder(object):
         elif type == DICT_TYPE:
             for i in value.items():
                 # i is a tuple (key, value)
-                self.__write_element(None, i, dom, e)
+                # ok we store each key-value pair as a tuple -- now we have to
+                # make sure the value isn't unsupported, or surprising results
+                # will happen...
+                if self.__get_type(i[1]) != UNSUPPORTED_TYPE:
+                    self.__write_element(None, i, dom, e)
         elif value != None:
             e.setAttribute(VALUE, str(value))
         root.appendChild(e)
