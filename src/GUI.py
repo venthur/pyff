@@ -36,8 +36,10 @@ class BciGui(QtGui.QMainWindow, Ui_MainWindow):
         self.model = TableModel(self)
         self.proxymodel = QtGui.QSortFilterProxyModel(self)
         self.proxymodel.setSourceModel(self.model)
-        self.proxymodel.setFilterKeyColumn(0)
+        self.proxymodel.setFilterKeyColumn(-1)
         self.tableView.setModel(self.proxymodel)
+        self.tableView.verticalHeader().setVisible(False)
+        self.tableView.horizontalHeader().setResizeMode(1, QtGui.QHeaderView.Stretch)
 
         
         # connect toolbuttons to actions
@@ -67,21 +69,6 @@ class BciGui(QtGui.QMainWindow, Ui_MainWindow):
         
         QtCore.QObject.connect(self.lineEdit, QtCore.SIGNAL("textEdited(const QString&)"), self.filter)
         QtCore.QObject.connect(self.comboBox_player, QtCore.SIGNAL("currentIndexChanged(int)"), self.playerChanged)
-        
-        
-        l = []
-        for i in xrange(10):
-            player = 1
-            if i % 2 == 0:
-                player = 2
-            e = Entry("name"+str(i), "value"+str(i), True, player)
-            l.append(e)
-        self.model.addElements(l)
-
-        self.tableView.resizeRowsToContents()
-        #self.tableView.horizontalHeader().setResizeMode(QtGui.QHeaderView.Stretch)
-        self.tableView.horizontalHeader().setStretchLastSection(True)
-        self.tableView.horizontalHeader().setMovable(True)
         
         self.feedbacks = []
         self.bcinetworks = []
@@ -125,12 +112,25 @@ class BciGui(QtGui.QMainWindow, Ui_MainWindow):
         if who == -1:
             retrn
         elif who == 0:
+            player = 0
             for i in self.bcinetworks:
+                player += 1
                 i.send_init(feedback)
                 d = i.get_variables()
+                entries = []
+                for name, value in d.iteritems():
+                    e = Entry(name, value, False, player)
+                    entries.append(e)
+                self.model.setElements(entries)
         else:
             self.bcinetworks[who-1].send_init(feedback)
             d = self.bcinetworks[who-1].get_variables()
+            entries = []
+            for name, value in d.iteritems():
+                e = Entry(name, value, False, who)
+                entries.append(e)
+            self.model.setElements(entries)
+
         print d
     
     def send(self):
@@ -246,10 +246,7 @@ class TableModel(QtCore.QAbstractTableModel):
         return len(self.entry)
     
     def columnCount(self, parent):
-        if self.rowCount(parent) > 0:
-            return len(self.entry[0])
-        else:
-            return 0
+        return len(self.header)
     
     def data(self, index, role):
         if not index.isValid() or role != QtCore.Qt.DisplayRole:
@@ -286,10 +283,9 @@ class TableModel(QtCore.QAbstractTableModel):
         self.entry.append(entry)
         self.endInsertRows()
     
-    def addElements(self, entries):
-        pos = len(self.entry)
-        pos2 = pos + len(entries)
-        self.beginInsertRows(QtCore.QModelIndex(), pos, pos2)
+    def setElements(self, entries):
+        self.entry = []
+        self.beginInsertRows(QtCore.QModelIndex(), 0, len(entries))
         for i in entries:
             player = i.player
             if not self.entriesPerPlayer.has_key(player):
@@ -298,7 +294,6 @@ class TableModel(QtCore.QAbstractTableModel):
                 self.entriesPerPlayer[player] += 1
             self.entry.append(i)
         self.endInsertRows()
-
         self.emit(QtCore.SIGNAL("layoutChanged()"))
 
         

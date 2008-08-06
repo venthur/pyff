@@ -34,8 +34,8 @@ class FeedbackCursorArrow(Feedback):
             self.__setattr__(p[0], p[1])
         
         self.pause = False
-        self.quit = False
-        self.quitting = False
+        self.quit = True
+        self.quitting = True
         
         self.gameover = False
         self.countdown = True
@@ -105,6 +105,7 @@ class FeedbackCursorArrow(Feedback):
         self.logger.debug("on_quit")
         self.quitting = True
         self.logger.debug("Waiting for main loop to quit...")
+        print self.quit
         while not self.quit:
             pygame.time.wait(100)
         self.logger.debug("Quitting pygame.")
