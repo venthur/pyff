@@ -23,6 +23,7 @@ import logging
 from PyQt4 import QtCore, QtGui
 from gui.gui import Ui_MainWindow
 import bcinetwork
+import bcixml
 
 class BciGui(QtGui.QMainWindow, Ui_MainWindow):
     
@@ -237,7 +238,7 @@ class TableModel(QtCore.QAbstractTableModel):
         self.entry = []
         self.entriesPerPlayer = dict()
         
-        self.header = ["Name", "Value", "Hidden", "Player"]
+        self.header = ["Name", "Value", "Type", "Hidden", "Player"]
 #        for i in xrange(len(self.header)):
 #            self.setHeaderData(i, QtCore.Qt.Horizontal, QtCore.QVariant("foo"))#self.header[i]))
             
@@ -251,7 +252,7 @@ class TableModel(QtCore.QAbstractTableModel):
     def data(self, index, role):
         if not index.isValid() or role != QtCore.Qt.DisplayRole:
             return QtCore.QVariant()
-        return QtCore.QVariant(self.entry[index.row()][index.column()])
+        return QtCore.QVariant(str(self.entry[index.row()][index.column()]))
     
     def headerData(self, section, orientation, role):
         if role != QtCore.Qt.DisplayRole:
@@ -264,12 +265,18 @@ class TableModel(QtCore.QAbstractTableModel):
     def setData(self, index, value, role):
         if not index.isValid():
             return False
-        self.entry[index.row()][index.column()] = unicode(value.toString())
+        #if not self.entry[index.row()].isValid(value.toString()):
+        #    return False 
+        #self.entry[index.row()][index.column()] = unicode(value.toString())
+        self.entry[index.row()].setValue(str(value.toString()))
         self.emit(QtCore.SIGNAL("dataChanged(const QModelIndex &, const QModelIndex &)"), index, index)
         return True
         
     def flags(self, index):
-        return QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled
+        r = QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled
+        if index.column() == 1:
+            r = r | QtCore.Qt.ItemIsEditable
+        return r
     
     # Own methods:
     def addElement(self, entry):
@@ -309,6 +316,7 @@ class Entry(object):
         self.value = value
         self.important = important
         self.player = player
+        self.type = type(value)#bcixml.XmlEncoder()._XmlEncoder__get_type(value)
         
     def __getitem__(self, i):
         if i == 0:
@@ -316,8 +324,10 @@ class Entry(object):
         elif i == 1:
             return self.value
         elif i == 2:
-            return self.important
+            return self.type
         elif i == 3:
+            return self.important
+        elif i == 4:
             return self.player
         else:
             return "ERROR!"
@@ -327,9 +337,9 @@ class Entry(object):
             self.name = value
         elif i == 1:
             self.value = value
-        elif i == 2:
-            self.important = value
         elif i == 3:
+            self.important = value
+        elif i == 4:
             self.player = value
         else:
             return "ERROR!"
@@ -337,9 +347,25 @@ class Entry(object):
     def __len__(self):
         return 4
         
-        
     def __str__(self):
         return str(self.name) + str(self.value) + str(self.important) + str(self.player)
+
+    def isValid(self, value):
+        try:
+            t = self.type(value)
+            #print type(t)
+        except:
+            return False
+        return True
+    
+    def setValue(self, value):
+        oldValue = self.value
+        try:
+            newValue = eval(value)
+            if self.type == type(newValue):
+                self.value = newValue
+        except:
+            self.value = oldValue
     
 
 if __name__ == "__main__":
