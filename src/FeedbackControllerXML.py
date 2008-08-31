@@ -188,7 +188,7 @@ class FeedbackController(object):
         Tries to find and load the feedback in the Feedbacks package. If the
         desired feedback does not exist, load the dummy feedback as fallback.
         """
-        name = getattr(self.feedback, self.feedback.PREFIX+"feedback")
+        name = getattr(self.feedback, "_feedback")
         module = self.feedbacks[name]
         
         self.logger.debug("Trying to load feedback: %s from module: %s." % (name, module))

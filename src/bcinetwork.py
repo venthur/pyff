@@ -56,7 +56,7 @@ class BciNetwork(object):
     
     
     def send_init(self, feedback):
-        signal = bcixml.BciSignal({"feedback": str(feedback)}, [bcixml.CMD_SEND_INIT], bcixml.INTERACTION_SIGNAL)
+        signal = bcixml.BciSignal({"_feedback": str(feedback)}, [bcixml.CMD_SEND_INIT], bcixml.INTERACTION_SIGNAL)
         self.send_signal(signal)
 
     def play(self):

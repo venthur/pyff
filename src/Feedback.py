@@ -33,14 +33,14 @@ class Feedback(object):
     in your feedback which will always hold the latest interaction signal.
     
     To get the data from the control signals, you can use the variable names 
-    just as sent by the GUI but prefixed with a "_".
+    just as sent by the GUI.
     
     This class provides the send_parallel method which you can use to send 
     arbitrary data to the parallel port. You don't have to override this 
     method in your feedback.
     """
 
-    def __init__(self, pp, prefix="_"):
+    def __init__(self, pp):
         """
         Initializes the feedback.
         
@@ -49,11 +49,7 @@ class Feedback(object):
         before anything else in your overridden __init__ method.
         """
      
-        # Prefix for all variables coming from the GUI and the variable holding
-        # the controll signal
-        self.PREFIX = prefix
-        self.__setattr__(self.PREFIX+"data", None)
-        
+        self._data = None
         self.logger = logging.getLogger("Feedback")
         self.logger.debug("Loaded my logger.")
         self.__parallelPort = pp
@@ -67,7 +63,7 @@ class Feedback(object):
         
         You should not override this method, use on_control_event instead.
         """
-        self.__setattr__(self.PREFIX+"data", data)
+        self._data = data
         self.on_control_event(data)
     
     def __on_interaction_event(self, data):
@@ -86,7 +82,8 @@ class Feedback(object):
             # fedback_opt(1).bla
             # Loesung: nehme nur den Namen nach dem letzten Punkt
             key2 = key.split(".")[-1]
-            self.__setattr__(self.PREFIX+key2, data[key])
+            #self.__setattr__(self.PREFIX+key2, data[key])
+            self.__setattr__(key2, data[key])
             data2[key2] = data[key]
         
         self.on_interaction_event(data2)
