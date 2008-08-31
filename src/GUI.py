@@ -74,82 +74,69 @@ class BciGui(QtGui.QMainWindow, Ui_MainWindow):
         self.feedbacks = []
         self.bcinetworks = []
         self.players = 0
+        self.bcinetwork2player = {} # assigns a playerhame (1,2,...) to each bcinetwork
         
 
     def play(self):
-        who = self.__who()
-        if who == -1:
-            return
-        elif who == 0:
-            for i in self.bcinetworks:
-                i.play()
-        else:
-            self.bcinetworks[who-1].play()
+        for i in self.__who():
+            i.play()
     
     def pause(self):
-        who = self.__who()
-        if who == -1:
-            return
-        elif who == 0:
-            for i in self.bcinetworks:
-                i.pause()
-        else:
-            self.bcinetworks[who-1].pause()
+        for i in self.__who():
+            i.pause()
     
     def stop(self):
-        who = self.__who()
-        if who == -1:
-            return
-        elif who == 0:
-            for i in self.bcinetworks:
-                i.stop()
-        else:
-            self.bcinetworks[who-1].stop()
+        for i in self.__who():
+            i.stop()
     
     def sendinit(self):
         feedback = unicode(self.comboBox_feedback.currentText())
-        who = self.__who()
-        d = {}
-        if who == -1:
-            retrn
-        elif who == 0:
-            player = 0
-            for i in self.bcinetworks:
-                player += 1
-                i.send_init(feedback)
-                d = i.get_variables()
-                entries = []
-                for name, value in d.iteritems():
-                    e = Entry(name, value, False, player)
-                    entries.append(e)
-                self.model.setElements(entries)
-        else:
-            self.bcinetworks[who-1].send_init(feedback)
-            d = self.bcinetworks[who-1].get_variables()
+        for i in self.__who():
+            i.send_init(feedback)
+            d = i.get_variables()
             entries = []
             for name, value in d.iteritems():
-                e = Entry(name, value, False, who)
+                e = Entry(name, value, False, self.bcinetwork2player[i])
                 entries.append(e)
             self.model.setElements(entries)
-
-        print d
+            
     
     def send(self):
-        pass
+        for i in self.__who():
+            signal = self.makeSignal(self.bcinetwork2player[i])
+            i.send_signal(signal)
+            
+    
+    def makeSignal(self, who):
+        """Create an Interaction Signal from the Variables in the Table."""
+        data = {}
+        for elem in self.model.entry:
+            if elem.player == who:
+                data[elem.name] = elem.value
+        signal = bcixml.BciSignal(data, None, bcixml.INTERACTION_SIGNAL)
+        return signal
+
     
     def quitFeedbackController(self):
-        who = self.__who()
-        if who == -1:
-            return
-        elif who == 0:
-            for i in self.bcinetworks:
-                i.quit()
-        else:
-            self.bcinetworks[who-1].quit()
+        for i in self.__who():
+            i.quit()
 
         
     def __who(self):
-        return self.comboBox_player.currentIndex()
+        """
+        Returns a list of bcinetworks which are currently selected via
+        the comboBox_player.
+        """
+        # 1 means invalid selection
+        # 0 means all players
+        # x means player x-1
+        i = self.comboBox_player.currentIndex()
+        if i < 0:
+            return None
+        elif i == 0:
+            return self.bcinetworks
+        else:
+            return self.bcinetworks[i-1]
     
     
     def open(self):
@@ -196,6 +183,7 @@ class BciGui(QtGui.QMainWindow, Ui_MainWindow):
             for i in xrange(self.players):
                 self.comboBox_player.addItem("Player %s" % str(i+1))
             self.bcinetworks.append(bcinet)
+            self.bcinetwork2player[bcinet] = self.players
 
         
     def playerChanged(self, index):
@@ -228,7 +216,6 @@ class BciGui(QtGui.QMainWindow, Ui_MainWindow):
     def filter(self, text):
         text = unicode(text)
         self.proxymodel.setFilterRegExp(QtCore.QRegExp(text, QtCore.Qt.CaseInsensitive, QtCore.QRegExp.FixedString))
-    
         
 
 class TableModel(QtCore.QAbstractTableModel):

@@ -47,8 +47,7 @@ class BciNetwork(object):
         
     def getAvailableFeedbacks(self):
         signal = bcixml.BciSignal(None, [bcixml.CMD_GET_FEEDBACKS], bcixml.INTERACTION_SIGNAL)
-        xml = self.xmlencoder.encode_packet(signal)
-        self.send(xml)
+        self.send_signal(signal)
         
         data, addr = self.receive(TIMEOUT)
         answer = self.xmldecoder.decode_packet(data)
@@ -58,42 +57,31 @@ class BciNetwork(object):
     
     def send_init(self, feedback):
         signal = bcixml.BciSignal({"feedback": str(feedback)}, [bcixml.CMD_SEND_INIT], bcixml.INTERACTION_SIGNAL)
-        xml = self.xmlencoder.encode_packet(signal)
-        self.send(xml)
+        self.send_signal(signal)
 
     def play(self):
         signal = bcixml.BciSignal(None, [bcixml.CMD_PLAY], bcixml.INTERACTION_SIGNAL)
-        xml = self.xmlencoder.encode_packet(signal)
-        self.send(xml)
+        self.send_signal(signal)
 
     def pause(self):
         signal = bcixml.BciSignal(None, [bcixml.CMD_PAUSE], bcixml.INTERACTION_SIGNAL)
-        xml = self.xmlencoder.encode_packet(signal)
-        self.send(xml)
+        self.send_signal(signal)
 
     def stop(self):
         signal = bcixml.BciSignal(None, [bcixml.CMD_QUIT], bcixml.INTERACTION_SIGNAL)
-        xml = self.xmlencoder.encode_packet(signal)
-        self.send(xml)
+        self.send_signal(signal)
 
     def get_variables(self):
         signal = bcixml.BciSignal(None, [bcixml.CMD_GET_VARIABLES], bcixml.INTERACTION_SIGNAL)
-        xml = self.xmlencoder.encode_packet(signal)
-        self.send(xml)
+        self.send_signal(signal)
 
         data, addr = self.receive(TIMEOUT)
         answer = self.xmldecoder.decode_packet(data)
         return answer.data.get("variables")
 
-
     def send_signal(self, signal):
         xml = self.xmlencoder.encode_packet(signal)
-        self.send(xml)
-
-
-    def send(self, string):
-        self.socket.sendto(string, self.addr)
-        
+        self.socket.sendto(xml, self.addr)
     
     def receive(self, timeout):
         if self.SEND_ONLY:
