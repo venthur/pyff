@@ -113,13 +113,13 @@
        <widget class="QToolButton" name="toolButton_send" />
       </item>
       <item>
+       <widget class="QToolButton" name="toolButton_get" />
+      </item>
+      <item>
        <widget class="QToolButton" name="toolButton_play" />
       </item>
       <item>
        <widget class="QToolButton" name="toolButton_pause" />
-      </item>
-      <item>
-       <widget class="QToolButton" name="toolButton_stop" />
       </item>
       <item>
        <widget class="QToolButton" name="toolButton_quit" />
@@ -244,13 +244,13 @@
     <string>Pause</string>
    </property>
   </action>
-  <action name="actionStop" >
+  <action name="actionGet" >
    <property name="icon" >
     <iconset>
-     <normaloff>../../../../../../../usr/share/icons/default.kde/16x16/actions/player_stop.png</normaloff>../../../../../../../usr/share/icons/default.kde/16x16/actions/player_stop.png</iconset>
+     <normaloff>../../../../../../../usr/share/icons/default.kde/16x16/actions/mail_get.png</normaloff>../../../../../../../usr/share/icons/default.kde/16x16/actions/mail_get.png</iconset>
    </property>
    <property name="text" >
-    <string>Stop</string>
+    <string>Get</string>
    </property>
   </action>
   <action name="actionSendInit" >

@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'gui.ui'
 #
-# Created: Wed Aug  6 12:22:26 2008
+# Created: Fri Aug 29 13:27:20 2008
 #      by: PyQt4 UI code generator 4.4.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -66,15 +66,15 @@ class Ui_MainWindow(object):
         self.toolButton_send = QtGui.QToolButton(self.centralwidget)
         self.toolButton_send.setObjectName("toolButton_send")
         self.hboxlayout.addWidget(self.toolButton_send)
+        self.toolButton_get = QtGui.QToolButton(self.centralwidget)
+        self.toolButton_get.setObjectName("toolButton_get")
+        self.hboxlayout.addWidget(self.toolButton_get)
         self.toolButton_play = QtGui.QToolButton(self.centralwidget)
         self.toolButton_play.setObjectName("toolButton_play")
         self.hboxlayout.addWidget(self.toolButton_play)
         self.toolButton_pause = QtGui.QToolButton(self.centralwidget)
         self.toolButton_pause.setObjectName("toolButton_pause")
         self.hboxlayout.addWidget(self.toolButton_pause)
-        self.toolButton_stop = QtGui.QToolButton(self.centralwidget)
-        self.toolButton_stop.setObjectName("toolButton_stop")
-        self.hboxlayout.addWidget(self.toolButton_stop)
         self.toolButton_quit = QtGui.QToolButton(self.centralwidget)
         self.toolButton_quit.setObjectName("toolButton_quit")
         self.hboxlayout.addWidget(self.toolButton_quit)
@@ -127,11 +127,11 @@ class Ui_MainWindow(object):
         icon.addPixmap(QtGui.QPixmap("../../../../../../../usr/share/icons/default.kde/16x16/actions/player_pause.png"),QtGui.QIcon.Normal,QtGui.QIcon.Off)
         self.actionPause.setIcon(icon)
         self.actionPause.setObjectName("actionPause")
-        self.actionStop = QtGui.QAction(MainWindow)
+        self.actionGet = QtGui.QAction(MainWindow)
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("../../../../../../../usr/share/icons/default.kde/16x16/actions/player_stop.png"),QtGui.QIcon.Normal,QtGui.QIcon.Off)
-        self.actionStop.setIcon(icon)
-        self.actionStop.setObjectName("actionStop")
+        icon.addPixmap(QtGui.QPixmap("../../../../../../../usr/share/icons/default.kde/16x16/actions/mail_get.png"),QtGui.QIcon.Normal,QtGui.QIcon.Off)
+        self.actionGet.setIcon(icon)
+        self.actionGet.setObjectName("actionGet")
         self.actionSendInit = QtGui.QAction(MainWindow)
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap("../../../../../../../usr/share/icons/default.kde/16x16/actions/mail_forward.png"),QtGui.QIcon.Normal,QtGui.QIcon.Off)
@@ -184,7 +184,7 @@ class Ui_MainWindow(object):
         self.actionQuit.setShortcut(QtGui.QApplication.translate("MainWindow", "Ctrl+Q", None, QtGui.QApplication.UnicodeUTF8))
         self.actionPlay.setText(QtGui.QApplication.translate("MainWindow", "Play", None, QtGui.QApplication.UnicodeUTF8))
         self.actionPause.setText(QtGui.QApplication.translate("MainWindow", "Pause", None, QtGui.QApplication.UnicodeUTF8))
-        self.actionStop.setText(QtGui.QApplication.translate("MainWindow", "Stop", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionGet.setText(QtGui.QApplication.translate("MainWindow", "Get", None, QtGui.QApplication.UnicodeUTF8))
         self.actionSendInit.setText(QtGui.QApplication.translate("MainWindow", "SendInit", None, QtGui.QApplication.UnicodeUTF8))
         self.actionSend.setText(QtGui.QApplication.translate("MainWindow", "Send", None, QtGui.QApplication.UnicodeUTF8))
         self.actionQuit1.setText(QtGui.QApplication.translate("MainWindow", "Quit", None, QtGui.QApplication.UnicodeUTF8))

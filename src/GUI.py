@@ -51,7 +51,7 @@ class BciGui(QtGui.QMainWindow, Ui_MainWindow):
         self.toolButton_quit.setDefaultAction(self.actionQuit1)
         self.toolButton_send.setDefaultAction(self.actionSend)
         self.toolButton_sendinit.setDefaultAction(self.actionSendInit)
-        self.toolButton_stop.setDefaultAction(self.actionStop)
+        self.toolButton_get.setDefaultAction(self.actionGet)
         
         # connect actions to methods
         #QtCore.QObject.connect(self.actionOpen, QtCore.SIGNAL("triggered()"), self.clicked)
@@ -66,7 +66,7 @@ class BciGui(QtGui.QMainWindow, Ui_MainWindow):
         QtCore.QObject.connect(self.actionSaveAs, QtCore.SIGNAL("triggered()"), self.saveas)
         QtCore.QObject.connect(self.actionSend, QtCore.SIGNAL("triggered()"), self.send)
         QtCore.QObject.connect(self.actionSendInit, QtCore.SIGNAL("triggered()"), self.sendinit)
-        QtCore.QObject.connect(self.actionStop, QtCore.SIGNAL("triggered()"), self.stop)
+        QtCore.QObject.connect(self.actionGet, QtCore.SIGNAL("triggered()"), self.get)
         
         QtCore.QObject.connect(self.lineEdit, QtCore.SIGNAL("textEdited(const QString&)"), self.filter)
         QtCore.QObject.connect(self.comboBox_player, QtCore.SIGNAL("currentIndexChanged(int)"), self.playerChanged)
@@ -85,9 +85,16 @@ class BciGui(QtGui.QMainWindow, Ui_MainWindow):
         for i in self.__who():
             i.pause()
     
-    def stop(self):
+    def get(self):
         for i in self.__who():
-            i.stop()
+            d = i.get_variables()
+            entries = []
+            for name, value in d.iteritems():
+                e = Entry(name, value, False, self.bcinetwork2player[i])
+                entries.append(e)
+            # FIXME: this will clear the whole table and just put in the new
+            # entries (ignoring the entries of the other players.
+            self.model.setElements(entries)
     
     def sendinit(self):
         feedback = unicode(self.comboBox_feedback.currentText())

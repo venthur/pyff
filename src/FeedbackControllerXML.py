@@ -96,10 +96,9 @@ class FeedbackController(object):
     
     def _handle_is(self, signal):
         self.logger.info("Got interaction signal: %s" % str(signal))
-        if len(signal.commands) < 1:
-            self.logger.warning("Received interaction signal without command, ignoring it.")
-            return
-        cmd = signal.commands[0]
+        cmd = None
+        if len(signal.commands) > 0:
+            cmd = signal.commands[0]
         # check if this signal is for the FC only (and not for the feedback)
         if cmd == bcixml.CMD_GET_FEEDBACKS:
             ip, port = signal.peeraddr[0], bcinetwork.GUI_PORT
