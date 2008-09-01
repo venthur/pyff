@@ -153,17 +153,6 @@
      <height>30</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menuFile" >
-    <property name="title" >
-     <string>&amp;File</string>
-    </property>
-    <addaction name="actionOpen" />
-    <addaction name="actionSave" />
-    <addaction name="actionSaveAs" />
-    <addaction name="separator" />
-    <addaction name="actionQuit" />
-   </widget>
-   <addaction name="menuFile" />
   </widget>
   <widget class="QStatusBar" name="statusbar" >
    <property name="geometry" >
