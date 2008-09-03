@@ -15,56 +15,92 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-import os
-import Feedback
-import traceback
+import sys, os, os.path, soya
 
-def test_feedback(root, file):
-    # remove trailing .py if present
-    if file.lower().endswith(".py"):
-        file2 = file[:-3]
-    root = root.replace("/", ".")
-    while root.startswith("."):
-        root = root[1:]
-    if not root.endswith(".") and not file2.startswith("."):
-        module = root + "." + file2
-    else:
-        module = root + file2
-    valid, name = False, file2
-    mod = None
-    try:
-        mod = __import__(module, fromlist=[None])
-        #print "1/3: loaded module (%s)." % str(module)
-        fb = getattr(mod, file2)(None)
-        #print "2/3: loaded feedback (%s)." % str(file2)
-        if isinstance(fb, Feedback.Feedback):
-            #print "3/3: feedback is valid Feedback()"
-            valid = True
-    except:
-        print "Ooops! Something went wrong loading the feedback"
-        print traceback.format_exc()
-    finally:
-        del mod
-        return valid, name
-    
-    
+soya.init(fps = 1)
+#soya.path.append(os.path.join(os.path.dirname(sys.argv[0]), "soya/data"))
+soya.path.append("/home/venthur/soya/data")
 
-def get_feedbacks():
-    """Returns the valid feedbacks in this directory."""
-    feedbacks = {}
-    for root, dirs, files in os.walk("./Feedbacks"):
-        for file in files:
-            if file.lower().endswith(".py"):
-                # ok we found a candidate, check if it's a valid feedback
-                isFeedback, name = test_feedback(root, file)
-                if isFeedback:
-                    feedbacks[name] = root+file
-    for i in feedbacks.items():
-        print i
+scene = soya.World()
+pyramid = soya.World()
 
-    
+scene.atmosphere = soya.Atmosphere()
+scene.atmosphere.bg_color = (0.05, 0.15, 0.25, 1.0)
 
-if __name__ == "__main__":
-    fb = get_feedbacks()
-    print dir()
+# each point of the rhomb
+points = [( 0.0, -1.0,  0.0),
+          ( 0.0,  1.0,  0.0),
+          (-1.0,  0.0, -1.0),
+          ( 1.0,  0.0, -1.0),
+          ( 1.0,  0.0,  1.0),
+          (-1.0,  0.0,  1.0)]
 
+# each vertex has three points
+vertices = [(0,2,3),
+            (0,3,4),
+            (0,4,5),
+            (0,5,2),
+            (1,2,3),
+            (1,3,4),
+            (1,4,5),
+            (1,5,2)]
+
+soya.Vertex(pyramid, *points[0])
+
+for p1, p2, p3 in vertices:
+    f = soya.Face(pyramid, [soya.Vertex(pyramid, *points[p1]),
+                        soya.Vertex(pyramid, *points[p2]),
+                        soya.Vertex(pyramid, *points[p3])])
+    f.double_sided = 1
+
+model_builder = soya.SimpleModelBuilder()
+model_builder.shadow = 1
+pyramid.model_builder = model_builder
+
+pyramid.shadow = 1
+
+RIGHT = -10.0
+LEFT = 10.0
+FAR = 10.0
+NEAR = -10.0
+FLOOR = -2.0
+
+f = soya.Face(scene, [soya.Vertex(scene, RIGHT, FLOOR, FAR),
+              soya.Vertex(scene, LEFT, FLOOR, FAR),
+              soya.Vertex(scene, LEFT, FLOOR, NEAR),
+              soya.Vertex(scene, RIGHT, FLOOR, NEAR)])
+f.double_sided = 1
+
+#soya.Face(pyramid, [soya.Vertex(pyramid, -0.5, -0.5,  0.5),
+#                                        soya.Vertex(pyramid,  0.5, -0.5,  0.5),
+#                                        soya.Vertex(pyramid,  0.0,  0.5,  0.0),
+#                                        ])
+
+pyramid.filename = "pyramid"
+pyramid.save()
+
+class RotatingBody(soya.Body):
+    def advance_time(self, proportion):
+        self.rotate_y(2.0 * proportion)
+        self.rotate_x(1.0 * proportion)
+        self.rotate_z(1.5 * proportion)
+
+p_body = RotatingBody(scene, pyramid.to_model())
+
+#pyramid.rotate_y(60.0)
+
+light = soya.Light(scene)
+light.diffuse = 0,0,1,1
+light.set_xyz(1.0, 1.7, 1.0)
+
+light2 = soya.Light(scene)
+light.diffuse = 0,1,0,1
+light2.set_xyz(-2.0, 2.0, 0.0)
+
+
+camera = soya.Camera(scene)
+camera.set_xyz(0.0, 0.0, 3.0)
+camera.look_at(pyramid)
+soya.set_root_widget(camera)
+
+soya.MainLoop(scene).main_loop()
