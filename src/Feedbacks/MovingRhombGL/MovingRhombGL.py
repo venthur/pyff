@@ -77,15 +77,26 @@ class MovingRhombGL(Feedback):
                 
         self.rhomb_model = rhomb_world.to_model()
         self.rhomb = MovingRotatingBody(self.scene, self.rhomb_model)
-        self.rhomb.rotate_z(90)
+        self.rhomb.turn_z(90)
+        self.rhomb.current = RIGHT
         self.rhomb.speed = soya.Vector(self.scene, 0.05, 0.1,0)
+        self.rhomb.direction = soya.Vector(self.rhomb, 1, 0, 0)
+        self.rhomb.dir_left = soya.Vector(self.scene, -1, 0, 0)
+        self.rhomb.dir_right = soya.Vector(self.scene, 1, 0, 0)
+        self.rhomb.dir_up = soya.Vector(self.scene, 0, 1, 0)
+        self.rhomb.dir_down = soya.Vector(self.scene, 0, -1, 0)
+        self.rhomb.dir_neutral = soya.Vector(self.scene, 0, 0, -1)
+
+        self.rhomb.angle_x = 0
+        self.rhomb.angle_y = 0
+        self.rhomb.angle_z = 0
         
         self.rhomb.rotating = 0
         self.rhomb.angle = 0
     
     def _create_camera_and_light(self):
         self.light = soya.Light(self.scene)
-        self.light.set_xyz(5.0, -5.0, 50.0)
+        self.light.set_xyz(5.0, -5.0, 5.0)
         self.light = soya.Light(self.scene)
         self.light.set_xyz(-5.0, -5.0, 5.0)
         self.light = soya.Light(self.scene)
@@ -109,6 +120,26 @@ class MovingRhombGL(Feedback):
     def _run_soya_mainloop(self):
         soya.MainLoop(self.scene).main_loop()
 
+# Possible directions of the Body:
+NEUTRAL = 0
+LEFT    = 1
+RIGHT   = 2
+UP      = 3
+DOWN    = 4
+
+def s(d):
+    return {0 : "neutral",
+            1 : "left",
+            2 : "right",
+            3 : "up",
+            4 : "down"}[d]
+
+KEY_A = 97
+KEY_D = 100
+KEY_W = 119
+KEY_S = 115
+KEY_SPACE = 32
+
 class MovingRotatingBody(soya.Body):
     
     def begin_round(self):
@@ -118,11 +149,18 @@ class MovingRotatingBody(soya.Body):
             if event[0] == soya.sdlconst.QUIT:
                 soya.MAIN_LOOP.stop()
             elif event[0] == soya.sdlconst.KEYDOWN:
-                print event
-                if not self.rotating:
-                    self.rotating = True
-                    self.angle = 0.0
-                #self.move = True
+                direction = {KEY_A : LEFT,
+                             KEY_D : RIGHT,
+                             KEY_W : UP,
+                             KEY_S : DOWN,
+                             KEY_SPACE : NEUTRAL}.get(event[1], NEUTRAL)
+                if not self.rotating: 
+                    self.turn_to(direction)
+                
+#                if not self.rotating:
+#                    self.rotating = True
+#                    self.angle = 0.0
+#                #self.move = True
         
             
         # check where we are and adjust the speed vector if neccessairy
@@ -152,13 +190,99 @@ class MovingRotatingBody(soya.Body):
         
         
         if self.rotating:
-            self.rotate_y(proportion * 10)
-            self.angle += proportion * 10
-            if self.angle > 180.0:
-                self.rotating = False
-                self.rotate_y(180.0 - self.angle)
-
+            #self.rotate_y(proportion * 10)
+            #self.angle += proportion * 10
+            #if self.angle > 180.0:
+            #    self.rotating = False
+            #    self.rotate_y(180.0 - self.angle)
+            #    print self.direction
             
+            self.rotate_x(proportion * self.angle_x)
+            self.rotate_y(proportion * self.angle_y)
+            self.rotate_z(proportion * self.angle_z)
+            
+    
+    def end_round(self):
+        self.rotating = False
+                
+    def turn_to(self, direction=NEUTRAL):
+        """Turns the body to the given scene direction.
+        
+        If no direction is given, it defaults to neutral position."""
+        
+        # calculate the amount of degrees for each axis to rotate
+        proposed = {NEUTRAL : self.dir_neutral,
+                    LEFT    : self.dir_left,
+                    RIGHT   : self.dir_right,
+                    UP      : self.dir_up,
+                    DOWN    : self.dir_down
+                    }[direction]
+
+        current = self.current
+        proposed = direction
+        
+        xyz = [0,0,0]    
+        if current == NEUTRAL:
+            if proposed == NEUTRAL:
+                xyz = [0.0, 0.0, 0.0]
+            elif proposed == UP:
+                xyz = [90.0, 0.0, 0.0]
+            elif proposed == DOWN:
+                xyz = [-90.0, 0.0, 0.0]
+            elif proposed == LEFT:
+                xyz = [0.0, 90.0, 0.0]
+            elif proposed == RIGHT:
+                xyz = [0.0, -90.0, 0.0]
+        elif current == UP:
+            if proposed == NEUTRAL:
+                xyz = [-90.0, 0.0, 0.0]
+            elif proposed == UP:
+                xyz = [0.0, 0.0, 0.0]
+            elif proposed == DOWN:
+                xyz = [180.0, 0.0, 0.0]
+            elif proposed == LEFT:
+                xyz = [0.0, 0.0, 90.0]
+            elif proposed == RIGHT:
+                xyz = [0.0, 0.0, -90.0]
+        elif current == DOWN:
+            if proposed == NEUTRAL:
+                xyz = [90.0, 0.0, 0.0]
+            elif proposed == UP:
+                xyz = [180.0, 0.0, 0.0]
+            elif proposed == DOWN:
+                xyz = [0.0, 0.0, 0.0]
+            elif proposed == LEFT:
+                xyz = [0.0, 0.0, -90.0]
+            elif proposed == RIGHT:
+                xyz = [0.0, 0.0, 90.0]
+        elif current == LEFT:
+            if proposed == NEUTRAL:
+                xyz = [0.0, -90.0, 0.0]
+            elif proposed == UP:
+                xyz = [0.0, 0.0, -90.0]
+            elif proposed == DOWN:
+                xyz = [0.0, 0.0, 90.0]
+            elif proposed == LEFT:
+                xyz = [0.0, 0.0, 0.0]
+            elif proposed == RIGHT:
+                xyz = [0.0, 180.0, 0.0]
+        elif current == RIGHT:
+            if proposed == NEUTRAL:
+                xyz = [0.0, 90.0, 0.0]
+            elif proposed == UP:
+                xyz = [0.0, 0.0, 90.0]
+            elif proposed == DOWN:
+                xyz = [0.0, 0.0, -90.0]
+            elif proposed == LEFT:
+                xyz = [0.0, 180.0, 0.0]
+            elif proposed == RIGHT:
+                xyz = [0.0, 0.0, 0.0]
+        # begin rotating
+        
+        self.rotating = True
+        self.angle_x, self.angle_y, self.angle_z = xyz
+        print s(self.current), s(proposed)
+        self.current = proposed
         
 
 if __name__ == '__main__':
