@@ -1,6 +1,7 @@
 
 from Feedback import Feedback
 import soya
+import math
 
 
 class MovingRhombGL(Feedback):
@@ -32,60 +33,51 @@ class MovingRhombGL(Feedback):
         self.scene = soya.World()
         
     def _create_models(self):
-        # each point of the rhomb
-        points = [( 0.0, -2.0,  0.0),
-                  ( 0.0,  0.7,  0.0),
-                  (-1.0,  0.0, -1.0),
-                  ( 1.0,  0.0, -1.0),
-                  ( 1.0,  0.0,  1.0),
-                  (-1.0,  0.0,  1.0)]
-        
-        # each vertex has three points
-        vertices = [(0,2,3),
-                    (0,3,4),
-                    (0,4,5),
-                    (0,5,2),
-                    (1,2,3),
-                    (1,3,4),
-                    (1,4,5),
-                    (1,5,2)]
+        leftSize = 2
+        rightSize = 0.7
+        radius = 1
+        n = 8
 
-        rhomb_world = soya.World()
-
-        soya.Vertex(rhomb_world, *points[0])
-        
         color1 = (1,0,0,1)
         color2 = (1,1,1,1)
 
-        i = 0
-        for p1, p2, p3 in vertices:
-            if i < 4:
-                c = color1
-            else:
-                c = color2
-            v1 = soya.Vertex(rhomb_world, *points[p1])
-            v2 = soya.Vertex(rhomb_world, *points[p2])
-            v3 = soya.Vertex(rhomb_world, *points[p3])
-            v1.diffuse = c
-            v2.diffuse = c
-            v3.diffuse = c
 
-            f = soya.Face(rhomb_world, [v1, v2, v3])
-            f.double_sided = 1
-            i += 1
+        rhomb_world = soya.World()
 
-                
+
+        centerVerticesLeft = []
+        centerVerticesRight = []
+
+
+        for i in range(n):
+            l = soya.Vertex(rhomb_world,radius * math.sin(2.0 * math.pi * i / n),0.0, radius * math.cos(2.0 * math.pi * i / n))
+            r = soya.Vertex(rhomb_world,radius * math.sin(2.0 * math.pi * i / n),0.0, radius * math.cos(2.0 * math.pi * i / n))
+            l.diffuse = color1
+            r.diffuse = color2
+            centerVerticesLeft.append(l)
+            centerVerticesRight.append(r)
+
+        for i in range(n):
+            leftVertex = soya.Vertex(rhomb_world, 0.0,-leftSize, 0.0)
+            rightVertex = soya.Vertex(rhomb_world, 0.0,rightSize, 0.0)
+            leftVertex.diffuse = color1
+            rightVertex.diffuse = color2
+            f = soya.Face(rhomb_world, [leftVertex, centerVerticesLeft[(i+1)%n], centerVerticesLeft[i]])
+            f.smooth_lit = 0
+            f = soya.Face(rhomb_world, [rightVertex, centerVerticesRight[i], centerVerticesRight[(i+1)%n]])
+            f.smooth_lit = 0
+
+        model_builder = soya.SimpleModelBuilder()
+
+        model_builder.shadow = 1
+
+        rhomb_world.model_builder = model_builder
+
         self.rhomb_model = rhomb_world.to_model()
         self.rhomb = MovingRotatingBody(self.scene, self.rhomb_model)
-        self.rhomb.turn_z(90)
+        self.rhomb.rotate_z(90)
         self.rhomb.current = RIGHT
         self.rhomb.speed = soya.Vector(self.scene, 0.05, 0.1,0)
-        self.rhomb.direction = soya.Vector(self.rhomb, 1, 0, 0)
-        self.rhomb.dir_left = soya.Vector(self.scene, -1, 0, 0)
-        self.rhomb.dir_right = soya.Vector(self.scene, 1, 0, 0)
-        self.rhomb.dir_up = soya.Vector(self.scene, 0, 1, 0)
-        self.rhomb.dir_down = soya.Vector(self.scene, 0, -1, 0)
-        self.rhomb.dir_neutral = soya.Vector(self.scene, 0, 0, -1)
 
         self.rhomb.angle_x = 0
         self.rhomb.angle_y = 0
@@ -96,13 +88,7 @@ class MovingRhombGL(Feedback):
     
     def _create_camera_and_light(self):
         self.light = soya.Light(self.scene)
-        self.light.set_xyz(5.0, -5.0, 5.0)
-        self.light = soya.Light(self.scene)
-        self.light.set_xyz(-5.0, -5.0, 5.0)
-        self.light = soya.Light(self.scene)
-        self.light.set_xyz(5.0, 5.0, 5.0)
-        self.light = soya.Light(self.scene)
-        self.light.set_xyz(-5.0, 5.0, 5.0)
+        self.light.set_xyz(0.0, 0.0, 50.0)
 
 
         
@@ -210,13 +196,6 @@ class MovingRotatingBody(soya.Body):
         
         If no direction is given, it defaults to neutral position."""
         
-        # calculate the amount of degrees for each axis to rotate
-        proposed = {NEUTRAL : self.dir_neutral,
-                    LEFT    : self.dir_left,
-                    RIGHT   : self.dir_right,
-                    UP      : self.dir_up,
-                    DOWN    : self.dir_down
-                    }[direction]
 
         current = self.current
         proposed = direction
