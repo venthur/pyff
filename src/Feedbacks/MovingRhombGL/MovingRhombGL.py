@@ -1,3 +1,21 @@
+# MovingRhombGL.py - MovingRhomb implementation in OpenGL using Soya 3D
+# Copyright (C) 2007-2008  Bastian Venthur
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+"""Stimulus-Only Feedback."""
 
 from Feedback import Feedback
 import soya
@@ -15,6 +33,7 @@ class MovingRhombGL(Feedback):
         self.rhomb_n = 16
         self.rhomb_color1 = (1,0,0,1)
         self.rhomb_color2 = (1,1,1,1)
+        self.rhomb_speed_xyz = (0.05, 0.1,0)
         
         # camera and light
         self.light_xyz = (0,0,50)
@@ -32,16 +51,9 @@ class MovingRhombGL(Feedback):
         self._stopped = False
         self._run_soya_mainloop()
         
-#        self._soya_ml = soya.MainLoop(self.scene)
-#        self._stopping, self._stoped = False, False
-#        while not self._stopping:
-#            #time.sleep(0)
-#            self._soya_ml.update()
-##        self._soya_ml.stop()
         soya.quit()
         print "Stopped soya's main loop."
         self._stopped = True
-#        self._stopped = True
     
     def on_pause(self):
         self._pause = not self._pause
@@ -50,8 +62,6 @@ class MovingRhombGL(Feedback):
         self.rhomb.stopping = True
         while not self._stopped:
             time.sleep(0.1)
-#            pass
-#        return
     
     def on_control_event(self, data):
         pass
@@ -95,7 +105,7 @@ class MovingRhombGL(Feedback):
         self.rhomb = MovingRotatingBody(self.scene, self.rhomb_model)
         self.rhomb.rotate_z(90)
         self.rhomb.current = RIGHT
-        self.rhomb.speed = soya.Vector(self.scene, 0.05, 0.1,0)
+        self.rhomb.speed = soya.Vector(self.scene, *self.rhomb_speed_xyz)
 
         self.rhomb.angle_x = 0
         self.rhomb.angle_y = 0
@@ -128,10 +138,6 @@ class MovingRhombGL(Feedback):
         soya.MainLoop(self.scene).main_loop()
 
 
-    def _stop_soya_mainloop(self):
-        soya.MAIN_LOOP.stop()
-
-
 # Possible directions of the Body:
 NEUTRAL = 0
 LEFT    = 1
@@ -150,10 +156,10 @@ class MovingRotatingBody(soya.Body):
     
     def begin_round(self):
         soya.Body.begin_round(self)
+        if self.stopping:
+            soya.MAIN_LOOP.stop()
         
         for event in soya.process_event():
-            if self.stopping:
-                soya.MAIN_LOOP.stop()
             if event[0] == soya.sdlconst.QUIT:
                 soya.MAIN_LOOP.stop()
             elif event[0] == soya.sdlconst.KEYDOWN:
