@@ -28,24 +28,28 @@ class MovingRhombGL(Feedback):
         self._create_camera_and_light()
         
         # this method will run until stopped from another thread
-        #self._run_soya_mainloop()
+        self.rhomb.stopping = False
+        self._stopped = False
+        self._run_soya_mainloop()
         
-        self._soya_ml = soya.MainLoop(self.scene)
-        self._stopping, self._stoped = False, False
-        while not self._stopping:
-            #time.sleep(0)
-            self._soya_ml.update()
-#        self._soya_ml.stop()
+#        self._soya_ml = soya.MainLoop(self.scene)
+#        self._stopping, self._stoped = False, False
+#        while not self._stopping:
+#            #time.sleep(0)
+#            self._soya_ml.update()
+##        self._soya_ml.stop()
         soya.quit()
         print "Stopped soya's main loop."
+        self._stopped = True
 #        self._stopped = True
     
     def on_pause(self):
         self._pause = not self._pause
     
     def on_quit(self):
-        self._stopping = True
-#        while not self._stopped:
+        self.rhomb.stopping = True
+        while not self._stopped:
+            time.sleep(0.1)
 #            pass
 #        return
     
@@ -148,6 +152,8 @@ class MovingRotatingBody(soya.Body):
         soya.Body.begin_round(self)
         
         for event in soya.process_event():
+            if self.stopping:
+                soya.MAIN_LOOP.stop()
             if event[0] == soya.sdlconst.QUIT:
                 soya.MAIN_LOOP.stop()
             elif event[0] == soya.sdlconst.KEYDOWN:
