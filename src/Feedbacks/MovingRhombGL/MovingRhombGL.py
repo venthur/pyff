@@ -2,21 +2,52 @@
 from Feedback import Feedback
 import soya
 import math
+import time
 
 
 class MovingRhombGL(Feedback):
     
     def on_init(self):
-        pass
+        # for the rhomb
+        self.rhomb_left_size = 2.0
+        self.rhomb_right_size = 0.7
+        self.rhomb_radius = 1.0
+        self.rhomb_n = 16
+        self.rhomb_color1 = (1,0,0,1)
+        self.rhomb_color2 = (1,1,1,1)
+        
+        # camera and light
+        self.light_xyz = (0,0,50)
+        self.camera_z = 15
+        self.camera_fov = 100
+
     
     def on_play(self):
-        pass
+        self._init_soya()
+        self._create_models()
+        self._create_camera_and_light()
+        
+        # this method will run until stopped from another thread
+        #self._run_soya_mainloop()
+        
+        self._soya_ml = soya.MainLoop(self.scene)
+        self._stopping, self._stoped = False, False
+        while not self._stopping:
+            #time.sleep(0)
+            self._soya_ml.update()
+#        self._soya_ml.stop()
+        soya.quit()
+        print "Stopped soya's main loop."
+#        self._stopped = True
     
     def on_pause(self):
-        pass
+        self._pause = not self._pause
     
     def on_quit(self):
-        pass
+        self._stopping = True
+#        while not self._stopped:
+#            pass
+#        return
     
     def on_control_event(self, data):
         pass
@@ -29,48 +60,31 @@ class MovingRhombGL(Feedback):
     def _init_soya(self):
         soya.path.append("data")
         soya.init()
-        
         self.scene = soya.World()
+
         
     def _create_models(self):
-        leftSize = 2
-        rightSize = 0.7
-        radius = 1
-        n = 8
-
-        color1 = (1,0,0,1)
-        color2 = (1,1,1,1)
-
-
         rhomb_world = soya.World()
-
-
         centerVerticesLeft = []
         centerVerticesRight = []
-
-
-        for i in range(n):
-            l = soya.Vertex(rhomb_world,radius * math.sin(2.0 * math.pi * i / n),0.0, radius * math.cos(2.0 * math.pi * i / n))
-            r = soya.Vertex(rhomb_world,radius * math.sin(2.0 * math.pi * i / n),0.0, radius * math.cos(2.0 * math.pi * i / n))
-            l.diffuse = color1
-            r.diffuse = color2
+        for i in range(self.rhomb_n):
+            l = soya.Vertex(rhomb_world,self.rhomb_radius * math.sin(2.0 * math.pi * i / self.rhomb_n),0.0, self.rhomb_radius * math.cos(2.0 * math.pi * i / self.rhomb_n))
+            r = soya.Vertex(rhomb_world,self.rhomb_radius * math.sin(2.0 * math.pi * i / self.rhomb_n),0.0, self.rhomb_radius * math.cos(2.0 * math.pi * i / self.rhomb_n))
+            l.diffuse = self.rhomb_color1
+            r.diffuse = self.rhomb_color2
             centerVerticesLeft.append(l)
             centerVerticesRight.append(r)
-
-        for i in range(n):
-            leftVertex = soya.Vertex(rhomb_world, 0.0,-leftSize, 0.0)
-            rightVertex = soya.Vertex(rhomb_world, 0.0,rightSize, 0.0)
-            leftVertex.diffuse = color1
-            rightVertex.diffuse = color2
-            f = soya.Face(rhomb_world, [leftVertex, centerVerticesLeft[(i+1)%n], centerVerticesLeft[i]])
-            f.smooth_lit = 0
-            f = soya.Face(rhomb_world, [rightVertex, centerVerticesRight[i], centerVerticesRight[(i+1)%n]])
-            f.smooth_lit = 0
-
+        for i in range(self.rhomb_n):
+            leftVertex = soya.Vertex(rhomb_world, 0.0,-self.rhomb_left_size, 0.0)
+            rightVertex = soya.Vertex(rhomb_world, 0.0,self.rhomb_right_size, 0.0)
+            leftVertex.diffuse = self.rhomb_color1
+            rightVertex.diffuse = self.rhomb_color2
+            f = soya.Face(rhomb_world, [leftVertex, centerVerticesLeft[(i+1)%self.rhomb_n], centerVerticesLeft[i]])
+            f.smooth_lit = 1
+            f = soya.Face(rhomb_world, [rightVertex, centerVerticesRight[i], centerVerticesRight[(i+1)%self.rhomb_n]])
+            f.smooth_lit = 1
         model_builder = soya.SimpleModelBuilder()
-
         model_builder.shadow = 1
-
         rhomb_world.model_builder = model_builder
 
         self.rhomb_model = rhomb_world.to_model()
@@ -85,26 +99,34 @@ class MovingRhombGL(Feedback):
         
         self.rhomb.rotating = 0
         self.rhomb.angle = 0
+
     
     def _create_camera_and_light(self):
         self.light = soya.Light(self.scene)
-        self.light.set_xyz(0.0, 0.0, 50.0)
-
-
+        self.light.set_xyz(*self.light_xyz)
         
         self.camera =  soya.Camera(self.scene)
-        self.camera.z = 15.0
-        self.camera.fov = 100
-        
+        self.camera.z = self.camera_z
+        self.camera.fov = self.camera_fov
         self.camera.ortho = True
         
+        # calculate the "border" of the field
         p = self.camera.coord2d_to_3d(0.0, 0.0, 0.0)
-        print p
+        self.rhomb.left = p.x
+        self.rhomb.right = -p.x
+        self.rhomb.top = p.y
+        self.rhomb.bottom = -p.y
         
         soya.set_root_widget(self.camera)
+
     
     def _run_soya_mainloop(self):
         soya.MainLoop(self.scene).main_loop()
+
+
+    def _stop_soya_mainloop(self):
+        soya.MAIN_LOOP.stop()
+
 
 # Possible directions of the Body:
 NEUTRAL = 0
@@ -113,13 +135,7 @@ RIGHT   = 2
 UP      = 3
 DOWN    = 4
 
-def s(d):
-    return {0 : "neutral",
-            1 : "left",
-            2 : "right",
-            3 : "up",
-            4 : "down"}[d]
-
+# Scancodes for the Keys
 KEY_A = 97
 KEY_D = 100
 KEY_W = 119
@@ -147,24 +163,17 @@ class MovingRotatingBody(soya.Body):
 #                    self.rotating = True
 #                    self.angle = 0.0
 #                #self.move = True
-        
             
-        # check where we are and adjust the speed vector if neccessairy
-        top = -3.75
-        bottom = -top
-        
-        left = -5.0
-        right = -left
-        
-        if self.x < left or self.x > right:
+        # check where we are and adjust the speed vector and position if 
+        # neccessairy
+        if self.x < self.left or self.x > self.right:
             self.speed.x = -self.speed.x
-            if self.x < left: self.x = left
-            elif self.x > right: self.x = right
-        
-        if self.y < top or self.y > bottom:
+            if self.x < self.left: self.x = self.left
+            elif self.x > self.right: self.x = self.right
+        if self.y < self.bottom or self.y > self.top:
             self.speed.y = -self.speed.y
-            if self.y < top: self.y = top
-            elif self.y > bottom: self.y = bottom
+            if self.y < self.bottom: self.y = self.bottom
+            elif self.y > self.top: self.y = self.top
 
                 
     def advance_time(self, proportion):
@@ -260,12 +269,12 @@ class MovingRotatingBody(soya.Body):
         
         self.rotating = True
         self.angle_x, self.angle_y, self.angle_z = xyz
-        print s(self.current), s(proposed)
         self.current = proposed
         
 
 if __name__ == '__main__':
     mr = MovingRhombGL(None)
+    mr.on_init()
     mr._init_soya()
     mr._create_models()
     mr._create_camera_and_light()

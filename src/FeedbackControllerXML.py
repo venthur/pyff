@@ -70,12 +70,15 @@ class FeedbackController(object):
             return
         # check our signal if it contains anything useful, if not drop it and
         # print a warning
-        if signal.type == bcixml.CONTROL_SIGNAL:
-            self._handle_cs(signal)
-        elif signal.type == bcixml.INTERACTION_SIGNAL:
-            self._handle_is(signal)
-        else:
-            self.logger.warning("Unknown signal type, ignoring it. (%s)" % str(signal.type))
+        try:
+            if signal.type == bcixml.CONTROL_SIGNAL:
+                self._handle_cs(signal)
+            elif signal.type == bcixml.INTERACTION_SIGNAL:
+                self._handle_is(signal)
+            else:
+                self.logger.warning("Unknown signal type, ignoring it. (%s)" % str(signal.type))
+        except:
+            print "Ooops, handling is or cs caused an exception."
 
         
     def main_loop(self):

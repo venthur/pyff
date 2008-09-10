@@ -67,7 +67,7 @@ class BciNetwork(object):
         signal = bcixml.BciSignal(None, [bcixml.CMD_PAUSE], bcixml.INTERACTION_SIGNAL)
         self.send_signal(signal)
 
-    def stop(self):
+    def quit(self):
         signal = bcixml.BciSignal(None, [bcixml.CMD_QUIT], bcixml.INTERACTION_SIGNAL)
         self.send_signal(signal)
 
