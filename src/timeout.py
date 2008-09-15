@@ -1,4 +1,7 @@
-# scratch.py -
+#!/usr/bin/env python
+# coding: utf8
+
+# timeout.py -
 # Copyright (C) 2007-2008  Bastian Venthur
 #
 # This program is free software; you can redistribute it and/or modify
@@ -15,43 +18,41 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+# Decorator @timeout(sec), calls the method in a seperate thread with the
+# specified timeout. Exceptions and the result is propagated
+#
+# from timeout import *
+# 
+# @timeout(5)
+# def infinite_loop():
+#    while 1:
+#        pass
+#
+# if __name__ == "__main__":
+#     try:
+#         infinite_loop()
+#     except ThreadMEthodTimeoutError, e:
+#         # do something
+#         pass
+#     except Exception, e:
+#         # thrown by infinite loop
 
-# 1. simple
-def mydec(f):
-    def _f(*args, **kwargs):
-        f(*args, **kwargs)
-        print str(i)
-    return _f
 
-# 2. ... with argument
-def mydec2(i):
-    def mydec2_inner(f):
-        def _f(*args, **kwargs):
-            f(*args, **kwargs)
-            print str(i)
-        return _f
-    return mydec2_inner
-
-# 3. same as 2. but as class:
-class mydec3(object):
-    def __init__(self, i):
-        self.i = i
-    def __call__(self, f):
-        def _f(*args, **kwargs):
-            f(*args, **kwargs)
-            print str(self.i)
-        return _f
 
 from threading import Thread
 
-# ok, now the real thing
+class ThreadMethodTimeoutError(Exception): pass
+
 class timeout(object):
+    """Runs the method in a different thread.
     
+    @timeout(timeout) is a decorator function which returns a method wrapper
+    which runs the wrapped method in a different thread with a timeout.
+    """
     def __init__(self, timeout):
         self.timeout = timeout
         
     def __call__(self, f):
-        
         def _f(*args, **kwargs):
             worker = ThreadMethodThread(f, args, kwargs)
             if self.timeout is None:
@@ -63,10 +64,8 @@ class timeout(object):
                 raise worker.exception
             else:
                 return worker.result
-            
         return _f
 
-class ThreadMethodTimeoutError(Exception): pass
 
 class ThreadMethodThread(Thread):
     def __init__(self, target, args, kwargs):
@@ -83,22 +82,3 @@ class ThreadMethodThread(Thread):
             self.exception = Exception()
         else:
             self.exception = None
-
-@timeout(5)
-def infinite_loop():
-    while 1:
-        pass        
-
-@timeout(5)
-def mymethod():
-    print "foo"
-
-
-if __name__ == '__main__':
-    try:
-        infinite_loop()
-    except ThreadMethodTimeoutError, e:
-        print "timeout"
-    except:
-        print "some other exception"
-
