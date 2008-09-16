@@ -50,8 +50,10 @@ class BciNetwork(object):
         self.send_signal(signal)
         
         data, addr = self.receive(TIMEOUT)
+        if not data:
+            self.logger.info("Did not receive an answer on getAvailableFeedbacks")
+            return None
         answer = self.xmldecoder.decode_packet(data)
-        print "Received answer: %s" % str(answer)
         return answer.data.get("feedbacks")
     
     
@@ -76,6 +78,9 @@ class BciNetwork(object):
         self.send_signal(signal)
 
         data, addr = self.receive(TIMEOUT)
+        if not data:
+            self.info("Did not receive answer on get_variables")
+            return None
         answer = self.xmldecoder.decode_packet(data)
         return answer.data.get("variables")
 
