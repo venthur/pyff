@@ -40,7 +40,6 @@ class Lesson03(Feedback):
                 print "Leaving main loop."
                 break
             print self._data
-            print self._type
             
         print "Left main loop."
         self.quit = True

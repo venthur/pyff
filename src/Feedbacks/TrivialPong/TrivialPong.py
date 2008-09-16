@@ -21,7 +21,7 @@ class TrivialPong(Feedback):
             if self.stopping:
                 break
 
-            val = self._data[-1]
+            val = self._data["data"][-1]
             w_half = self.screen.get_width() / 2
             pos = w_half + w_half * val
             self.barrect.center = pos, self.height - 20

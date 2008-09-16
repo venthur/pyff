@@ -15,23 +15,18 @@ class FeedbackCursorArrow(Feedback):
         # TODO: move variables to parameters, check for unused variables
         self.logger.debug("on_init")
         
-        self.parameters = {
-        #   Name from GUI : (local variablename, default value)
-            'duration_until_hit' : ('durationUntilHit', 1500),
-            'duration' : ('durationPerTrial', 4000),
-            'trials_per_run' : ('trials', 10),
-            'break_every' : ('pauseAfter', 5),
-            'duration_break' : ('pauseDuration', 9000),
-            'directions' : ('availableDirections', ['left', 'right']),
-            'fps' : ('FPS', 30),
-            'fullscreen' : ('fullscreen', False),
-            'screen_width' : ('screenWidht',  600),
-            'screen_height' : ('screenHeight', 600),
-            'countdown_from' : ('countdownFrom', 4),
-            'hit_miss_duration' : ('hitMissDuration', 1000)
-        }
-        for p in self.parameters.values():
-            self.__setattr__(p[0], p[1])
+        self.durationUntilHit = 1500
+        self.durationPerTrial = 4000
+        self.trials = 10
+        self.pauseAfter = 5
+        self.pauseDuration = 9000
+        self.availableDirections =  ['left', 'right']
+        self.FPS =  30
+        self.fullscreen =  False
+        self.screenWidht =  600
+        self.screenHeight =  600
+        self.countdownFrom = 4
+        self.hitMissDuration =  1000
         
         self.pause = False
         self.quit = True
@@ -72,7 +67,6 @@ class FeedbackCursorArrow(Feedback):
         # left to point at left, right and foot
         self.LEFT, self.RIGHT, self.DOWN, self.UP = 'left', 'right', 'foot', 'up'
         self.directions = {self.LEFT: 0, self.RIGHT: 180, self.DOWN: 90, self.UP: 270}
-        self.availableDirections = [None, None]
 
 
     def on_play(self):
@@ -118,16 +112,11 @@ class FeedbackCursorArrow(Feedback):
         """
         self.logger.debug("on_interaction_event: %s" % str(data))
         for var, val in data.items():
-            if self.parameters.has_key(var):
-                local = self.parameters[var][0]
-                self.__setattr__(local, val)
-            else:
-                self.logger.warning("Caught unknown variable %s" % str(var))
-
+                self.__setattr__(var, val)
 
     def on_control_event(self, data):
         #self.logger.debug("on_control_event: %s" % str(data))
-        self.f = data[-1]
+        self.f = data["data"][-1]
 
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # Derived from Feedback

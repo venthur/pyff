@@ -116,7 +116,7 @@ class MovingRhomb(Feedback):
         pygame.init()
         #size = (self.w, self.h)
         size = pygame.display.list_modes()[0]
-        self.screen = pygame.display.set_mode(size, pygame.FULLSCREEN | pygame.HWSURFACE | pygame.DOUBLEBUF) #pygame.HWSURFACE | pygame.FULLSCREEN | pygame.DOUBLEBUF) # 
+        self.screen = pygame.display.set_mode(size, pygame.HWSURFACE | pygame.DOUBLEBUF) #pygame.HWSURFACE | pygame.FULLSCREEN | pygame.DOUBLEBUF) # 
         self.clock = pygame.time.Clock()
         #print pygame.display.get_driver()
         #print pygame.display.Info()

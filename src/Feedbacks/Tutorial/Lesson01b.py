@@ -6,7 +6,7 @@ from Feedback import Feedback
 class Lesson01b(Feedback):
     
     def __init__(self, pp):
-        Feedback.__init__(self, pp, "foo-")
+        Feedback.__init__(self, pp)
         # Your own stuff goes here
     
     def on_init(self):

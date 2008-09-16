@@ -12,10 +12,12 @@ class TrivialFeedback(Feedback):
         
         self.quitting, self.quit = False, False
         self.pause = False
+        self.data = [0]
         
         # 30 should be the best all-purpose solution
         # 60 is recommendet for RT-shooters
         self.FPS = 30
+        
         
     
     def main_loop(self):
@@ -35,7 +37,7 @@ class TrivialFeedback(Feedback):
             #
             
             #font = pygame.font.Font(None, 36)
-            val = self._data[-1]
+            val = self.data[-1]
             w_half = self.background.get_width() / 2
             pos = w_half + w_half * val
 
@@ -105,5 +107,5 @@ class TrivialFeedback(Feedback):
     def on_control_event(self, data):
         """"""
         self.logger.warn("on_control_event")
-        self.logger.info(data)
+        self.data = data["data"]
         
