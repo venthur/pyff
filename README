@@ -15,9 +15,10 @@ Enter the src directory and start GUI.py
     cd src
     python GUI.py
 
-If you made changes to the gui.ui, you have to rebuild the gui.py:
+If you made changes to the gui.ui or just checked out the tree from SVN, you
+have to rebuild the gui.py:
 
-    cd src/gui
+    cd src
     make
 
 

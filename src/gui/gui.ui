@@ -10,7 +10,7 @@
    </rect>
   </property>
   <property name="windowTitle" >
-   <string>MainWindow</string>
+   <string>GUI</string>
   </property>
   <widget class="QWidget" name="centralwidget" >
    <property name="geometry" >
@@ -166,8 +166,8 @@
   </widget>
   <action name="actionOpen" >
    <property name="icon" >
-    <iconset>
-     <normaloff>../../../../../../../usr/share/icons/default.kde/16x16/actions/fileopen.png</normaloff>../../../../../../../usr/share/icons/default.kde/16x16/actions/fileopen.png</iconset>
+    <iconset resource="icons.qrc" >
+     <normaloff>:/icons/open.png</normaloff>:/icons/open.png</iconset>
    </property>
    <property name="text" >
     <string>&amp;Open...</string>
@@ -181,8 +181,8 @@
   </action>
   <action name="actionSave" >
    <property name="icon" >
-    <iconset>
-     <normaloff>../../../../../../../usr/share/icons/default.kde/16x16/actions/filesave.png</normaloff>../../../../../../../usr/share/icons/default.kde/16x16/actions/filesave.png</iconset>
+    <iconset resource="icons.qrc" >
+     <normaloff>:/icons/save.png</normaloff>:/icons/save.png</iconset>
    </property>
    <property name="text" >
     <string>&amp;Save</string>
@@ -193,8 +193,8 @@
   </action>
   <action name="actionSaveAs" >
    <property name="icon" >
-    <iconset>
-     <normaloff>../../../../../../../usr/share/icons/default.kde/16x16/actions/filesaveas.png</normaloff>../../../../../../../usr/share/icons/default.kde/16x16/actions/filesaveas.png</iconset>
+    <iconset resource="icons.qrc" >
+     <normaloff>:/icons/saveas.png</normaloff>:/icons/saveas.png</iconset>
    </property>
    <property name="text" >
     <string>Save &amp;As...</string>
@@ -205,8 +205,8 @@
   </action>
   <action name="actionQuit" >
    <property name="icon" >
-    <iconset>
-     <normaloff>../../../../../../../usr/share/icons/default.kde/16x16/actions/exit.png</normaloff>../../../../../../../usr/share/icons/default.kde/16x16/actions/exit.png</iconset>
+    <iconset resource="icons.qrc" >
+     <normaloff>:/icons/exit.png</normaloff>:/icons/exit.png</iconset>
    </property>
    <property name="text" >
     <string>&amp;Quit</string>
@@ -217,8 +217,8 @@
   </action>
   <action name="actionPlay" >
    <property name="icon" >
-    <iconset>
-     <normaloff>../../../../../../../usr/share/icons/default.kde/16x16/actions/player_play.png</normaloff>../../../../../../../usr/share/icons/default.kde/16x16/actions/player_play.png</iconset>
+    <iconset resource="icons.qrc" >
+     <normaloff>:/icons/play.png</normaloff>:/icons/play.png</iconset>
    </property>
    <property name="text" >
     <string>Play</string>
@@ -226,8 +226,8 @@
   </action>
   <action name="actionPause" >
    <property name="icon" >
-    <iconset>
-     <normaloff>../../../../../../../usr/share/icons/default.kde/16x16/actions/player_pause.png</normaloff>../../../../../../../usr/share/icons/default.kde/16x16/actions/player_pause.png</iconset>
+    <iconset resource="icons.qrc" >
+     <normaloff>:/icons/pause.png</normaloff>:/icons/pause.png</iconset>
    </property>
    <property name="text" >
     <string>Pause</string>
@@ -235,8 +235,8 @@
   </action>
   <action name="actionGet" >
    <property name="icon" >
-    <iconset>
-     <normaloff>../../../../../../../usr/share/icons/default.kde/16x16/actions/mail_get.png</normaloff>../../../../../../../usr/share/icons/default.kde/16x16/actions/mail_get.png</iconset>
+    <iconset resource="icons.qrc" >
+     <normaloff>:/icons/get.png</normaloff>:/icons/get.png</iconset>
    </property>
    <property name="text" >
     <string>Get</string>
@@ -244,8 +244,8 @@
   </action>
   <action name="actionSendInit" >
    <property name="icon" >
-    <iconset>
-     <normaloff>../../../../../../../usr/share/icons/default.kde/16x16/actions/mail_forward.png</normaloff>../../../../../../../usr/share/icons/default.kde/16x16/actions/mail_forward.png</iconset>
+    <iconset resource="icons.qrc" >
+     <normaloff>:/icons/sendinit.png</normaloff>:/icons/sendinit.png</iconset>
    </property>
    <property name="text" >
     <string>SendInit</string>
@@ -253,8 +253,8 @@
   </action>
   <action name="actionSend" >
    <property name="icon" >
-    <iconset>
-     <normaloff>../../../../../../../usr/share/icons/default.kde/16x16/actions/mail_generic.png</normaloff>../../../../../../../usr/share/icons/default.kde/16x16/actions/mail_generic.png</iconset>
+    <iconset resource="icons.qrc" >
+     <normaloff>:/icons/send.png</normaloff>:/icons/send.png</iconset>
    </property>
    <property name="text" >
     <string>Send</string>
@@ -262,8 +262,8 @@
   </action>
   <action name="actionQuit" >
    <property name="icon" >
-    <iconset>
-     <normaloff>../../../../../../../usr/share/icons/default.kde/16x16/actions/remove.png</normaloff>../../../../../../../usr/share/icons/default.kde/16x16/actions/remove.png</iconset>
+    <iconset resource="icons.qrc" >
+     <normaloff>:/icons/stop.png</normaloff>:/icons/stop.png</iconset>
    </property>
    <property name="text" >
     <string>Quit</string>
@@ -271,8 +271,8 @@
   </action>
   <action name="actionAddFeedbackController" >
    <property name="icon" >
-    <iconset>
-     <normaloff>../../../../../../../usr/share/icons/default.kde/16x16/actions/add.png</normaloff>../../../../../../../usr/share/icons/default.kde/16x16/actions/add.png</iconset>
+    <iconset resource="icons.qrc" >
+     <normaloff>:/icons/connect.png</normaloff>:/icons/connect.png</iconset>
    </property>
    <property name="text" >
     <string>addFeedbackController</string>
@@ -280,14 +280,16 @@
   </action>
   <action name="actionClearFilter" >
    <property name="icon" >
-    <iconset>
-     <normaloff>../../../../../../../usr/share/icons/default.kde/16x16/actions/clear_left.png</normaloff>../../../../../../../usr/share/icons/default.kde/16x16/actions/clear_left.png</iconset>
+    <iconset resource="icons.qrc" >
+     <normaloff>:/icons/clear.png</normaloff>:/icons/clear.png</iconset>
    </property>
    <property name="text" >
     <string>clearFilter</string>
    </property>
   </action>
  </widget>
- <resources/>
+ <resources>
+  <include location="icons.qrc" />
+ </resources>
  <connections/>
 </ui>

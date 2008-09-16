@@ -95,7 +95,8 @@ class FeedbackController(object):
 
 
     def _handle_cs(self, signal):
-        pass
+        self.feedback._Feedback__on_control_event(signal.data)
+
     
     def _handle_is(self, signal):
         self.logger.info("Got interaction signal: %s" % str(signal))
