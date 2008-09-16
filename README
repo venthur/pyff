@@ -1,10 +1,10 @@
 How to use the FeedbackController
 =================================
 
-Enter the src directory and start FeedbackControllerXML:
+Enter the src directory and start FeedbackController:
 
     cd src
-    python FeedbackControllerXML.py
+    python FeedbackController.py
 
 
 How to use the GUI

@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# coding: utf8
 
 # FeedbackController.py -
 # Copyright (C) 2007-2008  Bastian Venthur
@@ -17,327 +18,68 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-from UdpDecoder import *
+import bcinetwork
+import bcixml
 from Feedback import Feedback
 
 import parallel
 
-import logging
 import socket
-import thread
-import Queue
-import traceback
+import asyncore
+import threading
+import logging
 import sys
-from optparse import OptionParser
+import os
+import traceback
 
-
-# Port and Maximum Package Size for the Interaction Signal
-IS_PORT = 12470
-IS_BUFFER_SIZE = 65535
-
-
-# Port and Maximum Package Size for the Control Signal
-CS_PORT = 12489
-CS_BUFFER_SIZE = 65535
-
-
-class FeedbackController:
-    
+class FeedbackController(object):
     def __init__(self):
-        """Initializes the logger and the event queue."""
-        # Analyze the command line
-        parser = OptionParser()
-        parser.add_option('-l', '--loglevel', dest='loglevel', default='warning', 
-                          help='Set the loglevel for the Feedbacks and the Feedback Controller. Accepted values are: notset, debug, info, warning, error and critical, default loglevel is "warning".')
-        # FIXME: not really a fulllog anymore
-        parser.add_option('-f', '--file', action='store_true', dest='fulllog', default=False,
-                          help='Log everything into a logfile.')
-        parser.add_option('--fb-loglevel', dest='fbloglevel', default='warning', 
-                          help='Set the loglevel for the Feedbacks. Default is "warning"')
-        parser.add_option('--fc-loglevel', dest='fcloglevel', default='warning', 
-                          help='Set the loglevel for the Feedback Controller. Default is "warning"')
-        options, args = parser.parse_args()
-
-        levels = {'notset': logging.NOTSET, 
-                  'debug': logging.DEBUG,
-                  'info': logging.INFO,
-                  'warning': logging.WARNING,
-                  'error': logging.ERROR,
-                  'critical': logging.CRITICAL
-                  }
-        loglevel = levels.get(options.loglevel, logging.WARNING)
-        fbLoglevel = levels.get(options.fbloglevel, logging.WARNING)
-        fcLoglevel = levels.get(options.fcloglevel, logging.WARNING)
-        
-        fbLoglevel = min(fbLoglevel, loglevel)
-        fcLoglevel = min(fcLoglevel, loglevel)
-        
-        # Setup the Logger
-        logging.getLogger('').setLevel(logging.NOTSET)
-        # Set the console output...
-        console = logging.StreamHandler()
-        console.setLevel(logging.NOTSET)
-        consoleFormatter = logging.Formatter('[%(threadName)-10s] %(name)-20s: %(levelname)-8s %(message)s')
-        console.setFormatter(consoleFormatter)
-        logging.getLogger('').addHandler(console)
-        # ... the file output if desired
-        # FIXME: Should fulllog overwrite the levels of fc and fb?
-        if options.fulllog:
-            file = logging.FileHandler('logfile.txt', 'w')
-            file.setLevel(logging.NOTSET)
-            fileFormatter = logging.Formatter('%(asctime)s %(name)-20s %(levelname)-8s %(message)s')
-            file.setFormatter(fileFormatter)
-            logging.getLogger('').addHandler(file)
-        # ... the loglevel for the Feedback Controller and it's childs
-        self.logger = logging.getLogger('FC')
-        self.logger.setLevel(fcLoglevel)
-        self.logger.debug("Loaded my logger.")
-        # ... the loglevel for the Feedback
-        logging.getLogger('Feedback').setLevel(fbLoglevel)
-        # TODO: convert all logging.foo to self.logger.foo
-        
-        self.decoder = UdpDecoder()
-        
-        # Setup the event queue
-        self.q = Queue.Queue()
-        
+        # Setup my stuff:
+        self.logger = logging.getLogger("FeedbackController")
+        self.encoder = bcixml.XmlEncoder()
+        self.decoder = bcixml.XmlDecoder()
+        self.feedbacks = self.get_feedbacks()
         # Setup the parallel port
         self.pp = None
         try:
             self.pp = parallel.Parallel()
         except:
             self.logger.error("Unable to open parallel port!")
-        
         self.feedback = Feedback(self.pp)
-
-    def __del__(self):
-        self.logger.info("Quitting the Feedback Controller.")
-        logging.shutdown()
-
-    def handle_event(self, e):
-        if e.type == Event.CONTROL_EVENT:
-            self.logger.info("Received control signal")
-            self.feedback._Feedback__on_control_event(e.data)
-        elif e.type == Event.INTERACTION_EVENT:
-            # Check the subtype if available
-            self.feedback._Feedback__on_interaction_event(e.data)
-            if e.subtype == Event.PLAY:
-                self.logger.info("Received PLAY signal")
-                self.feedback._Feedback__on_play()
-            elif e.subtype == Event.PAUSE:
-                self.logger.info("Received PAUSE signal")
-                self.feedback._Feedback__on_pause()
-            elif e.subtype == Event.QUIT:
-                self.logger.info("Received QUIT signal")
-                self.feedback._Feedback__on_quit()
-                # Load the default dummy Feedback
-                self.feedback = Feedback(self.pp)
-            elif e.subtype == Event.SEND_INIT:
-                self.logger.info("Received SEND_INIT signal")
-                # Working with old Feedback!
-                self.feedback._Feedback__on_quit()
-                self.load_feedback()
-                # Proably a new one!
-                self.feedback._Feedback__on_init()
-                self.feedback._Feedback__on_interaction_event(e.data)
-            else:
-                self.logger.info("Received generic interaction signal")
-        else:
-            self.logger.warning("Received unknown event type: %i" % d)
-        
-        
-    def main(self):
-        """Start the Feedback Controller."""
-        thread.start_new_thread(self.interaction_signal_loop, ())
-        thread.start_new_thread(self.control_signal_loop, ())
-        self.main_loop()
-        
-        
-    def load_feedback(self):
-        """
-        Tries to find and load the feedback in the Feedbacks package. If the
-        desired feedback does not exist, load the dummy feedback as fallback.
-        """
-        try:
-            name = "Feedbacks."+getattr(self.feedback, self.feedback.PREFIX+"type")
-            mod = __import__(name)
-            components = name.split('.')
-            for comp in components[1:]:
-                mod = getattr(mod, comp)
-            self.feedback = getattr(mod, components[-1])(self.pp)
-        except:
-            self.logger.warning("Unable to load Feedback, falling back to dummy.")
-            self.logger.warning(traceback.format_exc())
-            self.feedback = Feedback(self.pp)
-
-    def main_loop(self):
-        """
-        Main event loop of the FB controller. 
-        Waits for network or feedback events and deligates them to the apropiate
-        places.
-        """
-        self.logger.info("Entering main loop.")
-        while 1:
-            e = self.q.get()
-            self.handle_event(e)
-        self.logger.info("Left main loop.")
-        
-    def process_interaction_signal(self, dgram):
-        try:
-            statements = self.decoder.decode_interaction_packet(dgram)
-        except BadMagicError, e:
-            self.logger.warning("Received interaction signal with bad magic: %x" % e.magic)
-        except BadPacketSizeError, e:
-            self.logger.warning("Received interaction signal with bad packet size. Should be %i, but was %i" % (e.shouldSize, e.isSize))
-        else:
-            self.logger.info("received %s" % str(statements))
-            # Possible Signals are:
-            # Send+Init, Send, Start, Pause and Quit
-            play, pause, run_false, loop_false = False, False, False, False
-            time = 0.0
-            for var in statements:
-                self.logger.debug("Analyzing statement: %s" % str(var))
-                val = statements[var]
-                if var == 'feedback_opt.status':
-                    if val == 'play':
-                        play = True
-                    elif val == 'pause':
-                        pause = True
-                elif var == 'run' and val == False:
-                    run_false = True
-                elif var == 'loop' and val == False:
-                    loop_false = True
-            subtype = None
-            if play:
-                subtype = Event.PLAY
-            elif pause:
-                subtype = Event.PAUSE
-            elif loop_false and run_false:
-                subtype = Event.QUIT
-            elif loop_false:
-                subtype = Event.SEND_INIT
-
-            return Event(Event.INTERACTION_EVENT, statements, subtype)
-        return None
-
-
-    def process_control_signal(self, dgram):
-        try:
-            data = self.decoder.decode_control_packet(dgram)
-        except BadMagicError, e:
-            self.logger.warning("Received control signal with bad magic: %x" % e.magic)
-        except BadPacketSizeError, e:
-            self.logger.warning("Received control signal with bad packet size. Should be %i, but was %i" % (e.shouldSize, e.isSize))
-        else:
-            self.logger.info("received %s" % str(data))
-
-            return Event(Event.CONTROL_EVENT, data)
-        return None
-
-    
-    def interaction_signal_loop(self):
-        """Set up a socket for the interaction signal and listen on it."""
-        # Setup socket for Interaction Signal.
-        is_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        is_socket.bind( ('', IS_PORT) )
-        self.logger.info("Entering interaction signal loop.")
-        while 1:
-            dgram = is_socket.recv(IS_BUFFER_SIZE)
-            e = self.process_interaction_signal(dgram)
-            if e:
-                self.q.put(e)
-        self.logger.info("Left interaction signal loop.")
-        is_socket.close()
-    
-    def control_signal_loop(self):
-        """Set up a socket for the control signal and listen on it."""
-        # Setup socket for Control Signal.
-        cs_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        cs_socket.bind( ('', CS_PORT) )
-        self.logger.info("Entering control signal loop.")
-        while 1:
-            dgram = cs_socket.recv(CS_BUFFER_SIZE)
-            e = self.process_control_signal(dgram)
-            if e:
-                self.q.put(e)
-        self.logger.info("Left control signal loop.")
-        cs_socket.close()
-
-
-class Event:
-    """Represents an Event with a type and the data."""
-    
-    CONTROL_EVENT = 10
-    INTERACTION_EVENT = 20
-
-    PLAY = 21
-    PAUSE = 22
-    QUIT = 23
-    SEND_INIT = 24
-   
-    
-    def __init__(self, type, data, subtype=None):
-        self.type = type
-        self.data = data
-        self.subtype = subtype
-    
-    
-import asyncore
-
-class Dispatcher(asyncore.dispatcher):
-    """Dispatcher for the interaction signal."""
-    
-    def __init__(self, port, feedbackController):
-        asyncore.dispatcher.__init__(self)
-        self.create_socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.bind(("", port))
-        if port == IS_PORT:
-            self.handle_read = self.handle_is_read
-        elif port == CS_PORT:
-            self.handle_read = self.handle_cs_read
-        self.feedbackController = feedbackController
-        
-    def writable(self):
-        return False
-
-    def handle_connect(self):
-        pass
-        
-    def handle_is_read(self):
-        datagram = self.recv(IS_BUFFER_SIZE)
-        self.feedbackController.on_is_signal(datagram)
-            
-    def handle_cs_read(self):
-        datagram = self.recv(IS_BUFFER_SIZE)
-        self.feedbackController.on_cs_signal(datagram)
-        
-
-class FeedbackController2(FeedbackController):
-    """
-    Non-threaded variant of the FeedbackController which uses select to poll
-    the network interface asyncronously.
-    """
-    
-    def on_is_signal(self, data):
-        e = self.process_interaction_signal(data)
-        if e:
-            self.handle_event(e)
-    
-    def on_cs_signal(self, data):
-        e = self.process_control_signal(data)
-        if e:
-            self.handle_event(e)
-
-
-class FeedbackController3(FeedbackController):
-    """
-    Variant of the Feedback Controller where the Feedback runs in the main
-    thread and everything else in other threads. Let's see how that turns out...
-    """
-
-    def __init__(self):
-        FeedbackController.__init__(self)
         self.playEvent = threading.Event()
+
+        
+        # Listen on the network in a second thread
+        Dispatcher(bcinetwork.FC_PORT, self)
+        self.networkThread = threading.Thread(target=asyncore.loop, args=())
+        self.networkThread.start()
+        
+        # start my main loop
+        print "startet main loop"
+        self.main_loop()
+    
+    def on_signal(self, address, datagram):
+        signal = None
+        try:
+            signal = self.decoder.decode_packet(datagram)
+            signal.peeraddr = address
+        except bcixml.DecodingError, e:
+            # ok, somehow the parsing failed, just drop the packet and print a
+            # warning
+            self.logger.warning("Parsing of signal failed, ignoring it. (%s)" % str(e))
+            return
+        # check our signal if it contains anything useful, if not drop it and
+        # print a warning
+        try:
+            if signal.type == bcixml.CONTROL_SIGNAL:
+                self._handle_cs(signal)
+            elif signal.type == bcixml.INTERACTION_SIGNAL:
+                self._handle_is(signal)
+            else:
+                self.logger.warning("Unknown signal type, ignoring it. (%s)" % str(signal.type))
+        except:
+            print "Ooops, handling is or cs caused an exception."
+
         
     def main_loop(self):
         while True:
@@ -348,86 +90,164 @@ class FeedbackController3(FeedbackController):
             self.playEvent.clear()
             # run the Feedbacks on_play in our thread
             self.feedback._Feedback__on_play()
+            #self.call_method_safely(self.feedback._Feedback__on_play())
             self.logger.debug("Feedback's on_play terminated.")
 
-    def on_is_signal(self, data):
-        e = self.process_interaction_signal(data)
-        if e:
-            self.handle_event(e)
+
+    def _handle_cs(self, signal):
+        self.feedback._Feedback__on_control_event(signal.data)
+
     
-    def on_cs_signal(self, data):
-        e = self.process_control_signal(data)
-        if e:
-            self.handle_event(e)
-            
-    def handle_event(self, e):
-        if e.type == Event.CONTROL_EVENT:
-            self.logger.info("Received control signal")
-            self.feedback._Feedback__on_control_event(e.data)
-        elif e.type == Event.INTERACTION_EVENT:
-            # Check the subtype if available
-            self.feedback._Feedback__on_interaction_event(e.data)
-            if e.subtype == Event.PLAY:
-                self.logger.info("Received PLAY signal")
-                # Instead of calling on_play in this thread, signal the main
-                # thread to run it for us.
-                self.playEvent.set()
-            elif e.subtype == Event.PAUSE:
-                self.logger.info("Received PAUSE signal")
-                self.feedback._Feedback__on_pause()
-            elif e.subtype == Event.QUIT:
-                self.logger.info("Received QUIT signal")
-                self.feedback._Feedback__on_quit()
-                # Load the default dummy Feedback
-                self.feedback = Feedback(self.pp)
-            elif e.subtype == Event.SEND_INIT:
-                self.logger.info("Received SEND_INIT signal")
-                # Working with old Feedback!
-                self.feedback._Feedback__on_quit()
-                self.load_feedback()
-                # Proably a new one!
-                self.feedback._Feedback__on_init()
-                self.feedback._Feedback__on_interaction_event(e.data)
-            else:
-                self.logger.info("Received generic interaction signal")
+    def _handle_is(self, signal):
+        self.logger.info("Got interaction signal: %s" % str(signal))
+        cmd = None
+        if len(signal.commands) > 0:
+            cmd = signal.commands[0]
+        # check if this signal is for the FC only (and not for the feedback)
+        if cmd == bcixml.CMD_GET_FEEDBACKS:
+            ip, port = signal.peeraddr[0], bcinetwork.GUI_PORT
+            bcinetw = bcinetwork.BciNetwork(ip, port)
+            answer = bcixml.BciSignal({"feedbacks" : self.feedbacks.keys()}, None, bcixml.INTERACTION_SIGNAL)
+            self.logger.debug("Sending %s to %s:%s." % (str(answer), str(ip), str(port)))
+            bcinetw.send_signal(answer)
+            return
+        elif cmd == bcixml.CMD_GET_VARIABLES:
+            ip, port = signal.peeraddr[0], bcinetwork.GUI_PORT
+            bcinetw = bcinetwork.BciNetwork(ip, port)
+            answer = bcixml.BciSignal({"variables" : self.feedback.__dict__}, None, bcixml.INTERACTION_SIGNAL)
+            self.logger.debug("Sending %s to %s:%s." % (str(answer), str(ip), str(port)))
+            bcinetw.send_signal(answer)
+            return
+        
+        self.feedback._Feedback__on_interaction_event(signal.data)
+        if cmd == bcixml.CMD_PLAY:
+            self.logger.info("Received PLAY signal")
+            self.playEvent.set()
+            #self.feedback._Feedback__on_play()
+        elif cmd == bcixml.CMD_PAUSE:
+            self.logger.info("Received PAUSE signal")
+            self.feedback._Feedback__on_pause()
+        elif cmd == bcixml.CMD_QUIT:
+            self.logger.info("Received QUIT signal")
+            self.feedback._Feedback__on_quit()
+            # Load the default dummy Feedback
+            self.feedback = Feedback(self.pp)
+        elif cmd == bcixml.CMD_SEND_INIT:
+            self.logger.info("Received SEND_INIT signal")
+            # Working with old Feedback!
+            self.feedback._Feedback__on_quit()
+            self.load_feedback()
+            # Proably a new one!
+            self.feedback._Feedback__on_init()
+            self.feedback._Feedback__on_interaction_event(signal.data)
         else:
-            self.logger.warning("Received unknown event type: %i" % d)
+            self.logger.info("Received generic interaction signal")
+
+            
+    def test_feedback(self, root, file):
+        # remove trailing .py if present
+        if file.lower().endswith(".py"):
+            file2 = file[:-3]
+        root = root.replace("/", ".")
+        while root.startswith("."):
+            root = root[1:]
+        if not root.endswith(".") and not file2.startswith("."):
+            module = root + "." + file2
+        else:
+            module = root + file2
+        valid, name = False, file2
+        if name == "__init__":
+            return False, name, module
+        mod = None
+        try:
+            mod = __import__(module, fromlist=[None])
+            #print "1/3: loaded module (%s)." % str(module)
+            fb = getattr(mod, name)(None)
+            #print "2/3: loaded feedback (%s)." % str(file2)
+            if isinstance(fb, Feedback):
+                #print "3/3: feedback is valid Feedback()"
+                valid = True
+        except:
+            print "Ooops! Something went wrong loading the feedback: %s from module: %s" % (name, module)
+            print traceback.format_exc()
+        del mod
+        return valid, name, module
+
     
+    def get_feedbacks(self):
+        """Returns the valid feedbacks in this directory."""
+        feedbacks = {}
+        for root, dirs, files in os.walk("./Feedbacks"):
+            for file in files:
+                if file.lower().endswith(".py"):
+                    # ok we found a candidate, check if it's a valid feedback
+                    isFeedback, name, module = self.test_feedback(root, file)
+                    if isFeedback:
+                        feedbacks[name] = module
+        return feedbacks
 
-def start_feedback_controller():
-    FeedbackController().main()
 
-    
-def start_feedback_controller2():
-    feedbackController = FeedbackController2()
-    Dispatcher(IS_PORT, feedbackController)
-    Dispatcher(CS_PORT, feedbackController)
-    asyncore.loop()
+    def load_feedback(self):
+        """
+        Tries to find and load the feedback in the Feedbacks package. If the
+        desired feedback does not exist, load the dummy feedback as fallback.
+        """
+        name = getattr(self.feedback, "_feedback")
+        module = self.feedbacks[name]
+        
+        self.logger.debug("Trying to load feedback: %s from module: %s." % (name, module))
+        
+        try:
+            mod = __import__(module, fromlist=[None])
+            self.feedback = getattr(mod, name)(self.pp)
+        except:
+            self.logger.warning("Unable to load Feedback, falling back to dummy.")
+            self.logger.warning(traceback.format_exc())
+            self.feedback = Feedback(self.pp)
+            
+        # TODO: Evalutate if this is really a good idea to wrap this method
+        # arounda all Feedback-methods called by the Feedback Controller
+#    def call_method_safely(self, method):
+#        """A wrapper which encapsulates the method call in a try block."""
+#        try:
+#            method()
+#        except:
+#            self.logger.error("Caught an exception running the method, here is the stack trace. Moving on.")
+#            self.logger.error(traceback.format_exc())
+            
 
-import threading
 
-def start_feedback_controller3():
-    feedbackController = FeedbackController3()
-    Dispatcher(IS_PORT, feedbackController)
-    Dispatcher(CS_PORT, feedbackController)
-    t = threading.Thread(target=asyncore.loop, args=())
-    t.start()
-    feedbackController.main_loop()
+class Dispatcher(asyncore.dispatcher):
+    def __init__(self, port, feedbackController):
+        asyncore.dispatcher.__init__(self)
+        self.create_socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.bind(("", port))
+        #self.handle_read = self.handle_read
+        self.feedbackController = feedbackController
+        
+    def writable(self):
+        return False
 
-def stop_feedback_controller(): pass
-def stop_feedback_controller2(): pass
-def stop_feedback_controller3(): pass
+    def handle_connect(self):
+        pass
+        
+    def handle_read(self):
+        datagram = self.recv(bcinetwork.BUFFER_SIZE)
+        self.feedbackController.on_signal(self.addr, datagram)    
 
-start_fc = start_feedback_controller3
-stop_fc = stop_feedback_controller3
 
-if __name__ == "__main__":
+def start_fc():
+    fc = FeedbackController()
+
+def stop_fc():
+    pass
+
+if __name__ == '__main__':
+    loglevel = logging.DEBUG
+    logging.basicConfig(level=loglevel, format='%(name)-12s %(levelname)-8s %(message)s')
     try:
         start_fc()
-    #FIXME: Does not work with FeedbackController yet (but with FC2)
     except (KeyboardInterrupt, SystemExit):
-        logging.info("Caught KeyboardInterrupt or SystemExit, quitting")
+        logging.info("Caught keyboard interrupt or system exit; quitting")
         stop_fc()
         sys.exit()
-    except:
-        raise
