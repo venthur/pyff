@@ -79,7 +79,7 @@ class BciNetwork(object):
 
         data, addr = self.receive(TIMEOUT)
         if not data:
-            self.info("Did not receive answer on get_variables")
+            self.logger.info("Did not receive answer on get_variables")
             return None
         answer = self.xmldecoder.decode_packet(data)
         return answer.data.get("variables")

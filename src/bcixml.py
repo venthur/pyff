@@ -72,6 +72,11 @@ class XmlDecoder(object):
         except DecodingError:
             ...
     """
+
+
+    def __init__(self):
+        self.logger = logging.getLogger("XmlDecoder")
+
     
     def decode_packet(self, packet):
         """Parse the XML string and return a BciSignal.

@@ -79,6 +79,7 @@ class FeedbackController(object):
                 self.logger.warning("Unknown signal type, ignoring it. (%s)" % str(signal.type))
         except:
             print "Ooops, handling is or cs caused an exception."
+            print traceback.format_exc()
 
         
     def main_loop(self):
