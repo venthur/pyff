@@ -25,6 +25,9 @@ import bcinetwork
 import time
 import socket
 
+from pylab import *
+
+
 CONTROL_SIGNAL = """
 <bci-signal>
 <control-signal version="1.0">
@@ -130,11 +133,20 @@ if __name__ == "__main__":
     
     d = test_clock_precision()
     pretty_print(d, "Clock resolution", 1000000)
+    subplot(211)
+    figure(1)
+    plot(d, label="Clock resolution")
+    legend()
 
     samples_hz = (10, 1), (100, 10), (100, 100), (100, 1000), (100, None)
+    subplot(212)
     for samples, hz in samples_hz:
         delay = 1.0/hz if hz else None
         d = test_latency(samples, delay)
         hz = "%iHz" % hz if hz else "burst mode"
         pretty_print(d, "BCI->Feedback Latency with %i samples in %s" % (samples, hz), 1000)
+        plot(d, label="%s" % hz)
+
+    legend()
+    savefig("benchmark.png")
     
