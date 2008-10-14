@@ -31,6 +31,7 @@ import logging
 import sys
 import os
 import traceback
+from optparse import OptionParser
 
 class FeedbackController(object):
     def __init__(self):
@@ -55,8 +56,9 @@ class FeedbackController(object):
         self.networkThread.start()
         
         # start my main loop
-        print "startet main loop"
+        self.logger.debug("Started main loop.")
         self.main_loop()
+        self.logger.debug("Left main loop.")
     
     def on_signal(self, address, datagram):
         signal = None
@@ -78,8 +80,8 @@ class FeedbackController(object):
             else:
                 self.logger.warning("Unknown signal type, ignoring it. (%s)" % str(signal.type))
         except:
-            print "Ooops, handling is or cs caused an exception."
-            print traceback.format_exc()
+            self.logger.error("Ooops, handling is or cs caused an exception.")
+            self.logger.error(traceback.format_exc())
 
         
     def main_loop(self):
@@ -169,8 +171,8 @@ class FeedbackController(object):
                 #print "3/3: feedback is valid Feedback()"
                 valid = True
         except:
-            print "Ooops! Something went wrong loading the feedback: %s from module: %s" % (name, module)
-            print traceback.format_exc()
+            self.logger.warning("Ooops! Something went wrong loading the feedback: %s from module: %s" % (name, module))
+            self.logger.warning(traceback.format_exc())
         del mod
         return valid, name, module
 
@@ -243,12 +245,50 @@ def start_fc():
 def stop_fc():
     pass
 
-if __name__ == '__main__':
-    loglevel = logging.DEBUG
+
+def main():
+    
+    # Get Options
+    description = """Feedback Controller"""
+    usage = "%prog [Options]"
+    version = """
+Copyright (C) 2007-2008 Bastian Venthur <venthur at cs tu-berlin de>
+
+Homepage: http://bbci.de/pyff
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+"""
+    parser = OptionParser(usage=usage, version=version, description=description)
+    parser.add_option('-l', '--loglevel', type='choice', choices=['critical',
+        'error', 'warning', 'info', 'debug', 'notset'], dest='loglevel',
+        help='Which loglevel to use [default: warning]. Valid loglevels are: critical, error, warning, info, debug, notset',
+        metavar='LEVEL')
+
+    options, args = parser.parse_args()
+
+    # Initialize logging
+    loglevel = {'critical' : logging.CRITICAL,
+                'error'    : logging.ERROR,
+                'warning'  : logging.WARNING,
+                'info'     : logging.INFO,
+                'debug'    : logging.DEBUG,
+                'notset'   : logging.NOTSET
+                }.get(options.loglevel, logging.WARNING)
+
     logging.basicConfig(level=loglevel, format='%(name)-12s %(levelname)-8s %(message)s')
+    logging.info('Logger initialized with level %s.' % options.loglevel)
+
     try:
         start_fc()
     except (KeyboardInterrupt, SystemExit):
         logging.info("Caught keyboard interrupt or system exit; quitting")
         stop_fc()
         sys.exit()
+    
+
+
+if __name__ == '__main__':
+    main()
