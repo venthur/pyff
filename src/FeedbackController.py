@@ -264,22 +264,29 @@ the Free Software Foundation; either version 2 of the License, or
     parser = OptionParser(usage=usage, version=version, description=description)
     parser.add_option('-l', '--loglevel', type='choice', choices=['critical',
         'error', 'warning', 'info', 'debug', 'notset'], dest='loglevel',
-        help='Which loglevel to use [default: warning]. Valid loglevels are: critical, error, warning, info, debug, notset',
+        help='Which loglevel to use for everything but the Feedbacks. Valid loglevels are: critical, error, warning, info, debug and notset. [default: warning]',
+        metavar='LEVEL')
+    parser.add_option('--fb-loglevel', type='choice', choices=['critical',
+        'error', 'warning', 'info', 'debug', 'notset'], dest='fbloglevel',
+        help='Which loglevel to use for the Feedbacks. Valid loglevels are: critical, error, warning, info, debug and notset. [default: warning]',
         metavar='LEVEL')
 
     options, args = parser.parse_args()
 
     # Initialize logging
-    loglevel = {'critical' : logging.CRITICAL,
-                'error'    : logging.ERROR,
-                'warning'  : logging.WARNING,
-                'info'     : logging.INFO,
-                'debug'    : logging.DEBUG,
-                'notset'   : logging.NOTSET
-                }.get(options.loglevel, logging.WARNING)
+    str2loglevel = {'critical' : logging.CRITICAL,
+                    'error'    : logging.ERROR,
+                    'warning'  : logging.WARNING,
+                    'info'     : logging.INFO,
+                    'debug'    : logging.DEBUG,
+                    'notset'   : logging.NOTSET}
+    
+    loglevel = str2loglevel.get(options.loglevel, logging.WARNING)
+    fbloglevel = str2loglevel.get(options.fbloglevel, logging.WARNING)
 
-    logging.basicConfig(level=loglevel, format='%(name)-12s %(levelname)-8s %(message)s')
+    logging.basicConfig(level=loglevel, format='[%(threadName)-10s] %(name)-25s: %(levelname)-8s %(message)s')
     logging.info('Logger initialized with level %s.' % options.loglevel)
+    logging.getLogger("FB").setLevel(fbloglevel)
 
     try:
         start_fc()

@@ -51,7 +51,7 @@ class Feedback(object):
      
         self._data = None
         #self.logger = logging.getLogger("Feedback")
-        self.logger = logging.getLogger(self.__class__.__name__)
+        self.logger = logging.getLogger("FB."+self.__class__.__name__)
         self.logger.debug("Loaded my logger.")
         self.__parallelPort = pp
  
