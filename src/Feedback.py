@@ -15,6 +15,11 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+"""
+This module contains the Feedback class, which is the baseclass of all
+feedbacks.
+"""
+
 import logging
 import threading
 
@@ -40,7 +45,7 @@ class Feedback(object):
     method in your feedback.
     """
 
-    def __init__(self, pp):
+    def __init__(self, pport):
         """
         Initializes the feedback.
         
@@ -53,7 +58,7 @@ class Feedback(object):
         #self.logger = logging.getLogger("Feedback")
         self.logger = logging.getLogger("FB."+self.__class__.__name__)
         self.logger.debug("Loaded my logger.")
-        self.__parallelPort = pp
+        self.__pport = pport
  
     #
     # Internal routines not inteded for overwriting
@@ -204,8 +209,8 @@ class Feedback(object):
     #
     def send_parallel(self, data, reset=True):
         """Sends the data to the parallel port."""
-        if self.__parallelPort:
-            self.__parallelPort.setData(data)
+        if self.__pport:
+            self.__pport.setData(data)
             if reset:
-                t = threading.Timer(0.01, self.send_parallel, (0x0, False))
-                t.start()
+                timer = threading.Timer(0.01, self.send_parallel, (0x0, False))
+                timer.start()
