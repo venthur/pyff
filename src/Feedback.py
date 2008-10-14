@@ -34,10 +34,10 @@ class Feedback(object):
     As a bare minimum you should override the on_play method in your derived
     class to do anything useful.
     
-    To get the data from interaction signals, you can use the "_data" variable
-    in your feedback which will always hold the latest interaction signal.
+    To get the data from control signals, you can use the "_data" variable
+    in your feedback which will always hold the latest control signal.
     
-    To get the data from the control signals, you can use the variable names 
+    To get the data from the interaction signals, you can use the variable names 
     just as sent by the GUI.
     
     This class provides the send_parallel method which you can use to send 
