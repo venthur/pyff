@@ -10,6 +10,7 @@ public class UdpSenderTest {
 			sender.sendString("foo");
 			sender.sendString("bar");
 			sender.sendString("baz");
+			sender.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.exit(1);

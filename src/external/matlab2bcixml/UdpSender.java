@@ -20,12 +20,9 @@ public class UdpSender {
 		// TODO: check if ip and port are correct
 		InetAddress address = InetAddress.getByName(host);
 		this.dgram = new DatagramPacket("".getBytes(), 0, address, port);
+		this.socket = new DatagramSocket();
 	}
 	
-	protected void finalize() throws Throwable {
-		this.socket.close();
-		super.finalize();
-	}
 	
 	
 	/**
@@ -33,8 +30,10 @@ public class UdpSender {
 	 */
 	public void sendString(String txt) throws IOException {
 		this.dgram.setData(txt.getBytes());
-		this.socket = new DatagramSocket();
 		this.socket.send(this.dgram);
+	}
+	
+	public void close() {
 		this.socket.close();
 	}
 }
