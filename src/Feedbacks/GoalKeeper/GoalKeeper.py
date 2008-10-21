@@ -1,8 +1,8 @@
-#from Feedback import Feedback
-import pygame, random, sys, math, random
+from Feedback import Feedback
+import pygame, random, sys, math, random, os
 
 #class BucketFeedback(Feedback):
-class BrainPong(object):
+class GoalKeeper(Feedback):
 
 ################################################################################
 # Derived from Feedback
@@ -354,19 +354,21 @@ class BrainPong(object):
         barWidth = int(self.screenWidth * 0.7)
         barHeight = int(self.screenHeight * 0.1)
         
+        path = os.path.dirname( globals()["__file__"] ) 
+                
         # init powerbar
         self.barSize = (barWidth, barHeight)
         self.barCenter = (self.screenWidth/2, int(self.screenHeight*(6.0/7)))
-        img = pygame.image.load('powerbar.png').convert()
+        img = pygame.image.load(os.path.join(path, 'powerbar.png')).convert()
         self.bar = pygame.Surface(self.barSize)
-        pygame.transform.scale(img, self.barSize, self.bar)
+        self.bar = pygame.transform.scale(img, self.barSize)
         self.barRect = self.bar.get_rect(center=self.barCenter, size=self.barSize)
         
         # init powerbar frame
         self.frameSize = (int(1.05*barWidth), int(1.3*barHeight))
-        img = pygame.image.load('frame_blue_grad.bmp').convert()
+        img = pygame.image.load(os.path.join(path, 'frame_blue_grad.bmp')).convert()
         self.frame = pygame.Surface(self.frameSize)
-        pygame.transform.scale(img, self.frameSize, self.frame)
+        self.frame = pygame.transform.scale(img, self.frameSize)
         self.frame.set_colorkey((255,255,255))
         self.frameRect = self.frame.get_rect(center=self.barCenter, size=self.frameSize)        
         
@@ -397,7 +399,7 @@ class BrainPong(object):
         self.bowlHeight = int((5.0/7)* self.screenHeight)
         for n in range(3):
             self.bowl_centers.append((gap*(n+1)+int((0.5+n)*self.bowlSize[0]), self.bowlHeight))
-        self.bowl = pygame.image.load('bowls_smaller.bmp').convert_alpha()
+        self.bowl = pygame.image.load(os.path.join(path, 'bowls_smaller.bmp')).convert_alpha()
         self.bowl = pygame.transform.rotate(self.bowl, self.rotation[1])
         self.bowlRect = self.bowl.get_rect(midbottom=self.bowl_centers[1], size=self.bowlSize)
         

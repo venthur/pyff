@@ -1,8 +1,8 @@
-#from Feedback import Feedback
-import pygame, random, sys, math
+from Feedback import Feedback
+import pygame, random, sys, math, os
 
 #class BucketFeedback(Feedback):
-class BrainPong(object):
+class BrainPong(Feedback):
 
 ################################################################################
 # Derived from Feedback
@@ -352,19 +352,21 @@ class BrainPong(object):
         barHeight = self.screenHeight/15
         self.barSurface = self.screenHeight-barHeight * 3/2
         
+        path = os.path.dirname( globals()["__file__"] )
+        
         # init background
-        img = pygame.image.load('bg.png').convert()
+        img = pygame.image.load(os.path.join(path, 'bg.png')).convert()
         self.background = pygame.Surface((self.screenWidth, self.screenHeight))
-        pygame.transform.scale(img, (self.screenWidth, self.screenHeight), self.background)
+        self.background = pygame.transform.scale(img, (self.screenWidth, self.screenHeight))
         #self.background = pygame.transform.rotate(self.background, 90)
         self.backgroundRect = self.background.get_rect(center=self.screen.get_rect().center)
                 
         # init walls
         if self.walls:
             self.wallSize = ((self.screenWidth-self.barSurface)/2,self.screenHeight)
-            img = pygame.image.load('wall_metal_blue.png').convert()
+            img = pygame.image.load(os.path.join(path, 'wall_metal_blue.png')).convert()
             self.wall = pygame.Surface(self.wallSize)
-            pygame.transform.scale(img, self.wallSize, self.wall)
+            self.wall = pygame.transform.scale(img, self.wallSize)
             self.wallRect1 = self.wall.get_rect(topleft=(0,0), size=self.wallSize)
             self.wallRect2 = self.wall.get_rect(topleft=(self.screenWidth-self.wallSize[0],0), size=self.wallSize)   
             self.fontsize_target = self.size/16
@@ -374,18 +376,18 @@ class BrainPong(object):
         # init bar
         barWidth = (self.screenWidth-2*self.wallSize[0]) / 3
         barSize = (barWidth, barHeight)
-        img = pygame.image.load('bar_metallic3.png').convert()
+        img = pygame.image.load(os.path.join(path, 'bar_metallic3.png')).convert()
         self.bar = pygame.Surface(barSize)
-        pygame.transform.scale(img, barSize, self.bar)
+        self.bar = pygame.transform.scale(img, barSize)
         self.barMB = (self.screenWidth/2, self.barSurface+barHeight)
         self.barRect = self.bar.get_rect(midbottom=self.barMB, size=(barWidth, barHeight))
         
         # init bowl
         diameter = barWidth/5
         bowlSize = (diameter, diameter)
-        img = pygame.image.load('bowl_metallic.png').convert()
+        img = pygame.image.load(os.path.join(path, 'bowl_metallic.png')).convert()
         self.bowl = pygame.Surface(bowlSize)
-        pygame.transform.scale(img, bowlSize, self.bowl)
+        self.bowl = pygame.transform.scale(img, bowlSize)
         self.bowlRect = self.bowl.get_rect(center=((self.screenWidth-2*self.wallSize[0])/3+self.wallSize[0], diameter/2), size=(self.bowl.get_width(), self.bowl.get_height()))
         self.bowl.set_colorkey((0,0,0))
         
