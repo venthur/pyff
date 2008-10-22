@@ -122,7 +122,7 @@ class BrainPong(Feedback):
 
     def on_control_event(self, data):
         ##self.logger.debug("on_control_event: %s" % str(data))
-        self.f = data[-1]
+        self.f = data["cl_output"]
 
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # Derived from Feedback
@@ -238,7 +238,8 @@ class BrainPong(Feedback):
         # Move bar according to classifier output (TODO: use self.f)     
         if self.control == "Absolute Control":
             self.it += 1
-            class_out = math.sin(self.it*0.03)  
+            #class_out = math.sin(self.it*0.03)  
+            class_out = self.f
             moveLength = (self.screenWidth-2*self.wallSize[0]-self.barRect.width) / 2
             self.barMoveRect = self.barRect.move(max(min(moveLength, class_out*moveLength*self.g_abs), -moveLength),0)
         elif self.control == "Relative Control":
@@ -246,7 +247,8 @@ class BrainPong(Feedback):
             #while class_out == 0:
             #    class_out = random.randint(-1,1)
             self.it += 1
-            class_out = math.sin(self.it*0.01)  
+            #class_out = math.sin(self.it*0.01)  
+            class_out = self.f
             newBarX = class_out*self.g_rel+self.BarX
             if self.screenWidth/2+newBarX-self.barRect.width/2>self.wallSize[0] and self.screenWidth/2+newBarX+self.barRect.width/2<self.screenWidth-self.wallSize[0]:
                 self.barMoveRect = self.barRect.move(newBarX,0)
@@ -466,7 +468,12 @@ class BrainPong(Feedback):
             elif event.type == pygame.QUIT:
                 sys.exit()
             elif event.type == pygame.KEYDOWN:
-                sys.exit()
+                step = 0
+                if event.unicode == u"a": step = -0.1
+                elif event.unicode == u"d" : step = 0.1
+                self.f += step
+                if self.f < -1: self.f = -1
+                if self.f > 1: self.f = 1
 
 # HACK
     def main(self):
