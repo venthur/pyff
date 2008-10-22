@@ -22,7 +22,10 @@ import bcinetwork
 import bcixml
 from Feedback import Feedback
 
-import parallel
+try:
+    import parallel
+except:
+    print "Unable to import parallel module, have you pyparallel installed?"
 
 import socket
 import asyncore

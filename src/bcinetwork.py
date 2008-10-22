@@ -32,6 +32,11 @@ class BciNetwork(object):
     def __init__(self, ip, port, myport=None):
         self.logger = logging.getLogger("BciNetwork-%s:%s" % (str(ip), str(port)))
         self.logger.debug("BciNetwork initialized.")
+        
+        if ip == "":
+            self.logger.debug("Got empty IP, assuming localhost.")
+            ip = LOCALHOST
+        
         self.addr = (ip, port)
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
@@ -39,7 +44,7 @@ class BciNetwork(object):
         if myport != None:
             self.SEND_ONLY = False
             self.srvsocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            self.srvsocket.bind(('', myport))
+            self.srvsocket.bind((ip, myport))
         
         self.xmlencoder = bcixml.XmlEncoder()
         self.xmldecoder = bcixml.XmlDecoder()
