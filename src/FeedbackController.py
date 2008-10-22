@@ -154,7 +154,7 @@ class FeedbackController(object):
         # remove trailing .py if present
         if file.lower().endswith(".py"):
             file2 = file[:-3]
-        root = root.replace("/", ".")
+        root = root.replace(os.sep, ".")
         while root.startswith("."):
             root = root[1:]
         if not root.endswith(".") and not file2.startswith("."):
@@ -183,7 +183,7 @@ class FeedbackController(object):
     def get_feedbacks(self):
         """Returns the valid feedbacks in this directory."""
         feedbacks = {}
-        for root, dirs, files in os.walk("./Feedbacks"):
+        for root, dirs, files in os.walk("Feedbacks"):
             for file in files:
                 if file.lower().endswith(".py"):
                     # ok we found a candidate, check if it's a valid feedback
