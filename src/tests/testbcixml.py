@@ -125,4 +125,15 @@ class BcixmlTestCase(unittest.TestCase):
         self.assertEqual(signal2.data[name], value2)
         self.assertEqual(type(signal2.data[name]), type(value2))
         
-suite = unittest.makeSuite(BcixmlTestCase)
+#suite = unittest.makeSuite(BcixmlTestCase)
+def suite():
+    testSuite = unittest.makeSuite(BcixmlTestCase)
+    return testSuite
+
+def main():
+    runner = unittest.TextTestRunner()
+    runner.run(suite())
+    
+if __name__ == "__main__":
+    main()
+    
