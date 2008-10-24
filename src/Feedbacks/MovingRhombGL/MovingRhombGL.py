@@ -63,11 +63,6 @@ class MovingRhombGL(Feedback):
         while not self._stopped:
             time.sleep(0.1)
     
-    def on_control_event(self, data):
-        pass
-    
-    def on_interaction_event(self, data):
-        pass
 
 ################################################################################
 
