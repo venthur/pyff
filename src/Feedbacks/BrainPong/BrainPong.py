@@ -66,7 +66,7 @@ class BrainPong(Feedback):
         self.down = True
         
         # HitMissCounter
-        self.counterSize = self.screenHeight/20
+        self.counterSize = self.screenHeight/15
         self.hitmissCounterColor = (100, 100, 200) #(120, 120, 255)
         self.missstr = " Miss: "
         self.hitstr = "Hit: "
@@ -191,7 +191,7 @@ class BrainPong(Feedback):
         (bowlPosX, bowlPosY) = self.bowlMoveRect.midbottom
         if bowlPosY >= self.screenHeight:
             self.miss = True; return
-        if self.trialElapsed > self.durationPerTrial and self.durationPerTrial!=0:
+        if self.trialElapsed>self.durationPerTrial and self.durationPerTrial!=0:
             self.hit = True; return
             
         # Calculate motion of bowl

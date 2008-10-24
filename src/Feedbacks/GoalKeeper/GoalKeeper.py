@@ -457,4 +457,4 @@ class GoalKeeper(Feedback):
 
 
 if __name__ == '__main__':
-    BrainPong().main()
+    GoalKeeper().main()

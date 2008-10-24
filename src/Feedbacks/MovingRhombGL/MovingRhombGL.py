@@ -285,7 +285,7 @@ class MovingRotatingBody(soya.Body):
         
 
 if __name__ == '__main__':
-    mr = MovingRhombGL(None)
+    mr = MovingRhombGL()
     mr.on_init()
     mr._init_soya()
     mr._create_models()

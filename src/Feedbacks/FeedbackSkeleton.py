@@ -50,6 +50,6 @@ if __name__ == "__main__":
     import logging
     logging.basicConfig(level=logging.DEBUG)
     
-    fb = FeedbackSkeleton(None)
+    fb = FeedbackSkeleton()
     fb.on_init()
     fb.on_play()

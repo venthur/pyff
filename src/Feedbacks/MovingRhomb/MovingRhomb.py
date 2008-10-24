@@ -184,7 +184,7 @@ class MovingRhomb(Feedback):
 if __name__ == '__main__':
     try:
         import threading, time, traceback
-        mr = MovingRhomb(None)
+        mr = MovingRhomb()
         mr.on_init()
 
         t = threading.Timer(15, mr.on_quit)

@@ -45,7 +45,7 @@ class Feedback(object):
     method in your feedback.
     """
 
-    def __init__(self, pport):
+    def __init__(self, pport=None):
         """
         Initializes the feedback.
         
