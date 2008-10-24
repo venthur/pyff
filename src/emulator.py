@@ -64,7 +64,8 @@ class Emulator(cmd.Cmd):
             sample1 = math.sin(c)
             sample2 = math.sin(c/90.0)
             sample3 = math.sin(c/180.0)
-            self.signal.data = {"data" : [sample1, sample2, sample3]}
+            #self.signal.data = {"data" : [sample1, sample2, sample3]}
+            self.signal.data = {"cl_output" : sample1}
             self.net.send_signal(self.signal)
 
     def do_stop_cs(self, line):

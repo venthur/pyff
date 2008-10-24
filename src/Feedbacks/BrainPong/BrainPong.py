@@ -1,8 +1,28 @@
+#!/usr/bin/env python
+
+# BrainPong.py -
+# Copyright (C) 2008  Simon Scholler
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+"""BrainPong BCI Feedback."""
+
 from Feedback import Feedback
-import pygame, random, sys, math, os
+import pygame, random, sys, os
 
 class BrainPong(Feedback):
-#class BrainPong(object):
 
 ################################################################################
 # Derived from Feedback
@@ -12,34 +32,28 @@ class BrainPong(Feedback):
         """
         Initializes variables etc., but not pygame itself.
         """
-        #self.logger.debug("on_init")
+        self.logger.debug("on_init")
         
-        self.parameters = {
-        #   Name from GUI : (local variablename, default value)
-            'duration' : ('durationPerTrial', 0), # if 0, duration last until a miss
-            'trials_per_run' : ('trials', 10),
-            'break_every' : ('pauseAfter', 5),
-            'duration_break' : ('pauseDuration', 9000),
-            'directions' : ('availableDirections', ['left', 'right']),
-            'fps' : ('FPS', 60),
-            'fullscreen' : ('fullscreen', False),
-            'screen_width' : ('screenWidth',  1200),
-            'screen_height' : ('screenHeight', 700),
-            'countdown_from' : ('countdownFrom', 2),
-            'hit_miss_duration' : ('hitMissDuration', 1500),
-            'time_until_next_trial' : ('timeUntilNextTrial',500),
-            'control' : ('control', "relative"),
-            'gain_relative' : ('g_rel', 0.2),
-            'gain_absolute' : ('g_abs', 0.7),
-            'ball_angle_jitter' : ('jitter', 0),    # jitter to force ball out of the predefined path
-            'bowl_speed' : ('bowlSpeed', 2.7),      # time from ceiling to bar
-            'bar_width' : ('barWidth', 30),         # in percent of the width of the playing field
-            'bowl_diameter' : ('bowlDiameter', 20), # in percent of the width of the bar
-            'show_counter' : ('showCounter', True)
-        }
-        for p in self.parameters.values():
-            self.__setattr__(p[0], p[1])
-        
+        self.durationPerTrial = 0 # if 0, duration last until a miss
+        self.trials = 10
+        self.pauseAfter = 5
+        self.pauseDuration = 9000
+        self.availableDirections = ['left', 'right']
+        self.FPS = 60
+        self.fullscreen = False
+        self.screenWidth = 1200
+        self.screenHeight = 700
+        self.countdownFrom = 2
+        self.hitMissDuration = 1500
+        self.timeUntilNextTrial = 500
+        self.control = "relative"
+        self.g_rel = 0.2
+        self.g_abs = 0.7
+        self.jitter = 0    # jitter to force ball out of the predefined path
+        self.bowlSpeed = 2.7      # time from ceiling to bar
+        self.barWidth = 30         # in percent of the width of the playing field
+        self.bowlDiameter = 20 # in percent of the width of the bar
+        self.showCounter = True
         self.showGameOverDuration = 10000
         
         # Feedback state booleans
@@ -76,7 +90,7 @@ class BrainPong(Feedback):
         """
         Initialize pygame, the graphics and start the game.
         """
-        #self.logger.debug("on_play")
+        self.logger.debug("on_play")
         self.init_pygame()
         self.init_graphics()
         self.quit = False
@@ -88,7 +102,7 @@ class BrainPong(Feedback):
         """
         Flip the pause variable.
         """
-        #self.logger.debug("on_pause")
+        self.logger.debug("on_pause")
         self.pause = not self.pause
         self.showsPause = False
 
@@ -98,29 +112,17 @@ class BrainPong(Feedback):
         Quit the main loop indirectly by setting quit, wait for the mainloop
         until it has quit and close pygame.
         """
-        #self.logger.debug("on_quit")
+        self.logger.debug("on_quit")
         self.quitting = True
-        #self.logger.debug("Waiting for main loop to quit...")
+        self.logger.debug("Waiting for main loop to quit...")
         while not self.quit:
             pygame.time.wait(100)
-        #self.logger.debug("Quitting pygame.")
+        self.logger.debug("Quitting pygame.")
         pygame.quit()
 
 
-    def on_interaction_event(self, data):
-        """
-        Translate the incoming variable-value tuples to the local variables.
-        """
-        #self.logger.debug("on_interaction_event: %s" % str(data))
-        for var, val in data.items():
-            if self.parameters.has_key(var):
-                local = self.parameters[var][0]
-                self.__setattr__(local, val)
-            #else:
-                #self.logger.warning("Caught unknown variable %s" % str(var))
-
     def on_control_event(self, data):
-        ##self.logger.debug("on_control_event: %s" % str(data))
+        self.logger.debug("on_control_event: %s" % str(data))
         self.f = data["cl_output"]
 
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -139,7 +141,7 @@ class BrainPong(Feedback):
             pygame.time.wait(10)
             self.elapsed = self.clock.tick(self.FPS)
             self.tick()
-        #self.logger.debug("Left the main loop.")
+        self.logger.debug("Left the main loop.")
         self.quit = True
 
 
@@ -486,11 +488,9 @@ class BrainPong(Feedback):
                 if self.f < -1: self.f = -1
                 if self.f > 1: self.f = 1
 
-# HACK
-    def main(self):
-        self.on_init()
-        self.on_play()
-
 
 if __name__ == '__main__':
-    BrainPong().main()
+    bp = BrainPong()
+    bp.on_init()
+    bp.on_play()
+    
