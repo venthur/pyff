@@ -68,7 +68,7 @@ class BrainPong(Feedback):
         self.showsHitMiss = False
         
         self.resized = False
-        self.f = 0
+        self.f = 0.0
         self.hitMiss = [0,0]
         
         # Colours

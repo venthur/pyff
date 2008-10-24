@@ -1,3 +1,24 @@
+#!/usr/bin/env python
+
+# GoalKeeper.py -
+# Copyright (C) 2008  Simon Scholler
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+"""GoalKeeper BCI Feedback."""
+
 from Feedback import Feedback
 import pygame, random, sys, math, random, os
 
@@ -14,24 +35,19 @@ class GoalKeeper(Feedback):
         """
         #self.logger.debug("on_init")
         
-        self.parameters = {
-        #   Name from GUI : (local variablename, default value)
-            #'duration_until_hit' : ('durationUntilHit', 1500),
-            'duration' : ('durationPerTrial', 3000),
-            'trials_per_run' : ('trials', 10),
-            'break_every' : ('pauseAfter', 5),
-            'duration_break' : ('pauseDuration', 9000),
-            'directions' : ('availableDirections', ['left', 'right']),
-            'fps' : ('FPS', 60),
-            'fullscreen' : ('fullscreen', False),
-            'screen_width' : ('screenWidth',  1000),
-            'screen_height' : ('screenHeight', 700),
-            'countdown_from' : ('countdownFrom', 1),
-            'hit_miss_duration' : ('hitMissDuration', 1000),
-            'time_until_next_trial' : ('timeUntilNextTrial',500)
-        }
-        for p in self.parameters.values():
-            self.__setattr__(p[0], p[1])
+        #self.durationUntilHit = 1500
+        self.durationPerTrial = 3000
+        self.trials = 10
+        self.pauseAfter = 5
+        self.pauseDuration = 9000
+        self.availableDirections = ['left', 'right']
+        self.FPS = 60
+        self.fullscreen = False
+        self.screenWidth = 1000
+        self.screenHeight = 700
+        self.countdownFrom = 1
+        self.hitMissDuration = 1000
+        self.timeUntilNextTrial = 500
         
         self.showGameOverDuration = 1000
         
@@ -48,7 +64,7 @@ class GoalKeeper(Feedback):
         self.hitMissElapsed, self.shortPauseElapsed, self.completedTrials = 0,0,0
         self.showsHitMiss = False
         
-        self.f = 0
+        self.f = 0.1
         self.hitMiss = [0,0]
         
         # Colours
@@ -105,21 +121,9 @@ class GoalKeeper(Feedback):
         pygame.quit()
 
 
-    def on_interaction_event(self, data):
-        """
-        Translate the incoming variable-value tuples to the local variables.
-        """
-        #self.logger.debug("on_interaction_event: %s" % str(data))
-        for var, val in data.items():
-            if self.parameters.has_key(var):
-                local = self.parameters[var][0]
-                self.__setattr__(local, val)
-            #else:
-                #self.logger.warning("Caught unknown variable %s" % str(var))
-
     def on_control_event(self, data):
         ##self.logger.debug("on_control_event: %s" % str(data))
-        self.f = data[-1]
+        self.f = data["cl_output"]
 
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # Derived from Feedback
@@ -191,22 +195,20 @@ class GoalKeeper(Feedback):
         self.stepX = self.tangens * self.stepY * self.direction
         
         # Change bowl position according to classifier output (TODO: use self.f)
-        ##### only for testing purposes...
-        class_out_list = [-1, 0, 1]
-        self.it += 1    # TODO: remove self.it after testing (in on_init)
-        class_out = math.sin(self.it/30.0)
-        ##### end
+        class_out = self.f
         self.bowl_pos_before = self.bowl_pos
-        self.bowl_pos = int(int(abs(class_out)+self.threshold) * (class_out/abs(class_out)))
+        self.bowl_pos = int(int(abs(class_out)+self.threshold))
+        if class_out < 0:
+            self.bowl_pos *= -1
         self.bowlRect = self.bowl.get_rect(midbottom=self.bowl_centers[self.bowl_pos+1], size=self.bowlSize)
         self.screen.blit(self.bowl, self.bowlRect) 
              
         # Adapt powerbar according to classifier output 
         (barWidth, barHeight) = self.barSize      
-        if class_out>0:
+        if class_out > 0:
             self.barAreaRect = pygame.Rect(barWidth/2, 0, class_out*barWidth/2, barHeight)
             self.barRect = pygame.Rect(self.barCenter[0], self.barCenter[1]-barHeight/2, class_out*barWidth/2, barHeight)
-        elif class_out<0:
+        else:
             self.barAreaRect = pygame.Rect((1+class_out)*barWidth/2, 0, -class_out*barWidth/2, barHeight)
             self.barRect = pygame.Rect(self.barCenter[0]+class_out*barWidth/2, self.barCenter[1]-barHeight/2, -class_out*barWidth/2, barHeight)
         self.screen.blit(self.bar, self.barRect, self.barAreaRect)
@@ -448,13 +450,14 @@ class GoalKeeper(Feedback):
             elif event.type == pygame.QUIT:
                 sys.exit()
             elif event.type == pygame.KEYDOWN:
-                sys.exit()
-
-# HACK
-    def main(self):
-        self.on_init()
-        self.on_play()
-
+                step = 0
+                if event.unicode == u"a": step = -0.1
+                elif event.unicode == u"d" : step = 0.1
+                self.f += step
+                if self.f < -1: self.f = -1
+                if self.f > 1: self.f = 1
 
 if __name__ == '__main__':
-    GoalKeeper().main()
+    gk = GoalKeeper()
+    gk.on_init()
+    gk.on_play()
