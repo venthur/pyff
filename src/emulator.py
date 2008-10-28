@@ -49,14 +49,26 @@ class Emulator(cmd.Cmd):
 
     def do_generate_cs(self, line):
         """Generates a control signal and sends it to the Feedback Controller."""
+        self._do_generate_cs(line, 1)
+
+    def do_generate_cs2(self, line):
+        """Generates a control signal and sends it to the Feedback Controller."""
+        self._do_generate_cs(line, 2)
+
+    def do_generate_cs3(self, line):
+        """Generates a control signal and sends it to the Feedback Controller."""
+        self._do_generate_cs(line, 3)
+        
+    def _do_generate_cs(self, line, numbers):
         self.net = BciNetwork("localhost", bcinetwork.FC_PORT)
         self.signal = BciSignal(None, None, bcixml.CONTROL_SIGNAL)
         self.stopping = False
-        self.t = threading.Thread(target=self._cs_loop)
+        self.t = threading.Thread(target=self._cs_loop, args=(numbers,))
         self.t.start()
         print "Enter: stop_cs to stop the signal."
+
         
-    def _cs_loop(self):
+    def _cs_loop(self, numbers=1):
         c = 0
         while not self.stopping:
             time.sleep(0.04)
@@ -65,7 +77,15 @@ class Emulator(cmd.Cmd):
             sample2 = math.sin(c/90.0)
             sample3 = math.sin(c/180.0)
             #self.signal.data = {"data" : [sample1, sample2, sample3]}
-            self.signal.data = {"cl_output" : sample1}
+            if numbers == 1: 
+                self.signal.data = {"cl_output" : sample1}
+            elif numbers == 2: 
+                self.signal.data = {"cl_output" : (sample1, sample2)}
+            elif numbers == 3:
+                self.signal.data = {"cl_output" : (sample1, sample2, sample3)}
+            else:
+                print "Error don't know how to handle %i numbers." % numbers
+                
             self.net.send_signal(self.signal)
 
     def do_stop_cs(self, line):

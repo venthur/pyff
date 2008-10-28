@@ -43,6 +43,9 @@ class FeedbackController(object):
         self.encoder = bcixml.XmlEncoder()
         self.decoder = bcixml.XmlDecoder()
         self.feedbacks = self.get_feedbacks()
+        self.logger.info("Registered the following Feedbacks:")
+        for i in self.feedbacks:
+            self.logger.info("\t%s" % str(i))
         # Setup the parallel port
         self.pp = None
         try:
