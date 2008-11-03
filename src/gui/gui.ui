@@ -13,14 +13,6 @@
    <string>GUI</string>
   </property>
   <widget class="QWidget" name="centralwidget" >
-   <property name="geometry" >
-    <rect>
-     <x>0</x>
-     <y>30</y>
-     <width>942</width>
-     <height>640</height>
-    </rect>
-   </property>
    <layout class="QVBoxLayout" >
     <property name="spacing" >
      <number>6</number>
@@ -54,7 +46,7 @@
        <widget class="QToolButton" name="toolButton_clearFilter" />
       </item>
       <item>
-       <widget class="QToolButton" name="toolButton_addFeedbackController" />
+       <widget class="QToolButton" name="toolButton_changeFeedbackController" />
       </item>
       <item>
        <spacer>
@@ -71,23 +63,6 @@
          </size>
         </property>
        </spacer>
-      </item>
-      <item>
-       <widget class="QLabel" name="label_2" >
-        <property name="text" >
-         <string>Send to:</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QComboBox" name="comboBox_player" >
-        <property name="sizePolicy" >
-         <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-       </widget>
       </item>
       <item>
        <widget class="QLabel" name="label_5" >
@@ -154,16 +129,7 @@
     </rect>
    </property>
   </widget>
-  <widget class="QStatusBar" name="statusbar" >
-   <property name="geometry" >
-    <rect>
-     <x>0</x>
-     <y>670</y>
-     <width>942</width>
-     <height>23</height>
-    </rect>
-   </property>
-  </widget>
+  <widget class="QStatusBar" name="statusbar" />
   <action name="actionOpen" >
    <property name="icon" >
     <iconset resource="icons.qrc" >
@@ -269,13 +235,13 @@
     <string>Quit</string>
    </property>
   </action>
-  <action name="actionAddFeedbackController" >
+  <action name="actionChangeFeedbackController" >
    <property name="icon" >
     <iconset resource="icons.qrc" >
      <normaloff>:/icons/connect.png</normaloff>:/icons/connect.png</iconset>
    </property>
    <property name="text" >
-    <string>addFeedbackController</string>
+    <string>Change FeedbackController</string>
    </property>
   </action>
   <action name="actionClearFilter" >

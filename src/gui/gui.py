@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'gui.ui'
 #
-# Created: Wed Oct 22 12:54:10 2008
+# Created: Mon Nov  3 12:16:22 2008
 #      by: PyQt4 UI code generator 4.4.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -14,7 +14,6 @@ class Ui_MainWindow(object):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(942,693)
         self.centralwidget = QtGui.QWidget(MainWindow)
-        self.centralwidget.setGeometry(QtCore.QRect(0,30,942,640))
         self.centralwidget.setObjectName("centralwidget")
         self.vboxlayout = QtGui.QVBoxLayout(self.centralwidget)
         self.vboxlayout.setSpacing(6)
@@ -33,22 +32,11 @@ class Ui_MainWindow(object):
         self.toolButton_clearFilter = QtGui.QToolButton(self.centralwidget)
         self.toolButton_clearFilter.setObjectName("toolButton_clearFilter")
         self.hboxlayout.addWidget(self.toolButton_clearFilter)
-        self.toolButton_addFeedbackController = QtGui.QToolButton(self.centralwidget)
-        self.toolButton_addFeedbackController.setObjectName("toolButton_addFeedbackController")
-        self.hboxlayout.addWidget(self.toolButton_addFeedbackController)
+        self.toolButton_changeFeedbackController = QtGui.QToolButton(self.centralwidget)
+        self.toolButton_changeFeedbackController.setObjectName("toolButton_changeFeedbackController")
+        self.hboxlayout.addWidget(self.toolButton_changeFeedbackController)
         spacerItem = QtGui.QSpacerItem(40,20,QtGui.QSizePolicy.Preferred,QtGui.QSizePolicy.Minimum)
         self.hboxlayout.addItem(spacerItem)
-        self.label_2 = QtGui.QLabel(self.centralwidget)
-        self.label_2.setObjectName("label_2")
-        self.hboxlayout.addWidget(self.label_2)
-        self.comboBox_player = QtGui.QComboBox(self.centralwidget)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding,QtGui.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.comboBox_player.sizePolicy().hasHeightForWidth())
-        self.comboBox_player.setSizePolicy(sizePolicy)
-        self.comboBox_player.setObjectName("comboBox_player")
-        self.hboxlayout.addWidget(self.comboBox_player)
         self.label_5 = QtGui.QLabel(self.centralwidget)
         self.label_5.setObjectName("label_5")
         self.hboxlayout.addWidget(self.label_5)
@@ -92,7 +80,6 @@ class Ui_MainWindow(object):
         self.menubar.setObjectName("menubar")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtGui.QStatusBar(MainWindow)
-        self.statusbar.setGeometry(QtCore.QRect(0,670,942,23))
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
         self.actionOpen = QtGui.QAction(MainWindow)
@@ -145,11 +132,11 @@ class Ui_MainWindow(object):
         icon.addPixmap(QtGui.QPixmap(":/icons/stop.png"),QtGui.QIcon.Normal,QtGui.QIcon.Off)
         self.actionQuit1.setIcon(icon)
         self.actionQuit1.setObjectName("actionQuit1")
-        self.actionAddFeedbackController = QtGui.QAction(MainWindow)
+        self.actionChangeFeedbackController = QtGui.QAction(MainWindow)
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/icons/connect.png"),QtGui.QIcon.Normal,QtGui.QIcon.Off)
-        self.actionAddFeedbackController.setIcon(icon)
-        self.actionAddFeedbackController.setObjectName("actionAddFeedbackController")
+        self.actionChangeFeedbackController.setIcon(icon)
+        self.actionChangeFeedbackController.setObjectName("actionChangeFeedbackController")
         self.actionClearFilter = QtGui.QAction(MainWindow)
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/icons/clear.png"),QtGui.QIcon.Normal,QtGui.QIcon.Off)
@@ -162,7 +149,6 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QtGui.QApplication.translate("MainWindow", "GUI", None, QtGui.QApplication.UnicodeUTF8))
         self.label.setText(QtGui.QApplication.translate("MainWindow", "Filter:", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_2.setText(QtGui.QApplication.translate("MainWindow", "Send to:", None, QtGui.QApplication.UnicodeUTF8))
         self.label_5.setText(QtGui.QApplication.translate("MainWindow", "Feedback:", None, QtGui.QApplication.UnicodeUTF8))
         self.actionOpen.setText(QtGui.QApplication.translate("MainWindow", "&Open...", None, QtGui.QApplication.UnicodeUTF8))
         self.actionOpen.setStatusTip(QtGui.QApplication.translate("MainWindow", "Open an Existing File", None, QtGui.QApplication.UnicodeUTF8))
@@ -179,7 +165,7 @@ class Ui_MainWindow(object):
         self.actionSendInit.setText(QtGui.QApplication.translate("MainWindow", "SendInit", None, QtGui.QApplication.UnicodeUTF8))
         self.actionSend.setText(QtGui.QApplication.translate("MainWindow", "Send", None, QtGui.QApplication.UnicodeUTF8))
         self.actionQuit1.setText(QtGui.QApplication.translate("MainWindow", "Quit", None, QtGui.QApplication.UnicodeUTF8))
-        self.actionAddFeedbackController.setText(QtGui.QApplication.translate("MainWindow", "addFeedbackController", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionChangeFeedbackController.setText(QtGui.QApplication.translate("MainWindow", "Change FeedbackController", None, QtGui.QApplication.UnicodeUTF8))
         self.actionClearFilter.setText(QtGui.QApplication.translate("MainWindow", "clearFilter", None, QtGui.QApplication.UnicodeUTF8))
 
 import icons_rc
