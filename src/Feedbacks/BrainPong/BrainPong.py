@@ -193,7 +193,7 @@ class BrainPong(Feedback):
         (bowlPosX, bowlPosY) = self.bowlMoveRect.midbottom
         if bowlPosY >= self.screenHeight:
             self.miss = True; return
-        if self.trialElapsed>self.durationPerTrial and self.durationPerTrial!=0:
+        if self.trialElapsed > self.durationPerTrial and self.durationPerTrial != 0:
             self.hit = True; return
             
         # Calculate motion of bowl
@@ -214,7 +214,7 @@ class BrainPong(Feedback):
                 stepY = -stepY
             else:
                 tol = 5      # tolerance
-                if barLeftX-bowlPosX>tol or bowlPosX-barRightX>tol:
+                if barLeftX - bowlPosX > tol or bowlPosX - barRightX > tol:
                     self.miss = True; return
             self.down = False
             stepY = -stepY
@@ -227,7 +227,7 @@ class BrainPong(Feedback):
         # if bowl is hitting the side of the screen
         border1 = bowlPosX+stepX-(self.bowlMoveRect.width/2+self.wallW)
         border2 = bowlPosX+stepX+self.bowlMoveRect.width/2+self.wallW
-        if  border1<0 or  border2>self.screenWidth:
+        if border1 < 0 or border2 > self.screenWidth:
             self.left = not self.left
             stepX = -stepX
         
@@ -252,10 +252,10 @@ class BrainPong(Feedback):
             newBarX = class_out*self.playWidth*self.g_rel*0.1+self.BarX
             barLeft = self.screenWidth/2+newBarX-self.barRect.width/2
             barRight = self.screenWidth/2+newBarX+self.barRect.width/2
-            if barLeft>self.wallW and barRight<self.screenWidth-self.wallW:
+            if barLeft > self.wallW and barRight < self.screenWidth - self.wallW:
                 self.barMoveRect = self.barRect.move(newBarX,0)
             else: # if bar would move into the wall
-                if newBarX<0:
+                if newBarX < 0:
                     newBarX = -self.playWidth/2+self.barRect.width/2
                 else:
                     newBarX = self.playWidth/2-self.barRect.width/2
