@@ -228,8 +228,8 @@ class BrainPong(Feedback):
         border1 = bowlPosX+stepX-(self.bowlMoveRect.width/2+self.wallW)
         border2 = bowlPosX+stepX+self.bowlMoveRect.width/2+self.wallW
         if  border1<0 or  border2>self.screenWidth:
-                self.left = not self.left
-                stepX = -stepX
+            self.left = not self.left
+            stepX = -stepX
         
         # Update hit-miss counter
         if self.showCounter:
@@ -262,7 +262,7 @@ class BrainPong(Feedback):
                 self.barMoveRect = self.barRect.move(newBarX,0)
             self.BarX = newBarX
         else:
-             raise Exception("Control type unknown (know types: 'absolute' and 'relative').")   
+            raise Exception("Control type unknown (know types: 'absolute' and 'relative').")   
         self.screen.blit(self.bar, self.barMoveRect)
         
         pygame.display.update()
