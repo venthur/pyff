@@ -18,7 +18,7 @@
 import logging
 
 import socket
-import bcixml
+from lib import bcixml
 
 LOCALHOST = "127.0.0.1"
 FC_PORT = 12345

@@ -18,8 +18,8 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-import bcinetwork
-import bcixml
+from lib import bcinetwork
+from lib import bcixml
 from Feedback import Feedback
 
 try:

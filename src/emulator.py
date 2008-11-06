@@ -20,10 +20,10 @@
 """A BCI-system emulator."""
 
 
-import bcinetwork
-from bcinetwork import BciNetwork
-import bcixml
-from bcixml import BciSignal
+from lib import bcinetwork
+from lib.bcinetwork import BciNetwork
+from lib import bcixml
+from lib.bcixml import BciSignal
 
 import cmd
 import threading

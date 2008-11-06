@@ -22,8 +22,8 @@ import logging
 
 from PyQt4 import QtCore, QtGui
 from gui.gui import Ui_MainWindow
-import bcinetwork
-import bcixml
+from lib import bcinetwork
+from lib import bcixml
 
 class BciGui(QtGui.QMainWindow, Ui_MainWindow):
     
