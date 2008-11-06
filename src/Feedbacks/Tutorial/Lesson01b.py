@@ -1,7 +1,7 @@
 # Lesson01b - Trivial Feedback without functionality - alternative with __init__
 #   overwritten
 
-from Feedback import Feedback
+from FeedbackBase.Feedback import Feedback
 
 class Lesson01b(Feedback):
     

@@ -1,6 +1,6 @@
 # Lesson04 - Reacting on control- and interaction events
 
-from Feedback import Feedback
+from FeedbackBase.Feedback import Feedback
 
 class Lesson04(Feedback):
     

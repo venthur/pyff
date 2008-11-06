@@ -1,6 +1,6 @@
 # Lesson03 - Working with data send by control- and interaction signals
 
-from Feedback import Feedback
+from FeedbackBase.Feedback import Feedback
 
 import time
 

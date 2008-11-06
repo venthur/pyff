@@ -17,7 +17,7 @@
 
 """Stimulus-Only Feedback."""
 
-from Feedback import Feedback
+from FeedbackBase.Feedback import Feedback
 import soya
 import math
 import time

@@ -18,7 +18,7 @@
 
 import unittest
 
-from Feedback import Feedback
+from FeedbackBase.Feedback import Feedback
 
 class FeedbackTestCase(unittest.TestCase):
     

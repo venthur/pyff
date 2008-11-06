@@ -1,6 +1,6 @@
 # Lesson06 - Logging
 
-from Feedback import Feedback
+from FeedbackBase.Feedback import Feedback
 
 class Lesson06(Feedback):
     

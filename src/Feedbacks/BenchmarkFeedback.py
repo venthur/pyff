@@ -1,9 +1,9 @@
 
-import Feedback
+from FeedbackBase.Feedback import Feedback
 
 import time
 
-class BenchmarkFeedback(Feedback.Feedback):
+class BenchmarkFeedback(Feedback):
     
     def on_init(self):
         self.data = []

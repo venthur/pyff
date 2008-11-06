@@ -20,7 +20,7 @@
 
 from lib import bcinetwork
 from lib import bcixml
-from Feedback import Feedback
+from FeedbackBase.Feedback import Feedback
 
 try:
     import parallel

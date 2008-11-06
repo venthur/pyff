@@ -21,7 +21,7 @@
 
 """BrainPong BCI Feedback."""
 
-from Feedback import Feedback
+from FeedbackBase.Feedback import Feedback
 import pygame, random, sys, os
 
 class BrainPong(Feedback):

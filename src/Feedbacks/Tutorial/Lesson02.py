@@ -3,7 +3,7 @@
 #  - Pausing and unpausing it
 #  - Quitting the main loop
 
-from Feedback import Feedback
+from FeedbackBase.Feedback import Feedback
 
 import time
 

@@ -19,7 +19,7 @@
 
 """CursorArrow BCI Feedback."""
 
-from Feedback import Feedback
+from FeedbackBase.Feedback import Feedback
 import pygame
 import random
 

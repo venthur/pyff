@@ -1,6 +1,6 @@
 # Lesson01 - Trivial Feedback without functionality
 
-from Feedback import Feedback
+from FeedbackBase.Feedback import Feedback
 
 class Lesson01(Feedback):
     
