@@ -1,4 +1,6 @@
-#!/usr/bin/env python
+#!/usr/bin/env python    
+
+# TODO: import logger
 
 # BrainPong.py -
 # Copyright (C) 2008  Simon Scholler
@@ -24,6 +26,13 @@ import pygame, random, sys, os
 
 class BrainPong(Feedback):
 
+    # TRIGGER VALUES FOR THE PARALLELPORT (MARKERS)
+    START_EXP, END_EXP = 100, 101
+    COUNTDOWN_START = 30
+    START_TRIAL = 35
+    HIT, MISS = 11, 21 
+    SHORTPAUSE_START, SHORTPAUSE_END = 249, 250
+
 ################################################################################
 # Derived from Feedback
 #vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
@@ -32,29 +41,30 @@ class BrainPong(Feedback):
         """
         Initializes variables etc., but not pygame itself.
         """
-        self.logger.debug("on_init")
+        self.send_parallel(self.START_EXP)
+        #self.logger.debug("on_init")
         
         self.durationPerTrial = 0 # if 0, duration last until a miss
-        self.trials = 10
-        self.pauseAfter = 5
-        self.pauseDuration = 9000
+        self.trials = 20
+        self.pauseAfter = 10
+        self.pauseDuration = 3000
         self.availableDirections = ['left', 'right']
         self.FPS = 60
         self.fullscreen = False
         self.screenWidth = 1200
         self.screenHeight = 700
-        self.countdownFrom = 2
+        self.countdownFrom = 3
         self.hitMissDuration = 1500
         self.timeUntilNextTrial = 500
         self.control = "relative"
         self.g_rel = 0.2
         self.g_abs = 0.7
-        self.jitter = 0    # jitter to force ball out of the predefined path
-        self.bowlSpeed = 2.7      # time from ceiling to bar
+        self.jitter = 0.0          # jitter to force ball out of the predefined "left-right"-path
+        self.bowlSpeed = 2.7       # time from ceiling to bar
         self.barWidth = 30         # in percent of the width of the playing field
-        self.bowlDiameter = 20 # in percent of the width of the bar
+        self.bowlDiameter = 20     # in percent of the width of the bar
         self.showCounter = True
-        self.showGameOverDuration = 10000
+        self.showGameOverDuration = 5000
         
         # Feedback state booleans
         self.quit, self.quitting = False, False
@@ -90,7 +100,7 @@ class BrainPong(Feedback):
         """
         Initialize pygame, the graphics and start the game.
         """
-        self.logger.debug("on_play")
+        #self.logger.debug("on_play")
         self.init_pygame()
         self.init_graphics()
         self.quit = False
@@ -102,7 +112,7 @@ class BrainPong(Feedback):
         """
         Flip the pause variable.
         """
-        self.logger.debug("on_pause")
+        #self.logger.debug("on_pause")
         self.pause = not self.pause
         self.showsPause = False
 
@@ -112,17 +122,18 @@ class BrainPong(Feedback):
         Quit the main loop indirectly by setting quit, wait for the mainloop
         until it has quit and close pygame.
         """
-        self.logger.debug("on_quit")
+        #self.logger.debug("on_quit")
         self.quitting = True
-        self.logger.debug("Waiting for main loop to quit...")
+        #self.logger.debug("Waiting for main loop to quit...")
         while not self.quit:
             pygame.time.wait(100)
-        self.logger.debug("Quitting pygame.")
+        #self.logger.debug("Quitting pygame.")
+        self.send_parallel(self.END_EXP)
         pygame.quit()
 
 
     def on_control_event(self, data):
-        self.logger.debug("on_control_event: %s" % str(data))
+        #self.logger.debug("on_control_event: %s" % str(data))
         self.f = data["cl_output"]
 
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -141,7 +152,7 @@ class BrainPong(Feedback):
             pygame.time.wait(10)
             self.elapsed = self.clock.tick(self.FPS)
             self.tick()
-        self.logger.debug("Left the main loop.")
+        #self.logger.debug("Left the main loop.")
         self.quit = True
 
 
@@ -149,17 +160,17 @@ class BrainPong(Feedback):
         """
         One tick of the main loop.
         
-        Decides in wich state the feedback currently is and calls the apropriate
+        Decides in which state the feedback currently is and calls the appropriate
         tick method.
         """
         if self.pause:
             self.pause_tick()
-        elif self.gameover:
-            self.gameover_tick()
         elif self.countdown:
             self.countdown_tick()
         elif self.hit or self.miss:
-            self.hit_miss_tick()
+            self.miss_tick()
+        elif self.gameover:
+            self.gameover_tick()
         elif self.shortPause:
             self.short_pause_tick()
         else:
@@ -176,30 +187,27 @@ class BrainPong(Feedback):
             self.trialElapsed = 0
             self.BarX = 0
             self.init_graphics()
-            self.draw_initial() 
+            self.draw_all(True) 
             pygame.time.wait(self.timeUntilNextTrial)
             self.firstTickOfTrial = False     
-            self.bipol = (random.randint(0,1)-0.5)*2
             (self.bowlX_float, self.bowlY_float) = (0,0)
+            self.direction = (random.randint(0,1)-0.5)*2
             
-
-        # Redraw background & walls
-        self.screen.blit(self.background, self.backgroundRect)
-        self.screen.blit(self.wall, self.wallRect1)
-        self.screen.blit(self.wall, self.wallRect2)
         
         # Check, if trial is over (if y-pos of bowl is on bottom of the screen)
         # or if the trial time is over
         (bowlPosX, bowlPosY) = self.bowlMoveRect.midbottom
         if bowlPosY >= self.screenHeight:
+            self.send_parallel(self.MISS)
             self.miss = True; return
         if self.trialElapsed > self.durationPerTrial and self.durationPerTrial != 0:
+            self.send_parallel(self.HIT)
             self.hit = True; return
             
         # Calculate motion of bowl
-        stepY = 1.0 * self.barSurface / (self.FPS * self.bowlSpeed)
-        stepX = stepY / 2 * self.bipol
-        stepY = stepY + self.bipol*self.jitter*stepY
+        stepY = 1.0 * (self.barSurface-self.bowlDiameter) / (self.FPS * self.bowlSpeed)
+        stepX = stepY / 2 * self.direction
+        stepY = stepY + self.direction*self.jitter*stepY
         if self.left == True:   stepX = -stepX
         if self.down == False:  stepY = -stepY
         
@@ -209,12 +217,11 @@ class BrainPong(Feedback):
             # check if bar is at the same x-coordinate, 
             # if yes: bounce ball, else: miss
             if bowlPosX > barLeftX and bowlPosX < barRightX:
-                self.down = False
-                self.hitMiss[0] += 1
+                self.hit_tick()
                 stepY = -stepY
             else:
-                tol = 5      # tolerance
-                if barLeftX - bowlPosX > tol or bowlPosX - barRightX > tol:
+                self.tol = 5      # tolerance
+                if barLeftX-bowlPosX>self.tol or bowlPosX-barRightX>self.tol:
                     self.miss = True; return
             self.down = False
             stepY = -stepY
@@ -230,17 +237,10 @@ class BrainPong(Feedback):
         if border1 < 0 or border2 > self.screenWidth:
             self.left = not self.left
             stepX = -stepX
-        
-        # Update hit-miss counter
-        if self.showCounter:
-            s = self.hitstr + str(self.hitMiss[0]).rjust(2) + self.missstr + str(self.hitMiss[-1]).rjust(2)
-            center = (self.wallW+self.playWidth*self.x_transl, self.size/20)
-            self.do_print(s, self.hitmissCounterColor, self.counterSize, center, True)
                 
         # Move bowl
         (self.bowlX_float, self.bowlY_float) = (self.bowlX_float+stepX, self.bowlY_float+stepY)
         self.bowlMoveRect = self.bowlRect.move(self.bowlX_float, self.bowlY_float)
-        self.screen.blit(self.bowl, self.bowlMoveRect)
         
         # Move bar according to classifier output
         if self.control == "absolute":
@@ -263,10 +263,14 @@ class BrainPong(Feedback):
             self.BarX = newBarX
         else:
             raise Exception("Control type unknown (know types: 'absolute' and 'relative').")   
-        self.screen.blit(self.bar, self.barMoveRect)
         
-        pygame.display.update()
-
+        # Update hit-miss counter
+        if self.showCounter:
+            s = self.hitstr + str(self.hitMiss[0]).rjust(2) + self.missstr + str(self.hitMiss[-1]).rjust(2)
+            center = (self.wallW+self.playWidth*self.x_transl, self.size/20)
+        
+        self.draw_all(True)
+        
     def pause_tick(self):
         """
         One tick of the pause loop.
@@ -281,16 +285,22 @@ class BrainPong(Feedback):
         """
         One tick of the short pause loop.
         """
+        if self.shortPauseElapsed == 0:
+            self.send_parallel(self.SHORTPAUSE_START)
         self.shortPauseElapsed += self.elapsed
         if self.shortPauseElapsed >= self.pauseDuration:
+            self.firstTickOfTrial = True
             self.showsShortPause = False
             self.shortPause = False
             self.shortPauseElapsed = 0
             self.countdown = True
+            self.send_parallel(self.SHORTPAUSE_END)
             return
         if self.showsShortPause:
             return
-        self.do_print("Short Break...", self.fontColor, self.size/6)
+        self.draw_all()
+        self.do_print("Short Break...", self.fontColor, self.size/10)
+        pygame.display.update()
         self.showsShortPause = True
 
     
@@ -298,26 +308,42 @@ class BrainPong(Feedback):
         """
         One tick of the countdown loop.
         """
+        if self.countdownElapsed == 0:
+            self.send_parallel(self.COUNTDOWN_START)
+            self.init_graphics()
         self.countdownElapsed += self.elapsed
-        if self.countdownElapsed >= self.countdownFrom * 1000:
+        if self.countdownElapsed >= (self.countdownFrom+1) * 1000:
             self.countdown = False
             self.countdownElapsed = 0
             return
-        t = (self.countdownFrom * 1000 - self.countdownElapsed) / 1000
+        t = ((self.countdownFrom+1) * 1000 - self.countdownElapsed) / 1000
+        self.draw_all()
         self.do_print(str(t), self.countdownColor, self.size/3)
-
+        pygame.display.update()
         
     def gameover_tick(self):
         """
         One tick of the game over loop.
         """
-        self.do_print("Game Over! (%i : %i)" % (self.hitMiss[0], self.hitMiss[1]), self.fontColor, self.size/6)
+        self.draw_all()
+        self.do_print("Game Over! (%i : %i)" % (self.hitMiss[0], self.hitMiss[1]), self.fontColor, self.size/10)
+        pygame.display.update()
         pygame.time.wait(self.showGameOverDuration)
+        self.quitting = True
 
+    def hit_tick(self):
+        self.down = False
+        self.hitMiss[0] += 1
+        self.completedTrials += 1
+        if self.completedTrials % self.pauseAfter == 0:
+            self.shortPause = True
+        if self.completedTrials >= self.trials:
+            self.gameover = True
         
-    def hit_miss_tick(self):
+        
+    def miss_tick(self):
         """
-        One tick of the Hit/Miss loop.
+        One tick of the Miss loop.
         """
         self.hitMissElapsed += self.elapsed
         if self.hitMissElapsed >= self.hitMissDuration:
@@ -329,32 +355,19 @@ class BrainPong(Feedback):
             return
         
         self.completedTrials += 1; 
-        self.firstTickOfTrial = True
-        s = ""
-        if self.hit:
-            s = "End of Trial"
-        else:
-            self.hitMiss[-1] += 1
+        self.firstTickOfTrial = True   # TODO: Check this!!
+        self.hitMiss[-1] += 1
             
         if self.completedTrials % self.pauseAfter == 0:
             self.shortPause = True
         if self.completedTrials >= self.trials:
             self.gameover = True
             
-        self.screen.blit(self.wall, self.wallRect1)
-        self.screen.blit(self.wall, self.wallRect2)
-        if self.showCounter:
-            countString = self.hitstr + str(self.hitMiss[0]).rjust(2) + self.missstr + str(self.hitMiss[-1]).rjust(2)
-            center = (self.wallW+self.playWidth*self.x_transl, self.size/20)
-            self.do_print(countString, self.hitmissCounterColor, self.counterSize, center, True)
-        self.screen.blit(self.bowl, self.bowlMoveRect)
-        self.screen.blit(self.bar, self.barMoveRect)
-        self.do_print(s, self.fontColor, self.size/7, None, True)
-        pygame.display.flip()
+        self.draw_all(True)
         self.showsHitMiss = True
 
 
-    def do_print(self, text, color, size=None, center=None, superimpose=False):
+    def do_print(self, text, color, size=None, center=None, superimpose=True):
         """
         Print the given text in the given color and size on the screen.
         """
@@ -370,9 +383,7 @@ class BrainPong(Feedback):
             self.screen.blit(self.background, self.backgroundRect)
         surface = font.render(text, 1, color)
         self.screen.blit(surface, surface.get_rect(center=center))
-        if not superimpose:
-            pygame.display.update()
-
+        
 
     def init_graphics(self):
         """
@@ -437,7 +448,7 @@ class BrainPong(Feedback):
                 self.BarX = (1.0* self.playWidth / self.oldPlayWidth) * self.BarX
                 self.barMoveRect = self.barRect.move(self.BarX,0)
                 
-    def draw_initial(self):
+    def draw_all(self, draw=False):
         # draw images on the screen
         self.screen.blit(self.background, self.backgroundRect)
         self.screen.blit(self.wall, self.wallRect1)
@@ -445,10 +456,11 @@ class BrainPong(Feedback):
         if self.showCounter:
             s = self.hitstr + str(self.hitMiss[0]).rjust(2) + self.missstr + str(self.hitMiss[-1]).rjust(2)
             center = (self.wallW+self.playWidth*self.x_transl, self.size/20)
-            self.do_print(s, self.hitmissCounterColor, self.counterSize, center, True)
-        self.screen.blit(self.bowl, self.bowlRect)
-        self.screen.blit(self.bar, self.barRect)
-        pygame.display.flip()
+            self.do_print(s, self.hitmissCounterColor, self.counterSize, center)
+        self.screen.blit(self.bowl, self.bowlMoveRect)
+        self.screen.blit(self.bar, self.barMoveRect)
+        if draw:
+            pygame.display.flip()
 
 
     def init_pygame(self):
@@ -456,7 +468,7 @@ class BrainPong(Feedback):
         Set up pygame and the screen and the clock.
         """
         pygame.init()
-        pygame.display.set_caption('BrainPong')
+        pygame.display.set_caption('Brain Pong')
         self.screenWidth = max(self.screenWidth, int(self.screenHeight*0.9))
         if self.fullscreen:
             self.screen = pygame.display.set_mode((self.screenWidth, self.screenHeight), pygame.FULLSCREEN)
@@ -492,5 +504,5 @@ class BrainPong(Feedback):
 if __name__ == '__main__':
     bp = BrainPong()
     bp.on_init()
+    #self.send_parallel(200)
     bp.on_play()
-    
