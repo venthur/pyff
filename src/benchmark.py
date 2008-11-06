@@ -20,7 +20,7 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 
-import bcinetwork
+from lib import bcinetwork
 
 import time
 import socket
