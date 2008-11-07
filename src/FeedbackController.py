@@ -207,7 +207,13 @@ class FeedbackController(object):
         self.logger.debug("Trying to load feedback: %s from module: %s." % (name, module))
         
         try:
-            mod = __import__(module, fromlist=[None])
+            # check if desired module is alreadty loaded, if so just reload it
+            if sys.modules.has_key(module):
+                self.logger.debug("Feedback module %s already loaded, trying to reload it." % str(module))
+                mod = reload(sys.modules[module])
+            else:
+                self.logger.debug("Loading module %s for the first time." % str(module))
+                mod = __import__(module, fromlist=[None])
             self.feedback = getattr(mod, name)(self.pp)
         except:
             self.logger.warning("Unable to load Feedback, falling back to dummy.")
