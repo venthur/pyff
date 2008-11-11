@@ -24,7 +24,7 @@ from FeedbackBase.Feedback import Feedback
 
 try:
     import parallel
-except:
+except ImportError:
     print "Unable to import parallel module, have you pyparallel installed?"
 
 import socket
@@ -54,7 +54,51 @@ class FeedbackController(object):
             self.logger.error("Unable to open parallel port!")
         self.feedback = Feedback(self.pp)
         self.playEvent = threading.Event()
+        self.inject("FeedbackControllerPlugins")
+        
+#
+# Feedback Controller Plugin-Methods
+#    
+    def pre_init(self): pass
+    def post_init(self): pass
+    def pre_play(self): pass
+    def post_play(self): pass
+    def pre_pause(self): pass
+    def post_pause(self): pass
+    def pre_stop(self): pass
+    def post_stop(self): pass
+#
+# /Feedback Controller Plugin-Methods
+#    
 
+    SUPPORTED_PLUGIN_METHODS = ["pre_init", "post_init", 
+                                "pre_play", "post_play", 
+                                "pre_pause", "post_pause",
+                                "pre_stop", "post_stop"]
+    
+    def inject(self, module):
+        """Inject methods from module to Feedback Controller."""
+        
+        try:
+            m = __import__(module, fromlist=[None])
+        except ImportError:
+            self.logger.error("Unable to import module, aborting injection.")
+        else:
+            for meth in FeedbackController.SUPPORTED_PLUGIN_METHODS:
+                if hasattr(m, meth) and callable(getattr(m, meth)):
+                    setattr(FeedbackController, meth, getattr(m, meth))
+                else:
+                    self.logger.error("Unable to inject %s" % meth)
+                    has = hasattr(m, meth)
+                    call = False
+                    if has:
+                        call = callable(getattr(m, meth))
+                    self.logger.error("hassattr/callable: %s/%s" % (str(has), str(call)))
+                    
+
+
+    def start(self):
+        """Start the Feedback Controllers activities."""
         
         # Listen on the network in a second thread
         Dispatcher(bcinetwork.FC_PORT, self)
@@ -65,6 +109,7 @@ class FeedbackController(object):
         self.logger.debug("Started main loop.")
         self.main_loop()
         self.logger.debug("Left main loop.")
+
     
     def on_signal(self, address, datagram):
         signal = None
@@ -131,23 +176,31 @@ class FeedbackController(object):
         self.feedback._Feedback__on_interaction_event(signal.data)
         if cmd == bcixml.CMD_PLAY:
             self.logger.info("Received PLAY signal")
+            self.pre_play()
             self.playEvent.set()
+            self.post_play()
             #self.feedback._Feedback__on_play()
         elif cmd == bcixml.CMD_PAUSE:
             self.logger.info("Received PAUSE signal")
+            self.pre_pause()
             self.feedback._Feedback__on_pause()
+            self.post_pause()
         elif cmd == bcixml.CMD_QUIT:
             self.logger.info("Received QUIT signal")
+            self.pre_stop()
             self.feedback._Feedback__on_quit()
             # Load the default dummy Feedback
             self.feedback = Feedback(self.pp)
+            self.post_stop()
         elif cmd == bcixml.CMD_SEND_INIT:
             self.logger.info("Received SEND_INIT signal")
             # Working with old Feedback!
             self.feedback._Feedback__on_quit()
             self.load_feedback()
             # Proably a new one!
+            self.pre_init()
             self.feedback._Feedback__on_init()
+            self.post_init()
             self.feedback._Feedback__on_interaction_event(signal.data)
         else:
             self.logger.info("Received generic interaction signal")
@@ -253,6 +306,7 @@ class Dispatcher(asyncore.dispatcher):
 
 def start_fc():
     fc = FeedbackController()
+    fc.start()
 
 def stop_fc():
     pass
