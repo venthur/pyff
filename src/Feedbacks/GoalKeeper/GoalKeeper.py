@@ -614,7 +614,6 @@ class GoalKeeper(Feedback):
 
         # Calculate stepsize in x- and y-direction of the ball dependend on the ball speed
         alpha = 1.0 * (self.trial+1) / self.trials
-        print alpha
         ballSpeed = (1-alpha) * self.durationPerTrial[0] + alpha * self.durationPerTrial[1]
         self.stepY =  self.distBallKeeper / (ballSpeed*self.FPS)
         tangens = 1.0 * self.keeperRange / self.distBallKeeper
