@@ -37,7 +37,7 @@ import traceback
 from optparse import OptionParser
 
 class FeedbackController(object):
-    def __init__(self):
+    def __init__(self, plugin=None):
         # Setup my stuff:
         self.logger = logging.getLogger("FeedbackController")
         self.encoder = bcixml.XmlEncoder()
@@ -51,10 +51,14 @@ class FeedbackController(object):
         try:
             self.pp = parallel.Parallel()
         except:
-            self.logger.error("Unable to open parallel port!")
+            self.logger.warning("Unable to open parallel port!")
         self.feedback = Feedback(self.pp)
         self.playEvent = threading.Event()
-        self.inject("FeedbackControllerPlugins")
+        if plugin:
+            self.logger.debug("Loading plugin ", plugin)
+            self.inject(plugin)
+        
+        self.fc_data = {}
         
 #
 # Feedback Controller Plugin-Methods
@@ -82,18 +86,19 @@ class FeedbackController(object):
         try:
             m = __import__(module, fromlist=[None])
         except ImportError:
-            self.logger.error("Unable to import module, aborting injection.")
+            self.logger.info("Unable to import module %s, aborting injection." % module)
         else:
             for meth in FeedbackController.SUPPORTED_PLUGIN_METHODS:
                 if hasattr(m, meth) and callable(getattr(m, meth)):
                     setattr(FeedbackController, meth, getattr(m, meth))
+                    self.logger.info("Sucessfully injected: ", meth)
                 else:
-                    self.logger.error("Unable to inject %s" % meth)
+                    self.logger.debug("Unable to inject %s" % meth)
                     has = hasattr(m, meth)
                     call = False
                     if has:
                         call = callable(getattr(m, meth))
-                    self.logger.error("hassattr/callable: %s/%s" % (str(has), str(call)))
+                    self.logger.debug("hassattr/callable: %s/%s" % (str(has), str(call)))
                     
 
 
@@ -304,8 +309,8 @@ class Dispatcher(asyncore.dispatcher):
         self.feedbackController.on_signal(self.addr, datagram)    
 
 
-def start_fc():
-    fc = FeedbackController()
+def start_fc(plugin=None):
+    fc = FeedbackController(plugin)
     fc.start()
 
 def stop_fc():
@@ -336,6 +341,9 @@ the Free Software Foundation; either version 2 of the License, or
         'error', 'warning', 'info', 'debug', 'notset'], dest='fbloglevel',
         help='Which loglevel to use for the Feedbacks. Valid loglevels are: critical, error, warning, info, debug and notset. [default: warning]',
         metavar='LEVEL')
+    parser.add_option('-p', '--plugin', dest='plugin',
+                      help="Optional Plugin, the Feedback Controller should load.",
+                      metavar="MODULE")
 
     options, args = parser.parse_args()
 
@@ -353,9 +361,12 @@ the Free Software Foundation; either version 2 of the License, or
     logging.basicConfig(level=loglevel, format='[%(threadName)-10s] %(name)-25s: %(levelname)-8s %(message)s')
     logging.info('Logger initialized with level %s.' % options.loglevel)
     logging.getLogger("FB").setLevel(fbloglevel)
+    
+    # get the plugin
+    plugin = options.plugin
 
     try:
-        start_fc()
+        start_fc(plugin)
     except (KeyboardInterrupt, SystemExit):
         logging.info("Caught keyboard interrupt or system exit; quitting")
         stop_fc()
