@@ -36,18 +36,32 @@ import os
 
 def start_bv_recorder(self):
     # save to filename TODAY_DIR BASENAME VP_CODE
+    # TODAY_DIR => D:\data\bbciRaw\bla\
+    # BASENAME+VP_CODE = filebase
+    # actual save target: TODAY_DIR\filebase
     todayDir = self.fc_data.get("TODAY_DIR")
     basename = self.fc_data.get("BASENAME")
     vbCode = self.fc_data.get("VP_CODE")
     if not (todayDir and basename and vbCode):
-        # one or more of the variables is missing
-        todayDir = ("UNKNOWN_DATE")
-        basename = ("UNKNOWN_BASE")
-        vbCode = ("UNKNOWN_VP")
+        self.logger.error("todayDir, basename or vbCode variable does not exist in the Feedback Controller")
+        return
+    # test if todayDir acutally exists
+    if not os.path.exists(todayDir):
+        self.logger.error("Directory does not exist, cannot record to: ", str(todayDir))
+        return
+    
     filename = os.sep.join([str(todayDir), str(basename), str(vbCode)])
-    print "Recoding to file: ", filename
-    rcc.startRecording(filename)
+    self.logger.debug("Recoding to file: ", filename)
+    try:
+        rcc.startRecording(filename)
+    except Exception, e:
+        self.logger.error("Unable to start recording:")
+        self.logger.error(str(e))
 
 
 def stop_bv_recorder(self):
-    rcc.stopRecording()
+    try:
+        rcc.stopRecording()
+    except:
+        self.logger.error("Unable to stop recording:")
+        self.logger.error(str(e))
