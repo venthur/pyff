@@ -230,8 +230,8 @@ class FeedbackController(object):
                 #print "3/3: feedback is valid Feedback()"
                 valid = True
         except:
-            self.logger.warning("Ooops! Something went wrong loading the feedback: %s from module: %s" % (name, module))
-            self.logger.warning(traceback.format_exc())
+            self.logger.debug("%s from module %s is no valid Feedback:" % (name, module))
+            self.logger.debug(traceback.format_exc())
         del mod
         return valid, name, module
 
