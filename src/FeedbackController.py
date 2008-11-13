@@ -133,6 +133,8 @@ class FeedbackController(object):
                 self._handle_cs(signal)
             elif signal.type == bcixml.INTERACTION_SIGNAL:
                 self._handle_is(signal)
+            elif signal.type == bcixml.FC_SIGNAL:
+                self._handle_fcs(signal)
             else:
                 self.logger.warning("Unknown signal type, ignoring it. (%s)" % str(signal.type))
         except:
@@ -152,6 +154,12 @@ class FeedbackController(object):
             #self.call_method_safely(self.feedback._Feedback__on_play())
             self.logger.debug("Feedback's on_play terminated.")
 
+
+    def _handle_fcs(self, signal):
+        # We assume, that the signal only contains variables which are to set
+        # in the Feedback Controller
+        self.fc_data = signal.data.copy()
+        
 
     def _handle_cs(self, signal):
         self.feedback._Feedback__on_control_event(signal.data)

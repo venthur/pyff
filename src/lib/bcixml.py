@@ -29,6 +29,8 @@ SUPPORTED_VERSIONS = ("1.0")
 
 CONTROL_SIGNAL = "control-signal"
 INTERACTION_SIGNAL = "interaction-signal"
+# FIXME: temporary
+FC_SIGNAL = "fc-signal"
 
 NAME = "name"
 VALUE = "value"
@@ -94,7 +96,8 @@ class XmlDecoder(object):
         t = None  # for the type
         for node in root.childNodes:
             if node.nodeType == Node.ELEMENT_NODE:
-                if node.nodeName == INTERACTION_SIGNAL or node.nodeName == CONTROL_SIGNAL:
+                #if node.nodeName == INTERACTION_SIGNAL or node.nodeName == CONTROL_SIGNAL or node.nodeName == FC_SIGNAL:
+                if node.nodeName in [INTERACTION_SIGNAL, CONTROL_SIGNAL, FC_SIGNAL]:
                     t = node.nodeName
                 else:
                     self.logger.warning("Received a signal which contains neither an interaction- nor a control-signal. (%s)" % str(node.nodeName))

@@ -101,6 +101,17 @@ class BcixmlTestCase(unittest.TestCase):
         d2 = {}
         self.__convert_and_compare("somename", d, d2)
         #self.__convert_and_compare("somename", [f], [])
+        
+    def testEncodeUnsupportedSignalType(self):
+        """Should throw an Exception on encoding an unknown signal type."""
+        signal = bcixml.BciSignal(None, None, "foo")
+        self.assertRaises(bcixml.EncodingError, self.encoder.encode_packet, signal)
+
+
+    def testDecodeUnsupportedSignalType(self):
+        """Should throw an Exception on decoding an unknown signal type."""
+        xml = """<?xml version="1.0" ?><bci-signal version="1.0"><foo/></bci-signal>"""
+        self.assertRaises(bcixml.DecodingError, self.decoder.decode_packet, xml)
 
 #
 # some pitfalls...
@@ -112,7 +123,6 @@ class BcixmlTestCase(unittest.TestCase):
         type, (name, value) = self.decoder._XmlDecoder__parse_element(dom.documentElement)
         self.assertEqual(name, "foo")
         self.assertEqual(value, False)
-    
         
         
     def __convert_and_compare(self, name, value, value2=None):
@@ -124,6 +134,17 @@ class BcixmlTestCase(unittest.TestCase):
         self.assertTrue(signal2.data.has_key(name))
         self.assertEqual(signal2.data[name], value2)
         self.assertEqual(type(signal2.data[name]), type(value2))
+
+
+    def testFC_Signal(self):
+        """Should support Feedback Controller Signal type."""
+        data = {"foo" : "bar", "baz" : 3}
+        signal = bcixml.BciSignal(data, None, bcixml.FC_SIGNAL)
+        xml = self.encoder.encode_packet(signal)
+        signal2 = self.decoder.decode_packet(xml)
+        self.assertEqual(signal2.type, bcixml.FC_SIGNAL)
+        self.assertEqual(signal2.data, data)
+        
         
 #suite = unittest.makeSuite(BcixmlTestCase)
 def suite():
