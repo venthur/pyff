@@ -20,6 +20,7 @@
 #               - File created
 
 import win32com.client
+import pythoncom
 
 global recorder
 
@@ -27,6 +28,7 @@ def createRecorder():
     """ This method calls the methods to create the BrainVision Recorder COM
     object. You don't have to call this method from your own code. """
     global recorder
+    pythoncom.CoInitialize()
     recorder = win32com.client.Dispatch("VisionRecorder.Application")
 
 def closeRecorder():
