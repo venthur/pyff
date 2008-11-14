@@ -82,7 +82,14 @@
        </widget>
       </item>
       <item>
-       <widget class="QToolButton" name="toolButton_sendinit" />
+       <widget class="QToolButton" name="toolButton_sendinit" >
+        <property name="popupMode" >
+         <enum>QToolButton::DelayedPopup</enum>
+        </property>
+        <property name="arrowType" >
+         <enum>Qt::NoArrow</enum>
+        </property>
+       </widget>
       </item>
       <item>
        <widget class="QToolButton" name="toolButton_send" />
@@ -217,13 +224,13 @@
     <string>SendInit</string>
    </property>
   </action>
-  <action name="actionSend" >
+  <action name="actionSendAll" >
    <property name="icon" >
     <iconset resource="icons.qrc" >
-     <normaloff>:/icons/send.png</normaloff>:/icons/send.png</iconset>
+     <normaloff>:/icons/sendall.png</normaloff>:/icons/sendall.png</iconset>
    </property>
    <property name="text" >
-    <string>Send</string>
+    <string>Send All Variables</string>
    </property>
   </action>
   <action name="actionQuit" >
@@ -251,6 +258,15 @@
    </property>
    <property name="text" >
     <string>clearFilter</string>
+   </property>
+  </action>
+  <action name="actionSendModified" >
+   <property name="icon" >
+    <iconset resource="icons.qrc" >
+     <normaloff>:/icons/sendmodified.png</normaloff>:/icons/sendmodified.png</iconset>
+   </property>
+   <property name="text" >
+    <string>Send Modified Variables</string>
    </property>
   </action>
  </widget>

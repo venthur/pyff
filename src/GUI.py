@@ -25,6 +25,9 @@ from gui.gui import Ui_MainWindow
 from lib import bcinetwork
 from lib import bcixml
 
+NORMAL_COLOR = QtCore.Qt.black
+MODIFIED_COLOR = QtCore.Qt.gray
+
 class BciGui(QtGui.QMainWindow, Ui_MainWindow):
     
     def __init__(self):
@@ -37,7 +40,7 @@ class BciGui(QtGui.QMainWindow, Ui_MainWindow):
         self.model = TableModel(self)
         self.proxymodel = QtGui.QSortFilterProxyModel(self)
         self.proxymodel.setSourceModel(self.model)
-        self.proxymodel.setFilterKeyColumn(-1)
+        self.proxymodel.setFilterKeyColumn(- 1)
         self.tableView.setModel(self.proxymodel)
         self.tableView.verticalHeader().setVisible(False)
         self.tableView.horizontalHeader().setResizeMode(1, QtGui.QHeaderView.Stretch)
@@ -49,9 +52,15 @@ class BciGui(QtGui.QMainWindow, Ui_MainWindow):
         self.toolButton_pause.setDefaultAction(self.actionPause)
         self.toolButton_play.setDefaultAction(self.actionPlay)
         self.toolButton_quit.setDefaultAction(self.actionQuit1)
-        self.toolButton_send.setDefaultAction(self.actionSend)
         self.toolButton_sendinit.setDefaultAction(self.actionSendInit)
         self.toolButton_get.setDefaultAction(self.actionGet)
+        
+        self.sendMenu = QtGui.QMenu()
+        self.sendMenu.addAction(self.actionSendAll)
+        self.sendMenu.addAction(self.actionSendModified)
+        self.toolButton_send.setMenu(self.sendMenu)
+        self.toolButton_send.setDefaultAction(self.actionSendModified)
+        
         
         # connect actions to methods
         #QtCore.QObject.connect(self.actionOpen, QtCore.SIGNAL("triggered()"), self.clicked)
@@ -64,11 +73,12 @@ class BciGui(QtGui.QMainWindow, Ui_MainWindow):
         QtCore.QObject.connect(self.actionQuit1, QtCore.SIGNAL("triggered()"), self.quitFeedbackController)
         QtCore.QObject.connect(self.actionSave, QtCore.SIGNAL("triggered()"), self.save)
         QtCore.QObject.connect(self.actionSaveAs, QtCore.SIGNAL("triggered()"), self.saveas)
-        QtCore.QObject.connect(self.actionSend, QtCore.SIGNAL("triggered()"), self.send)
+        QtCore.QObject.connect(self.actionSendModified, QtCore.SIGNAL("triggered()"), self.sendModified)
+        QtCore.QObject.connect(self.actionSendAll, QtCore.SIGNAL("triggered()"), self.sendAll)
         QtCore.QObject.connect(self.actionSendInit, QtCore.SIGNAL("triggered()"), self.sendinit)
         QtCore.QObject.connect(self.actionGet, QtCore.SIGNAL("triggered()"), self.get)
         
-        QtCore.QObject.connect(self.lineEdit, QtCore.SIGNAL("textEdited(const QString&)"), self.filter)
+        QtCore.QObject.connect(self.lineEdit, QtCore.SIGNAL("textChanged(const QString&)"), self.filter)
         
         self.feedbacks = []
         self.setFeedbackController(bcinetwork.LOCALHOST, bcinetwork.FC_PORT)
@@ -89,6 +99,7 @@ class BciGui(QtGui.QMainWindow, Ui_MainWindow):
         # FIXME: this will clear the whole table and just put in the new
         # entries (ignoring the entries of the other players.
         self.model.setElements(entries)
+        
     
     def sendinit(self):
         feedback = unicode(self.comboBox_feedback.currentText())
@@ -99,18 +110,29 @@ class BciGui(QtGui.QMainWindow, Ui_MainWindow):
             e = Entry(name, value)
             entries.append(e)
         self.model.setElements(entries)
-            
     
-    def send(self):
+        
+    def sendModified(self):
+        print "modified"
+        signal = self.makeSignal(True)
+        self.fc.send_signal(signal)
+        
+    
+    def sendAll(self):
+        print "all"
         signal = self.makeSignal()
         self.fc.send_signal(signal)
-            
     
-    def makeSignal(self):
+    
+    def makeSignal(self, modifiedOnly=False):
         """Create an Interaction Signal from the Variables in the Table."""
         data = {}
         for elem in self.model.entry:
-            data[elem.name] = elem.value
+            if not modifiedOnly or (modifiedOnly and elem.modified):
+                data[elem.name] = elem.value
+                # FIXME: should 
+                elem.modified = False
+        print data
         signal = bcixml.BciSignal(data, None, bcixml.INTERACTION_SIGNAL)
         return signal
 
@@ -160,9 +182,9 @@ class BciGui(QtGui.QMainWindow, Ui_MainWindow):
         feedbacks = bcinet.getAvailableFeedbacks()
         
         if not feedbacks:
-            QtGui.QMessageBox.warning(self, 
-                "Ooops!", 
-                "The Feedback Controller under the given adress: %s did not respond or has no feedbacks available!\n\nIt was not added to the list of available Feedback Controllers." % str(ip)+":"+str(port))
+            QtGui.QMessageBox.warning(self,
+                "Ooops!",
+                "The Feedback Controller under the given adress: %s did not respond or has no feedbacks available!\n\nIt was not added to the list of available Feedback Controllers." % str(ip) + ":" + str(port))
             return
         else:
             feedbacks.sort()
@@ -188,7 +210,7 @@ class BciGui(QtGui.QMainWindow, Ui_MainWindow):
 
 class TableModel(QtCore.QAbstractTableModel):
     
-    def __init__(self, parent = None):
+    def __init__(self, parent=None):
         QtCore.QAbstractTableModel.__init__(self, parent)
         self.entry = []
         self.entryCount = 0
@@ -205,8 +227,13 @@ class TableModel(QtCore.QAbstractTableModel):
         return len(self.header)
     
     def data(self, index, role):
-        if not index.isValid() or role != QtCore.Qt.DisplayRole:
+        if not index.isValid():
             return QtCore.QVariant()
+        if role == QtCore.Qt.ForegroundRole:
+            c = MODIFIED_COLOR if self.entry[index.row()].modified else NORMAL_COLOR
+            return QtCore.QVariant(QtGui.QColor(c))
+        if role != QtCore.Qt.DisplayRole:
+            return QtCore.QVariant() 
         return QtCore.QVariant(str(self.entry[index.row()][index.column()]))
     
     def headerData(self, section, orientation, role):
@@ -224,6 +251,7 @@ class TableModel(QtCore.QAbstractTableModel):
         #    return False 
         #self.entry[index.row()][index.column()] = unicode(value.toString())
         self.entry[index.row()].setValue(str(value.toString()))
+        self.entry[index.row()].modified = True
         self.emit(QtCore.SIGNAL("dataChanged(const QModelIndex &, const QModelIndex &)"), index, index)
         return True
         
@@ -237,9 +265,11 @@ class TableModel(QtCore.QAbstractTableModel):
     def addElement(self, entry):
         self.entryCount += 1
         pos = len(self.entry)
-        self.beginInsertRows(QtCore.QModelIndex(), pos, pos+1)
+        self.beginInsertRows(QtCore.QModelIndex(), pos, pos + 1)
         self.entry.append(entry)
         self.endInsertRows()
+        self.emit(QtCore.SIGNAL("layoutChanged()"))
+
     
     def setElements(self, entries):
         self.entry = []
@@ -248,8 +278,7 @@ class TableModel(QtCore.QAbstractTableModel):
         for i in entries:
             self.entry.append(i)
         self.endInsertRows()
-        self.emit(QtCore.SIGNAL("layoutChanged()"))
-
+        self.emit(QtCore.SIGNAL("layoutChanged"))
         
 
 class Entry(object):
@@ -262,6 +291,7 @@ class Entry(object):
         self.name = name
         self.value = value
         self.type = type(value)#bcixml.XmlEncoder()._XmlEncoder__get_type(value)
+        self.modified = False
         
     def __getitem__(self, i):
         if i == 0:

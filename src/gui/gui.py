@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'gui.ui'
 #
-# Created: Tue Nov 11 18:05:21 2008
+# Created: Fri Nov 14 12:09:47 2008
 #      by: PyQt4 UI code generator 4.4.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -49,6 +49,8 @@ class Ui_MainWindow(object):
         self.comboBox_feedback.setObjectName("comboBox_feedback")
         self.hboxlayout.addWidget(self.comboBox_feedback)
         self.toolButton_sendinit = QtGui.QToolButton(self.centralwidget)
+        self.toolButton_sendinit.setPopupMode(QtGui.QToolButton.DelayedPopup)
+        self.toolButton_sendinit.setArrowType(QtCore.Qt.NoArrow)
         self.toolButton_sendinit.setObjectName("toolButton_sendinit")
         self.hboxlayout.addWidget(self.toolButton_sendinit)
         self.toolButton_send = QtGui.QToolButton(self.centralwidget)
@@ -122,11 +124,11 @@ class Ui_MainWindow(object):
         icon.addPixmap(QtGui.QPixmap(":/icons/sendinit.png"),QtGui.QIcon.Normal,QtGui.QIcon.Off)
         self.actionSendInit.setIcon(icon)
         self.actionSendInit.setObjectName("actionSendInit")
-        self.actionSend = QtGui.QAction(MainWindow)
+        self.actionSendAll = QtGui.QAction(MainWindow)
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/icons/send.png"),QtGui.QIcon.Normal,QtGui.QIcon.Off)
-        self.actionSend.setIcon(icon)
-        self.actionSend.setObjectName("actionSend")
+        icon.addPixmap(QtGui.QPixmap(":/icons/sendall.png"),QtGui.QIcon.Normal,QtGui.QIcon.Off)
+        self.actionSendAll.setIcon(icon)
+        self.actionSendAll.setObjectName("actionSendAll")
         self.actionQuit1 = QtGui.QAction(MainWindow)
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/icons/stop.png"),QtGui.QIcon.Normal,QtGui.QIcon.Off)
@@ -142,6 +144,11 @@ class Ui_MainWindow(object):
         icon.addPixmap(QtGui.QPixmap(":/icons/clear.png"),QtGui.QIcon.Normal,QtGui.QIcon.Off)
         self.actionClearFilter.setIcon(icon)
         self.actionClearFilter.setObjectName("actionClearFilter")
+        self.actionSendModified = QtGui.QAction(MainWindow)
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/icons/sendmodified.png"),QtGui.QIcon.Normal,QtGui.QIcon.Off)
+        self.actionSendModified.setIcon(icon)
+        self.actionSendModified.setObjectName("actionSendModified")
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -163,9 +170,10 @@ class Ui_MainWindow(object):
         self.actionPause.setText(QtGui.QApplication.translate("MainWindow", "Pause", None, QtGui.QApplication.UnicodeUTF8))
         self.actionGet.setText(QtGui.QApplication.translate("MainWindow", "Get", None, QtGui.QApplication.UnicodeUTF8))
         self.actionSendInit.setText(QtGui.QApplication.translate("MainWindow", "SendInit", None, QtGui.QApplication.UnicodeUTF8))
-        self.actionSend.setText(QtGui.QApplication.translate("MainWindow", "Send", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionSendAll.setText(QtGui.QApplication.translate("MainWindow", "Send All Variables", None, QtGui.QApplication.UnicodeUTF8))
         self.actionQuit1.setText(QtGui.QApplication.translate("MainWindow", "Quit", None, QtGui.QApplication.UnicodeUTF8))
         self.actionChangeFeedbackController.setText(QtGui.QApplication.translate("MainWindow", "Change FeedbackController", None, QtGui.QApplication.UnicodeUTF8))
         self.actionClearFilter.setText(QtGui.QApplication.translate("MainWindow", "clearFilter", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionSendModified.setText(QtGui.QApplication.translate("MainWindow", "Send Modified Variables", None, QtGui.QApplication.UnicodeUTF8))
 
 import icons_rc

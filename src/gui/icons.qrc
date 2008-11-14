@@ -11,7 +11,8 @@
 <file>icons/saveas.png</file>
 <file>icons/save.png</file>
 <file>icons/sendinit.png</file>
-<file>icons/send.png</file>
+<file>icons/sendall.png</file>
+<file>icons/sendmodified.png</file>
 <file>icons/stop.png</file>
 </qresource>
 </RCC>
