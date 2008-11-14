@@ -51,7 +51,8 @@ class BciGui(QtGui.QMainWindow, Ui_MainWindow):
         self.toolButton_clearFilter.setDefaultAction(self.actionClearFilter)
         self.toolButton_pause.setDefaultAction(self.actionPause)
         self.toolButton_play.setDefaultAction(self.actionPlay)
-        self.toolButton_quit.setDefaultAction(self.actionQuit1)
+        self.toolButton_stop.setDefaultAction(self.actionStop)
+        self.toolButton_quit.setDefaultAction(self.actionQuit)
         self.toolButton_sendinit.setDefaultAction(self.actionSendInit)
         self.toolButton_get.setDefaultAction(self.actionGet)
         
@@ -70,7 +71,7 @@ class BciGui(QtGui.QMainWindow, Ui_MainWindow):
         QtCore.QObject.connect(self.actionPause, QtCore.SIGNAL("triggered()"), self.pause)
         QtCore.QObject.connect(self.actionPlay, QtCore.SIGNAL("triggered()"), self.play)
         QtCore.QObject.connect(self.actionQuit, QtCore.SIGNAL("triggered()"), self.quit)
-        QtCore.QObject.connect(self.actionQuit1, QtCore.SIGNAL("triggered()"), self.quitFeedbackController)
+        QtCore.QObject.connect(self.actionStop, QtCore.SIGNAL("triggered()"), self.stop)
         QtCore.QObject.connect(self.actionSave, QtCore.SIGNAL("triggered()"), self.save)
         QtCore.QObject.connect(self.actionSaveAs, QtCore.SIGNAL("triggered()"), self.saveas)
         QtCore.QObject.connect(self.actionSendModified, QtCore.SIGNAL("triggered()"), self.sendModified)
@@ -89,6 +90,14 @@ class BciGui(QtGui.QMainWindow, Ui_MainWindow):
     
     def pause(self):
         self.fc.pause()
+        
+    def stop(self):
+        self.fc.stop()
+
+    def quit(self):
+        self.fc.quit()
+    
+
     
     def get(self):
         d = self.fc.get_variables()
@@ -137,10 +146,6 @@ class BciGui(QtGui.QMainWindow, Ui_MainWindow):
         return signal
 
     
-    def quitFeedbackController(self):
-        self.fc.quit()
-    
-    
     def open(self):
         pass
     
@@ -149,10 +154,7 @@ class BciGui(QtGui.QMainWindow, Ui_MainWindow):
     
     def saveas(self):
         pass
-    
-    def quit(self):
-        pass
-    
+
     
     def changeFeedbackController(self):
         try:

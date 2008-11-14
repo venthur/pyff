@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'gui.ui'
 #
-# Created: Fri Nov 14 12:09:47 2008
+# Created: Fri Nov 14 14:30:06 2008
 #      by: PyQt4 UI code generator 4.4.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -65,6 +65,9 @@ class Ui_MainWindow(object):
         self.toolButton_pause = QtGui.QToolButton(self.centralwidget)
         self.toolButton_pause.setObjectName("toolButton_pause")
         self.hboxlayout.addWidget(self.toolButton_pause)
+        self.toolButton_stop = QtGui.QToolButton(self.centralwidget)
+        self.toolButton_stop.setObjectName("toolButton_stop")
+        self.hboxlayout.addWidget(self.toolButton_stop)
         self.toolButton_quit = QtGui.QToolButton(self.centralwidget)
         self.toolButton_quit.setObjectName("toolButton_quit")
         self.hboxlayout.addWidget(self.toolButton_quit)
@@ -99,11 +102,6 @@ class Ui_MainWindow(object):
         icon.addPixmap(QtGui.QPixmap(":/icons/saveas.png"),QtGui.QIcon.Normal,QtGui.QIcon.Off)
         self.actionSaveAs.setIcon(icon)
         self.actionSaveAs.setObjectName("actionSaveAs")
-        self.actionQuit = QtGui.QAction(MainWindow)
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/icons/exit.png"),QtGui.QIcon.Normal,QtGui.QIcon.Off)
-        self.actionQuit.setIcon(icon)
-        self.actionQuit.setObjectName("actionQuit")
         self.actionPlay = QtGui.QAction(MainWindow)
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/icons/play.png"),QtGui.QIcon.Normal,QtGui.QIcon.Off)
@@ -129,11 +127,11 @@ class Ui_MainWindow(object):
         icon.addPixmap(QtGui.QPixmap(":/icons/sendall.png"),QtGui.QIcon.Normal,QtGui.QIcon.Off)
         self.actionSendAll.setIcon(icon)
         self.actionSendAll.setObjectName("actionSendAll")
-        self.actionQuit1 = QtGui.QAction(MainWindow)
+        self.actionQuit = QtGui.QAction(MainWindow)
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/icons/stop.png"),QtGui.QIcon.Normal,QtGui.QIcon.Off)
-        self.actionQuit1.setIcon(icon)
-        self.actionQuit1.setObjectName("actionQuit1")
+        icon.addPixmap(QtGui.QPixmap(":/icons/quit.png"),QtGui.QIcon.Normal,QtGui.QIcon.Off)
+        self.actionQuit.setIcon(icon)
+        self.actionQuit.setObjectName("actionQuit")
         self.actionChangeFeedbackController = QtGui.QAction(MainWindow)
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/icons/connect.png"),QtGui.QIcon.Normal,QtGui.QIcon.Off)
@@ -149,6 +147,11 @@ class Ui_MainWindow(object):
         icon.addPixmap(QtGui.QPixmap(":/icons/sendmodified.png"),QtGui.QIcon.Normal,QtGui.QIcon.Off)
         self.actionSendModified.setIcon(icon)
         self.actionSendModified.setObjectName("actionSendModified")
+        self.actionStop = QtGui.QAction(MainWindow)
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/icons/stop.png"),QtGui.QIcon.Normal,QtGui.QIcon.Off)
+        self.actionStop.setIcon(icon)
+        self.actionStop.setObjectName("actionStop")
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -164,16 +167,15 @@ class Ui_MainWindow(object):
         self.actionSave.setShortcut(QtGui.QApplication.translate("MainWindow", "Ctrl+S", None, QtGui.QApplication.UnicodeUTF8))
         self.actionSaveAs.setText(QtGui.QApplication.translate("MainWindow", "Save &As...", None, QtGui.QApplication.UnicodeUTF8))
         self.actionSaveAs.setShortcut(QtGui.QApplication.translate("MainWindow", "Ctrl+A", None, QtGui.QApplication.UnicodeUTF8))
-        self.actionQuit.setText(QtGui.QApplication.translate("MainWindow", "&Quit", None, QtGui.QApplication.UnicodeUTF8))
-        self.actionQuit.setShortcut(QtGui.QApplication.translate("MainWindow", "Ctrl+Q", None, QtGui.QApplication.UnicodeUTF8))
         self.actionPlay.setText(QtGui.QApplication.translate("MainWindow", "Play", None, QtGui.QApplication.UnicodeUTF8))
         self.actionPause.setText(QtGui.QApplication.translate("MainWindow", "Pause", None, QtGui.QApplication.UnicodeUTF8))
         self.actionGet.setText(QtGui.QApplication.translate("MainWindow", "Get", None, QtGui.QApplication.UnicodeUTF8))
         self.actionSendInit.setText(QtGui.QApplication.translate("MainWindow", "SendInit", None, QtGui.QApplication.UnicodeUTF8))
         self.actionSendAll.setText(QtGui.QApplication.translate("MainWindow", "Send All Variables", None, QtGui.QApplication.UnicodeUTF8))
-        self.actionQuit1.setText(QtGui.QApplication.translate("MainWindow", "Quit", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionQuit.setText(QtGui.QApplication.translate("MainWindow", "Quit", None, QtGui.QApplication.UnicodeUTF8))
         self.actionChangeFeedbackController.setText(QtGui.QApplication.translate("MainWindow", "Change FeedbackController", None, QtGui.QApplication.UnicodeUTF8))
         self.actionClearFilter.setText(QtGui.QApplication.translate("MainWindow", "clearFilter", None, QtGui.QApplication.UnicodeUTF8))
         self.actionSendModified.setText(QtGui.QApplication.translate("MainWindow", "Send Modified Variables", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionStop.setText(QtGui.QApplication.translate("MainWindow", "Stop", None, QtGui.QApplication.UnicodeUTF8))
 
 import icons_rc

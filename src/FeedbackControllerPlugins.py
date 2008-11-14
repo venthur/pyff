@@ -23,6 +23,9 @@ def pre_stop(self):
     stop_bv_recorder(self)
     
 def post_stop(self): pass
+
+def pre_quit(self):  pass
+def post_quit(self): pass
 ################################################################################
 # /Feedback Controller Hooks
 ################################################################################
@@ -47,11 +50,11 @@ def start_bv_recorder(self):
         return
     # test if todayDir acutally exists
     if not os.path.exists(todayDir):
-        self.logger.error("Directory does not exist, cannot record to: ", str(todayDir))
+        self.logger.error("Directory does not exist, cannot record to: %s" % str(todayDir))
         return
     
-    filename = os.sep.join([str(todayDir), str(basename), str(vbCode)])
-    self.logger.debug("Recoding to file: ", filename)
+    filename = os.sep.join([str(todayDir), str(basename) + str(vbCode)])
+    self.logger.debug("Recoding to file: %s" % filename)
     try:
         rcc.startRecording(filename)
     except Exception, e:

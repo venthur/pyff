@@ -59,6 +59,7 @@ COMMAND_TYPE = ("command",)
 CMD_GET_FEEDBACKS = "getfeedbacks"        # tell the fc to send the list of available feedbacks
 CMD_PLAY = 'play'
 CMD_PAUSE = 'pause'
+CMD_STOP = 'stop'
 CMD_QUIT = 'quit'
 CMD_SEND_INIT = 'sendinit'
 CMD_GET_VARIABLES = 'getvariables'

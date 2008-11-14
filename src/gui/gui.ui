@@ -104,6 +104,9 @@
        <widget class="QToolButton" name="toolButton_pause" />
       </item>
       <item>
+       <widget class="QToolButton" name="toolButton_stop" />
+      </item>
+      <item>
        <widget class="QToolButton" name="toolButton_quit" />
       </item>
      </layout>
@@ -176,18 +179,6 @@
     <string>Ctrl+A</string>
    </property>
   </action>
-  <action name="actionQuit" >
-   <property name="icon" >
-    <iconset resource="icons.qrc" >
-     <normaloff>:/icons/exit.png</normaloff>:/icons/exit.png</iconset>
-   </property>
-   <property name="text" >
-    <string>&amp;Quit</string>
-   </property>
-   <property name="shortcut" >
-    <string>Ctrl+Q</string>
-   </property>
-  </action>
   <action name="actionPlay" >
    <property name="icon" >
     <iconset resource="icons.qrc" >
@@ -236,7 +227,7 @@
   <action name="actionQuit" >
    <property name="icon" >
     <iconset resource="icons.qrc" >
-     <normaloff>:/icons/stop.png</normaloff>:/icons/stop.png</iconset>
+     <normaloff>:/icons/quit.png</normaloff>:/icons/quit.png</iconset>
    </property>
    <property name="text" >
     <string>Quit</string>
@@ -267,6 +258,15 @@
    </property>
    <property name="text" >
     <string>Send Modified Variables</string>
+   </property>
+  </action>
+  <action name="actionStop" >
+   <property name="icon" >
+    <iconset resource="icons.qrc" >
+     <normaloff>:/icons/stop.png</normaloff>:/icons/stop.png</iconset>
+   </property>
+   <property name="text" >
+    <string>Stop</string>
    </property>
   </action>
  </widget>

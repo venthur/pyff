@@ -71,6 +71,8 @@ class FeedbackController(object):
     def post_pause(self): pass
     def pre_stop(self): pass
     def post_stop(self): pass
+    def pre_quit(self): pass
+    def post_quit(self): pass
 #
 # /Feedback Controller Plugin-Methods
 #    
@@ -78,7 +80,8 @@ class FeedbackController(object):
     SUPPORTED_PLUGIN_METHODS = ["pre_init", "post_init", 
                                 "pre_play", "post_play", 
                                 "pre_pause", "post_pause",
-                                "pre_stop", "post_stop"]
+                                "pre_stop", "post_stop",
+                                "pre_quit", "post_quit"]
     
     def inject(self, module):
         """Inject methods from module to Feedback Controller."""
@@ -198,13 +201,18 @@ class FeedbackController(object):
             self.pre_pause()
             self.feedback._Feedback__on_pause()
             self.post_pause()
+        elif cmd == bcixml.CMD_STOP:
+            self.logger.info("Received STOP signal")
+            self.pre_stop()
+            self.feedback._Feedback__on_stop()
+            self.post_stop()
         elif cmd == bcixml.CMD_QUIT:
             self.logger.info("Received QUIT signal")
-            self.pre_stop()
+            self.pre_quit()
             self.feedback._Feedback__on_quit()
             # Load the default dummy Feedback
             self.feedback = Feedback(self.pp)
-            self.post_stop()
+            self.post_quit()
         elif cmd == bcixml.CMD_SEND_INIT:
             self.logger.info("Received SEND_INIT signal")
             # Working with old Feedback!

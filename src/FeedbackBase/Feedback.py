@@ -117,6 +117,14 @@ class Feedback(object):
         You should not override this method, use on_pause instead.
         """
         self.on_pause()
+        
+    def __on_stop(self):
+        """
+        Calls on_stop.
+        
+        You should not override this method, use on_stop instead.
+        """
+        self.on_stop()
     
     def __on_quit(self):
         """
@@ -159,6 +167,17 @@ class Feedback(object):
         Override this method to pause your feedback.
         """
         self.logger.warn("on_pause not implemented yet!")
+        
+    
+    def on_stop(self):
+        """
+        This method is called by the FeedbackController when it received a
+        "Stop" event.
+        
+        Override this method to stop your feedback. It should be possible to
+        start again when receiving the on_start event.
+        """
+        self.logger.warn("on_stop not implemented yet!")
 
 
     def on_quit(self):
