@@ -56,7 +56,7 @@ class Feedback(object):
      
         self._data = None
         #self.logger = logging.getLogger("Feedback")
-        self.logger = logging.getLogger("FB."+self.__class__.__name__)
+        self.logger = logging.getLogger("FB." + self.__class__.__name__)
         self.logger.debug("Loaded my logger.")
         self.__pport = pport
  
@@ -87,7 +87,7 @@ class Feedback(object):
             # Problem: Variablen wie feedback_opt.fb_port oder
             # fedback_opt(1).bla
             # Loesung: nehme nur den Namen nach dem letzten Punkt
-            key2 = key.split(".")[-1]
+            key2 = key.split(".")[ - 1]
             #self.__setattr__(self.PREFIX+key2, data[key])
             self.__setattr__(key2, data[key])
             data2[key2] = data[key]

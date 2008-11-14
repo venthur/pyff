@@ -55,8 +55,12 @@ class FeedbackController(object):
         self.feedback = Feedback(self.pp)
         self.playEvent = threading.Event()
         if plugin:
-            self.logger.debug("Loading plugin ", plugin)
-            self.inject(plugin)
+            self.logger.debug("Loading plugin %s" % str(plugin))
+            try:
+                self.inject(plugin)
+            except:
+                self.logger.error(str(traceback.format_exc()))
+                
         
         self.fc_data = {}
         
@@ -89,12 +93,12 @@ class FeedbackController(object):
         try:
             m = __import__(module, fromlist=[None])
         except ImportError:
-            self.logger.info("Unable to import module %s, aborting injection." % module)
+            self.logger.info("Unable to import module %s, aborting injection." % str(module))
         else:
             for meth in FeedbackController.SUPPORTED_PLUGIN_METHODS:
                 if hasattr(m, meth) and callable(getattr(m, meth)):
                     setattr(FeedbackController, meth, getattr(m, meth))
-                    self.logger.info("Sucessfully injected: ", meth)
+                    self.logger.info("Sucessfully injected: %s" % meth)
                 else:
                     self.logger.debug("Unable to inject %s" % meth)
                     has = hasattr(m, meth)

@@ -222,6 +222,8 @@ class XmlEncoder(object):
         dom.appendChild(root)
         
         # Write the type
+        if signal.type not in [CONTROL_SIGNAL, INTERACTION_SIGNAL, FC_SIGNAL]:
+            raise EncodingError("Unknown signal type: %s" % str(signal.type))
         root2 = dom.createElement(signal.type)
         root.appendChild(root2)
         

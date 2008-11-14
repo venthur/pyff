@@ -12,6 +12,7 @@ def pre_init(self):  pass
 def post_init(self): pass
 
 def pre_play(self):
+    self.logger.debug('Running pre_play.')
     start_bv_recorder(self)
     
 def post_play(self): pass
@@ -36,6 +37,7 @@ except ImportError, e:
     print "Unable to import", str(e)
 
 import os
+import traceback
 
 def start_bv_recorder(self):
     # save to filename TODAY_DIR BASENAME VP_CODE
@@ -60,6 +62,7 @@ def start_bv_recorder(self):
     except Exception, e:
         self.logger.error("Unable to start recording:")
         self.logger.error(str(e))
+        self.logger.error(str(traceback.format_exc()))
 
 
 def stop_bv_recorder(self):
