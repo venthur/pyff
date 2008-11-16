@@ -60,10 +60,11 @@ class FeedbackController(object):
             self.logger.debug("Testing additional Feedback path.")
             if os.path.exists(fbpath):
                 self.logger.debug("Additional Feedback path exists, adding it to path.")
+                fbpath = os.path.normpath(fbpath)
                 sys.path.append(fbpath)
             else:
                 self.logger.warning("Additional Feedback path does not exist!")
-        self.additionalFBPath = os.path.normpath(fbpath)
+        self.additionalFBPath = fbpath
         self.feedbacks = self.get_feedbacks()
         self.logger.info("Registered the following Feedbacks:")
         for i in self.feedbacks:
