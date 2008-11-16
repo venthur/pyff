@@ -44,6 +44,7 @@ class BciGui(QtGui.QMainWindow, Ui_MainWindow):
         self.tableView.setModel(self.proxymodel)
         self.tableView.verticalHeader().setVisible(False)
         self.tableView.horizontalHeader().setResizeMode(1, QtGui.QHeaderView.Stretch)
+        self.tableView.setSortingEnabled(True)
 
         
         # connect toolbuttons to actions
@@ -280,7 +281,7 @@ class TableModel(QtCore.QAbstractTableModel):
         for i in entries:
             self.entry.append(i)
         self.endInsertRows()
-        self.emit(QtCore.SIGNAL("layoutChanged"))
+        self.emit(QtCore.SIGNAL("layoutChanged()"))
         
 
 class Entry(object):

@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'gui.ui'
 #
-# Created: Fri Nov 14 14:30:06 2008
+# Created: Sun Nov 16 16:47:28 2008
 #      by: PyQt4 UI code generator 4.4.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -76,7 +76,6 @@ class Ui_MainWindow(object):
         self.tableView.setAlternatingRowColors(True)
         self.tableView.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
         self.tableView.setShowGrid(False)
-        self.tableView.setSortingEnabled(True)
         self.tableView.setObjectName("tableView")
         self.vboxlayout.addWidget(self.tableView)
         MainWindow.setCentralWidget(self.centralwidget)
