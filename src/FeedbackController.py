@@ -37,15 +37,11 @@ import traceback
 from optparse import OptionParser
 
 class FeedbackController(object):
-    def __init__(self, plugin=None):
+    def __init__(self, plugin=None, fbpath=None):
         # Setup my stuff:
         self.logger = logging.getLogger("FeedbackController")
         self.encoder = bcixml.XmlEncoder()
         self.decoder = bcixml.XmlDecoder()
-        self.feedbacks = self.get_feedbacks()
-        self.logger.info("Registered the following Feedbacks:")
-        for i in self.feedbacks:
-            self.logger.info("\t%s" % str(i))
         # Setup the parallel port
         self.pp = None
         try:
@@ -60,7 +56,18 @@ class FeedbackController(object):
                 self.inject(plugin)
             except:
                 self.logger.error(str(traceback.format_exc()))
-                
+        if fbpath:
+            self.logger.debug("Testing additional Feedback path.")
+            if os.path.exists(fbpath):
+                self.logger.debug("Additional Feedback path exists, adding it to path.")
+                sys.path.append(fbpath)
+            else:
+                self.logger.warning("Additional Feedback path does not exist!")
+        self.additionalFBPath = os.path.normpath(fbpath)
+        self.feedbacks = self.get_feedbacks()
+        self.logger.info("Registered the following Feedbacks:")
+        for i in self.feedbacks:
+            self.logger.info("\t%s" % str(i))
         
         self.fc_data = {}
         
@@ -235,7 +242,11 @@ class FeedbackController(object):
         # remove trailing .py if present
         if file.lower().endswith(".py"):
             file2 = file[:-3]
+        root = os.path.normpath(root)
         root = root.replace(os.sep, ".")
+        if self.additionalFBPath:
+            modPath = self.additionalFBPath.replace(os.sep, ".")
+            root = root.replace(modPath, "")
         while root.startswith("."):
             root = root[1:]
         if not root.endswith(".") and not file2.startswith("."):
@@ -271,6 +282,15 @@ class FeedbackController(object):
                     isFeedback, name, module = self.test_feedback(root, file)
                     if isFeedback:
                         feedbacks[name] = module
+        if self.additionalFBPath:
+            for root, dirs, files in os.walk(self.additionalFBPath):
+                for file in files:
+                    if file.lower().endswith(".py"):
+                        # ok we found a candidate, check if it's a valid feedback
+                        isFeedback, name, module = self.test_feedback(root, file)
+                        if isFeedback:
+                            feedbacks[name] = module
+        
         return feedbacks
 
 
@@ -329,8 +349,8 @@ class Dispatcher(asyncore.dispatcher):
         self.feedbackController.on_signal(self.addr, datagram)    
 
 
-def start_fc(plugin=None):
-    fc = FeedbackController(plugin)
+def start_fc(plugin=None, fbpath=None):
+    fc = FeedbackController(plugin, fbpath)
     fc.start()
 
 def stop_fc():
@@ -364,6 +384,9 @@ the Free Software Foundation; either version 2 of the License, or
     parser.add_option('-p', '--plugin', dest='plugin',
                       help="Optional Plugin, the Feedback Controller should load.",
                       metavar="MODULE")
+    parser.add_option('-a', '--additional-feedback-path', dest='fbpath',
+                      help="Additional path to search for Feedbacks.",
+                      metavar="DIR")
 
     options, args = parser.parse_args()
 
@@ -382,11 +405,12 @@ the Free Software Foundation; either version 2 of the License, or
     logging.info('Logger initialized with level %s.' % options.loglevel)
     logging.getLogger("FB").setLevel(fbloglevel)
     
-    # get the plugin
+    # get the rest
     plugin = options.plugin
+    fbpath = options.fbpath
 
     try:
-        start_fc(plugin)
+        start_fc(plugin, fbpath)
     except (KeyboardInterrupt, SystemExit):
         logging.info("Caught keyboard interrupt or system exit; quitting")
         stop_fc()
