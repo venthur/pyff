@@ -102,6 +102,7 @@ class GoalKeeper(Feedback):
         self.digitToDirection = {-1:'left', 0:'middle', 1:'right'}
         self.X = 0
         self.Y = 1
+        self.eps = 0.5
         
         
         # Colours
@@ -133,7 +134,7 @@ class GoalKeeper(Feedback):
         self.quit, self.quitting = False, False
         self.countdown, self.firstTickOfTrial = True, True
         self.elapsed, self.completedTrials = 0,0
-        self.hitMiss = [0,0,0]
+        self.hitMissFalse = [0,0,0]
         self.trial = -1
         
     def on_play(self):
@@ -330,7 +331,7 @@ class GoalKeeper(Feedback):
         
         
         # if ball is hitting the keeper "surface" 
-        if self.ballMoveRect.midbottom[1]+self.stepY >= self.keeperSurface: 
+        if self.ballMoveRect.midbottom[1]+self.stepY+self.eps >= self.keeperSurface: 
             self.ballMoveRect = self.ball.get_rect(midbottom=(self.ballX, self.keeperSurface))
             if self.init_time!=0:
                 print "Trial time: " + str(time.clock()-self.init_time)       
@@ -429,8 +430,8 @@ class GoalKeeper(Feedback):
             self.countdownElapsed = 0
             self.waitBeforeTrial = True
             # initialize targets for the upcoming trial block randomly (equal 'left' and 'right' trials)
-            self.directions = [1]*self.pauseAfter
-            self.directions[0:(self.pauseAfter/2)] = [-1] * (self.pauseAfter/2)
+            self.directions = [1]*int(self.pauseAfter)
+            self.directions[0:int(self.pauseAfter/2)] = [-1] * int(self.pauseAfter/2)
             random.shuffle(self.directions)
             return
         t = ((self.countdownFrom+1) * 1000 - self.countdownElapsed) / 1000
