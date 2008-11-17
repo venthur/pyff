@@ -21,7 +21,8 @@
 """GoalKeeper BCI Feedback."""
 
 from FeedbackBase.Feedback import Feedback
-import pygame, random, sys, math, random, os
+#from Feedback import Feedback
+import pygame, random, sys, math, random, os, time
 
 class GoalKeeper(Feedback):
 
@@ -35,6 +36,9 @@ class GoalKeeper(Feedback):
     HIT_LEFT, HIT_RIGHT = 41, 42
     MISS_KL_TR, MISS_KR_TL, MISS_KM = 51, 52, 53
     TOO_LATE_LEFT, TOO_LATE_RIGHT = 31, 32 
+    TOO_LATE_CORRECT_LEFT, TOO_LATE_CORRECT_RIGHT = 61, 62
+    TOO_LATE_INCORRECT_KL_TR, TOO_LATE_INCORRECT_KR_TL= 71, 72
+    END_OF_RED_CIRCLE= 80
     SHORTPAUSE_START, SHORTPAUSE_END = 249, 250
 
 
@@ -193,6 +197,7 @@ class GoalKeeper(Feedback):
         #self.logger.debug("Left the main loop.")
         pygame.quit()
         self.quit = True
+        self.on_quit()
 
 
     def tick(self):
@@ -205,9 +210,11 @@ class GoalKeeper(Feedback):
         if self.pause:
             self.pause_tick()
         elif self.countdown:
+            self.nt = 0
             self.countdown_tick()
         elif self.hit or self.miss or self.false:
             self.hit_miss_tick()
+            self.nt = 0
         elif self.gameover:
             self.gameover_tick()
         elif self.shortPause:
@@ -217,6 +224,7 @@ class GoalKeeper(Feedback):
         elif self.trialStartAnimation:
             self.animate_trial_start()
         else:
+            self.nt += 1
             self.trial_tick()
     
     
@@ -230,8 +238,9 @@ class GoalKeeper(Feedback):
         self.bMR, self.kMR = self.ballMoveRect.move(0,0), self.keeperMoveRect.move(0,0)
         
         if self.firstTickOfTrial:
+            print "*************************************"
             self.f = 0.0
-            
+            self.init_time = time.clock() 
             # initialize feedback start screen
             resized = False
             self.firstChange = True
@@ -323,6 +332,10 @@ class GoalKeeper(Feedback):
         # if ball is hitting the keeper "surface" 
         if self.ballMoveRect.midbottom[1]+self.stepY >= self.keeperSurface: 
             self.ballMoveRect = self.ball.get_rect(midbottom=(self.ballX, self.keeperSurface))
+            if self.init_time!=0:
+                print "Trial time: " + str(time.clock()-self.init_time)       
+                print "Ticks: " + str(self.nt)
+                self.init_time = 0
             # check if keeper is at the same spot 
             if self.keeperMoveRect.left-self.ballX > self.tol or self.ballX-self.keeperMoveRect.right > self.tol:
                 if self.continueAfterMiss and not self.nrKeeperChanged:
@@ -334,11 +347,10 @@ class GoalKeeper(Feedback):
                         if wrongSide or timeUp:
                             self.ball = pygame.transform.scale(self.ball_miss, self.ballSize)
                             if wrongSide:
-                                if self.direction == 'left':    self.send_parallel(self.MISS_KR_TL)
-                                else:                           self.send_parallel(self.MISS_KL_TR)
+                                if self.direction == 'left':    self.send_parallel(self.TOO_LATE_INCORRECT_KR_TL)
+                                else:                           self.send_parallel(self.TOO_LATE_INCORRECT_KL_TR)
                                 self.false = True; return
-                            else:
-                                self.send_parallel(self.MISS_KM) 
+                            else: 
                                 self.miss = True; return
                     self.stepY = 0
                     stepX = 0
@@ -356,8 +368,8 @@ class GoalKeeper(Feedback):
             else:
                 if self.continueAfterMiss and self.continueAfterMissElapsed!=0:
                     #self.ball = pygame.transform.scale(self.ballMemo, self.ballSize)
-                    if self.direction == 'left':    self.send_parallel(self.TOO_LATE_LEFT) 
-                    else:                           self.send_parallel(self.TOO_LATE_RIGHT)
+                    if self.direction == 'left':    self.send_parallel(self.TOO_LATE_CORRECT_LEFT) 
+                    else:                           self.send_parallel(self.TOO_LATE_CORRECT_RIGHT)
                     self.miss = True; return
                 else:
                     if self.direction == 'left':    self.send_parallel(self.HIT_LEFT); 
@@ -438,8 +450,10 @@ class GoalKeeper(Feedback):
     def hit_miss_tick(self):
         """
         One tick of the Hit/Miss loop.
-        """        
+        """ 
         if self.hitMissElapsed==0:
+            if self.continueAfterMiss and self.continueAfterMissElapsed!=0:
+                self.send_parallel(self.END_OF_RED_CIRCLE)
             self.continueAfterMissElapsed = 0
             self.completedTrials += 1; 
             self.firstTickOfTrial = True
