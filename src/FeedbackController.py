@@ -153,7 +153,7 @@ class FeedbackController(object):
             else:
                 self.logger.warning("Unknown signal type, ignoring it. (%s)" % str(signal.type))
         except:
-            self.logger.error("Ooops, handling is or cs caused an exception.")
+            self.logger.error("Handling is or cs caused an exception.")
             self.logger.error(traceback.format_exc())
 
         
@@ -165,7 +165,11 @@ class FeedbackController(object):
             self.logger.debug("Got play-event, starting Feedback's on_play()")
             self.playEvent.clear()
             # run the Feedbacks on_play in our thread
-            self.feedback._Feedback__on_play()
+            try:
+                self.feedback._Feedback__on_play()
+            except:
+                self.logger.error("Feedbacks on_play threw an exception:")
+                self.logger.error(traceback.format_exc())
             #self.call_method_safely(self.feedback._Feedback__on_play())
             self.logger.debug("Feedback's on_play terminated.")
 
