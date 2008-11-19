@@ -25,6 +25,7 @@ import os
 logging.basicConfig(level=logging.WARNING,
                     format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s'
                     )
+logging.disable(100)
 
 # Walk through every subdir and search for folders named "test".
 # For every python file in those folders should contain TestCases by convention.
