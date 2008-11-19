@@ -21,7 +21,6 @@
 """GoalKeeper BCI Feedback."""
 
 from FeedbackBase.Feedback import Feedback
-#from Feedback import Feedback
 import pygame, random, sys, math, random, os, time
 
 class GoalKeeper(Feedback):
@@ -75,7 +74,7 @@ class GoalKeeper(Feedback):
         self.g_abs = 1       
         self.showRedBallDuration = 500       # in ms
         self.continueAfterMiss = True
-        self.playTimeAfterMiss = 500        # in ms   
+        self.playTimeAfterMiss = 1500        # in ms   
         self.distanceBetweenHalfBalls = 25             # in percent of the screen width
         
         # Feedback state booleans
@@ -245,17 +244,17 @@ class GoalKeeper(Feedback):
             # initialize feedback start screen
             resized = False
             self.firstChange = True
+            self.markerSent = False
             self.init_graphics()
             self.trialElapsed = 0
             self.trial += 1
             self.c = 0
             self.barX = 0;
             if not self.showTrialStartAnimation:
-                pygame.time.wait(random.randint(self.timeUntilNextTrial[0],self.timeUntilNextTrial[1]))
+                pygame.time.wait(random.randint(self.timeUntilNextTrial[0],self.timeUntilNextTrial[1]))  # TODO: implement wait-method
             self.firstTickOfTrial = False
             self.keeperPos = 'middle'
-            self.nrKeeperChanged = False
-            self.nrKeeperChange = False
+            self.keeperChanged = False
             self.direction = self.digitToDirection[self.directions[self.trial%self.pauseAfter]]
             if self.direction == 'left':    self.send_parallel(self.TARGET_LEFT)
             else:                           self.send_parallel(self.TARGET_RIGHT)  
@@ -273,9 +272,8 @@ class GoalKeeper(Feedback):
                
         if self.keeperPos!=keeperPosBefore:
             if self.noReturn:
-                #self.nrKeeperChanged = True
                 self.firstChange = False
-                if self.continueAfterMissElapsed==0 and self.contKeeperMotion: 
+                if self.continueAfterMissElapsed==0: 
                     if self.direction == self.keeperPos:
                         if self.direction == 'left':
                             self.send_parallel(self.CORRECT_LEFT)
@@ -287,102 +285,97 @@ class GoalKeeper(Feedback):
                         else:
                             self.send_parallel(self.INCORRECT_KL_TR)
                             
-            # if keeper position change is instantaneous
-            if not self.contKeeperMotion:
-                self.center = self.keeperCenter[self.keeperPos]
-            # it keeper position change is continuous and position has changed in the PREVIOUS step
-            elif self.contKeeperMotion and not self.firstTickOfTrial:
-                if not self.noReturn:
-                    self.c = 0
-                self.keeperPosBefore = self.keeperMoveRect.centerx
-                self.keeperChange = True
 
-        # if keeper is currently changing the position
+            # it keeper position change is continuous and position has changed in the PREVIOUS STEP
+            if self.contKeeperMotion:
+                self.c = 0
+                self.keeperPosBefore = self.keeperMoveRect.centerx
+                self.keeperChanged = False
+                self.keeperChange = True
+            # if keeper position change is instantaneous
+            else:
+                self.center = self.keeperCenter[self.keeperPos]
+        
+
+        # if keeper is currently changing the position (only applies for continuous keeper movement)
         if self.contKeeperMotion and self.keeperChange:
-            if self.noReturn and not self.nrKeeperChange:
-                self.nrKeeperPos = self.keeperPos
-                self.nrKeeperPosBefore = self.keeperPosBefore
-                self.nrKeeperChange = True
             # normal keeper update block during keeper position change
-            if not self.nrKeeperChanged:
+            if not self.keeperChanged:
                 if self.memoResize:
                     self.memoResize = False
                     self.center = self.keeperMoveRect.center
-                    if self.noReturn:
-                        self.nrKeeperPosBefore = self.keeperMoveRect.centerx
-                    else:
-                        self.keeperPosBefore = self.keeperMoveRect.centerx
+                    self.keeperPosBefore = self.keeperMoveRect.centerx
                 alpha = min(1.0, 1.0 * self.c / (self.contKeeperMotion/1000.0*self.FPS))
                 self.c += 1
                 if alpha == 1:
                     self.keeperChange = False
-                    self.nrKeeperChanged = True
+                    self.keeperChanged = True
                 if self.noReturn:
-                    centerX= alpha*self.keeperCenter[self.nrKeeperPos][self.X] + (1-alpha)*self.nrKeeperPosBefore
-                    self.center = (centerX, self.keeperCenter[self.nrKeeperPos][self.Y])
+                    centerX= alpha*self.keeperCenter[self.keeperPos][self.X] + (1-alpha)*self.keeperCenter['middle'][self.X]
+                    self.center = (centerX, self.keeperCenter[self.keeperPos][self.Y])
                 else:
                     centerX= alpha*self.keeperCenter[self.keeperPos][self.X] + (1-alpha)*self.keeperPosBefore
                     self.center = (centerX, self.keeperCenter[self.keeperPos][self.Y])
-            # if keeper has already changed its position and self.noReturn is on, stay at the old position 
-            elif self.noReturn and self.nrKeeperChanged:
-                self.center = self.keeperCenter[self.nrKeeperPos]
-        
         self.keeperMoveRect = self.keeper.get_rect(center=self.center, size=self.keeperSize) # update keeper position
         
-        
-        # if ball is hitting the keeper "surface" 
-        if self.ballMoveRect.midbottom[1]+self.stepY+self.eps >= self.keeperSurface: 
+        # if normal trial is over
+        if self.totalTrialTicks==self.nt:
             self.ballMoveRect = self.ball.get_rect(midbottom=(self.ballX, self.keeperSurface))
             if self.init_time!=0:
                 print "Trial time: " + str(time.clock()-self.init_time)       
                 print "Ticks: " + str(self.nt)
                 self.init_time = 0
-            # check if keeper is at the same spot 
             if self.keeperMoveRect.left-self.ballX > self.tol or self.ballX-self.keeperMoveRect.right > self.tol:
-                if self.continueAfterMiss and not self.nrKeeperChanged:
-                    if self.continueAfterMissElapsed==0:
-                        self.send_parallel(self.MISS_KM)
-                    else:
-                        wrongSide = (self.nrKeeperChange and self.direction != self.nrKeeperPos)
-                        timeUp = self.playTimeAfterMiss<=self.continueAfterMissElapsed
-                        if wrongSide or timeUp:
-                            self.ball = pygame.transform.scale(self.ball_miss, self.ballSize)
-                            if wrongSide:
-                                if self.direction == 'left':    self.send_parallel(self.TOO_LATE_INCORRECT_KR_TL)
-                                else:                           self.send_parallel(self.TOO_LATE_INCORRECT_KL_TR)
-                                self.false = True; return
-                            else: 
-                                self.miss = True; return
-                    self.stepY = 0
-                    stepX = 0
-                    self.continueAfterMissElapsed += self.elapsed
-                    self.ball = pygame.transform.scale(self.ball_missCircle, self.ballSize)
-                else: 
-                    if self.keeperPos == 'middle' or (self.keeperChange and self.direction==self.keeperPos): 
-                        self.send_parallel(self.MISS_KM)
-                        self.miss = True; return 
-                    else:
-                        if self.direction == 'left':    self.send_parallel(self.MISS_KR_TL) 
-                        else:                           self.send_parallel(self.MISS_KL_TR)
-                        self.false = True; return
-                    self.ball = pygame.transform.scale(self.ball_miss, self.ballSize)
-            else:
-                if self.continueAfterMiss and self.continueAfterMissElapsed!=0:
-                    #self.ball = pygame.transform.scale(self.ballMemo, self.ballSize)
-                    if self.direction == 'left':    self.send_parallel(self.TOO_LATE_CORRECT_LEFT) 
-                    else:                           self.send_parallel(self.TOO_LATE_CORRECT_RIGHT)
-                    self.miss = True; return
+                if self.keeperPos=='middle' or self.keeperPos==self.direction:
+                    self.send_parallel(self.MISS_KM)
+                    if not self.continueAfterMiss:
+                        self.miss = True; return
                 else:
-                    if self.direction == 'left':    self.send_parallel(self.HIT_LEFT); 
-                    else:                           self.send_parallel(self.HIT_RIGHT);
-                    self.hit = True; return
+                    if self.keeperPos=='left':
+                        self.send_parallel(self.MISS_KL_TR)
+                    else:
+                        self.send_parallel(self.MISS_KR_TL)
+                    self.ball = pygame.transform.scale(self.ball_miss, self.ballSize)
+                    self.false = True; return
+            else:
+                if self.direction=='left':
+                    self.send_parallel(self.HIT_LEFT)
+                else:
+                    self.send_parallel(self.HIT_RIGHT)
+                self.hit = True; return                    
+            
+        elif self.continueAfterMiss and self.nt > self.totalTrialTicks:
+            if self.continueAfterMissElapsed==0:
+                self.ball = pygame.transform.scale(self.ball_missCircle, self.ballSize)
+            self.continueAfterMissElapsed += self.elapsed
+            
+            if not self.markerSent:
+                if self.keeperPos==self.direction:
+                    if self.direction=='left':
+                        self.send_parallel(self.TOO_LATE_CORRECT_LEFT)
+                    else:
+                        self.send_parallel(self.TOO_LATE_CORRECT_RIGHT)
+                    self.markerSent = True
+                elif self.keeperPos != 'middle':
+                    if self.direction=='left':
+                        self.send_parallel(self.TOO_LATE_INCORRECT_KR_TL)
+                    else:
+                        self.send_parallel(self.TOO_LATE_INCORRECT_KL_TR)
+                    self.ball = pygame.transform.scale(self.ball_miss, self.ballSize)
+                    self.markerSent = True
                     
+            if self.continueAfterMissElapsed>self.playTimeAfterMiss:
+                if self.keeperPos!='middle' and self.keeperPos!=self.direction:
+                    self.false = True
+                else:
+                    self.miss = True
+                return
         else:
             # Calculate the new ball position
             self.ballX = self.ballX+stepX     
             self.ballY = self.ballY+self.stepY
             self.ballMoveRect = self.ball.get_rect(midbottom=(self.ballX, self.ballY))
-                
+                        
         self.draw_all()
                                                                
 
@@ -453,8 +446,8 @@ class GoalKeeper(Feedback):
         One tick of the Hit/Miss loop.
         """ 
         if self.hitMissElapsed==0:
-            if self.continueAfterMiss and self.continueAfterMissElapsed!=0:
-                self.send_parallel(self.END_OF_RED_CIRCLE)
+            #if self.continueAfterMiss and self.continueAfterMissElapsed!=0:
+            #    self.send_parallel(self.END_OF_RED_CIRCLE)
             self.continueAfterMissElapsed = 0
             self.completedTrials += 1; 
             self.firstTickOfTrial = True
@@ -688,6 +681,7 @@ class GoalKeeper(Feedback):
         tangens = 1.0 * self.keeperRange / self.distBallKeeper
         self.stepX = tangens * self.stepY
         self.speed = math.sqrt(self.stepX**2+self.stepY**2)
+        self.totalTrialTicks = int(self.distBallKeeper/self.stepY) 
 
         if not self.resized:
             # init helper rectangle for keeper (deep copy)
@@ -697,11 +691,9 @@ class GoalKeeper(Feedback):
             self.barRect = self.barRect_init
             self.barAreaRect = None
             self.kMR, self.bMR = None, None
-            self.nrKeeperChange = False
-            self.nrKeeperChanged = False
             self.keeperChange = False
+            self.keeperChanged = False
         else:
-            self.distBallKeeper = self.keeperSurface-self.ballRect.bottom
             self.ballX = (1.0 * self.keeperRange / self.oldKeeperRange) * self.oldBallX 
             self.ballY = (1.0 * self.keeperSurface / self.oldKeeperSurface) * self.oldBallY 
             self.ballMoveRect = self.ball.get_rect(midbottom=(self.ballX, self.ballY))
