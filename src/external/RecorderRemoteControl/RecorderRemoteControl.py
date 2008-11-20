@@ -21,6 +21,7 @@
 
 import win32com.client
 import pythoncom
+import time
 
 global recorder
 
@@ -54,6 +55,15 @@ def viewTestSignal():
 def startRecording(filename):
     """ The filename has to be an absolute path."""
     createRecorder()
+    recorder.Acquisition.StartRecording(filename)
+    closeRecorder()
+
+def startImpRecording(filename):
+    """ The filename has to be an absolute path."""
+    createRecorder()
+    recorder.Acquisition.ViewImpedance()
+    time.sleep(10)    
+    recorder.Acquisition.ViewData()
     recorder.Acquisition.StartRecording(filename)
     closeRecorder()
 

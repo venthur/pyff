@@ -25,7 +25,9 @@ def pre_stop(self):
     
 def post_stop(self): pass
 
-def pre_quit(self):  pass
+def pre_quit(self):
+    stop_bv_recorder(self)
+
 def post_quit(self): pass
 ################################################################################
 # /Feedback Controller Hooks
@@ -56,9 +58,17 @@ def start_bv_recorder(self):
         return
     
     filename = os.sep.join([str(todayDir), str(basename) + str(vbCode)])
+    
+    suffix = ""
+    num = 2
+    while os.path.exists(filename+suffix+".eeg"):
+        suffix = "%02i" % num
+        num += 1
+    filename = filename + suffix + ".eeg"
+        
     self.logger.debug("Recoding to file: %s" % filename)
     try:
-        rcc.startRecording(filename)
+        rcc.startImpRecording(filename)
     except Exception, e:
         self.logger.error("Unable to start recording:")
         self.logger.error(str(e))
