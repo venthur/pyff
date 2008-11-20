@@ -32,7 +32,6 @@ class TrivialPong(MainloopFeedback):
         
     def init(self):
         self.FPS = 60
-        self.pause, self.stopping, self.stop = False, False, False
         self.val = 0.0
         
     def pre_mainloop(self):

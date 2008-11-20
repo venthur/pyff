@@ -19,28 +19,26 @@
 
 """MovingRhomb Stimulus."""
 
-from FeedbackBase.Feedback import Feedback
+from FeedbackBase.MainloopFeedback import MainloopFeedback
 
 import pygame
 
 import math
 import random
 
-class MovingRhomb(Feedback):
+class MovingRhomb(MainloopFeedback):
 
     LEFT, RIGHT, TOP, BOTTOM = 1, 2, 3, 4
 
 # From Feedback ################################################################
 
-    def on_init(self):
-        self.play, self.pause, self.stopping, self.stop = False, False, False, False
-        
+    def init(self):
         self.transparent = (0, 0, 0)
         self.rhomb_bg_color = (255, 255, 255)
         self.rhomb_fg_color = (255, 0, 0)
 
-        self.w, self.h = 1600, 1200
-        self.FPS = 60
+        self.w, self.h = 800, 600
+        self.FPS = 30
         
         self.angle = 173
         self.duration = 1000.0 # 3s from left to right
@@ -50,69 +48,45 @@ class MovingRhomb(Feedback):
         # TODO: move this to init_graphics 
         self.v = (self.w * 1000) / (self.duration * self.FPS)
         
-    def on_play(self):
+    def pre_mainloop(self):
         self.init_pygame()
         self.init_graphics()
         self.stopping, self.stop = False, False
-        
         # for now...
         self.rhomb = self.rhomb_left
-        self.main_loop()
+    
+    def post_mainloop(self):
         pygame.quit()
-    
-    def on_pause(self):
-        self.pause = not self.pause
-    
-    def on_quit(self):
-        self.stopping = True
-        while not self.stop:
-            pass
-        #pygame.quit() -- moved to end of on_play in oder to quit it in same thread as it was started
-    
-# /From Feedback ###############################################################
-
-    def main_loop(self):
-        self.clock.tick(self.FPS)
-        while not self.stopping:
-            self.process_pygame_events()
             
-            pygame.time.wait(10)
-            self.elapsed = self.clock.tick(self.FPS)
-            #print self.elapsed
-            self.tick()
-        self.stop = True
-
     def tick(self):
-        if self.pause:
-            self.pause_tick()
-        else:
-            self.trial_tick()
-            
-    def pause_tick(self):
-        pass
-    
-    def trial_tick(self):
+        self.process_pygame_events()
+        pygame.time.wait(10)
+        self.elapsed = self.clock.tick(self.FPS)
+
         self.screen.blit(self.background, self.background.get_rect()) #, self.rhomb_rect)
 
         # calculate the new position
         speed_v = self.calc_speed_vector(self.v, self.angle)
         self.rhomb_rect.move_ip(speed_v)
-        
-
-       
         if self.rhomb_rect.left < 0 or self.rhomb_rect.right > self.w:
             self.angle = self.calc_reflection(self.angle, MovingRhomb.LEFT)
             self.angle += 2 * (random.random() - 0.5) * self.random_angle
-        
         if self.rhomb_rect.top < 0 or self.rhomb_rect.bottom > self.h:
             self.angle = self.calc_reflection(self.angle, MovingRhomb.TOP)
             self.angle += 2 * (random.random() - 0.5) * self.random_angle
-
         # paint it
         self.screen.blit(self.rhomb, self.rhomb_rect)
-                        
         # for hwsurfaces and doublebuf
         pygame.display.flip()
+
+
+    def pause_tick(self):
+        self.process_pygame_events()
+        pygame.time.wait(10)
+        self.elapsed = self.clock.tick(self.FPS)
+
+    
+# /From Feedback ###############################################################
 
 
     def calc_speed_vector(self, v, angle):
@@ -135,8 +109,8 @@ class MovingRhomb(Feedback):
         Set up pygame and the screen and the clock.
         """
         pygame.init()
-        #size = (self.w, self.h)
-        size = pygame.display.list_modes()[0]
+        size = (self.w, self.h)
+        #size = pygame.display.list_modes()[0]
         self.screen = pygame.display.set_mode(size, pygame.HWSURFACE | pygame.DOUBLEBUF) #pygame.HWSURFACE | pygame.FULLSCREEN | pygame.DOUBLEBUF) # 
         self.clock = pygame.time.Clock()
         #print pygame.display.get_driver()
@@ -149,8 +123,8 @@ class MovingRhomb(Feedback):
         """
         
         # Initialize some usefull variables
-        self.w = self.screen.get_width()
-        self.h = self.screen.get_height()
+        #self.w = self.screen.get_width()
+        #self.h = self.screen.get_height()
     
         # Scale some stuff
         rhomb_w = self.w / 20
@@ -201,18 +175,11 @@ class MovingRhomb(Feedback):
             if event.type == pygame.VIDEORESIZE:
                 self.screen = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
                 self.init_graphics()
+
                 
 if __name__ == '__main__':
-    try:
-        import threading, time, traceback
-        mr = MovingRhomb()
-        mr.on_init()
-
-        t = threading.Timer(15, mr.on_quit)
-        t.start()
-        
-        mr.on_play()
-    except:
-        print traceback.format_exc()
-        pygame.quit()
-
+    import logging
+    logging.basicConfig(level=logging.DEBUG)    
+    mr = MovingRhomb()
+    mr.on_init()
+    mr.on_play()
