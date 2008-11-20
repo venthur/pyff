@@ -21,10 +21,10 @@
 
 """BrainPong BCI Feedback."""
 
-from FeedbackBase.Feedback import Feedback
+from FeedbackBase.MainloopFeedback import MainloopFeedback
 import pygame, random, sys, os
 
-class BrainPong(Feedback):
+class BrainPong(MainloopFeedback):
 
     # TRIGGER VALUES FOR THE PARALLELPORT (MARKERS)
     START_EXP, END_EXP = 100, 101
@@ -33,11 +33,8 @@ class BrainPong(Feedback):
     HIT, MISS = 11, 21 
     SHORTPAUSE_START, SHORTPAUSE_END = 249, 250
 
-################################################################################
-# Derived from Feedback
-#vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 
-    def on_init(self):
+    def init(self):
         """
         Initializes variables etc., but not pygame itself.
         """
@@ -96,76 +93,34 @@ class BrainPong(Feedback):
         self.hitstr = "Hit: "
         self.x_transl = 0.8
 
-    def on_play(self):
+
+    def pre_mainloop(self):
         """
         Initialize pygame, the graphics and start the game.
         """
         #self.logger.debug("on_play")
         self.init_pygame()
         self.init_graphics()
-        self.quit = False
-        self.quitting = False
-        self.main_loop()
 
 
-    def on_pause(self):
-        """
-        Flip the pause variable.
-        """
-        #self.logger.debug("on_pause")
-        self.pause = not self.pause
-        self.showsPause = False
-
-
-    def on_quit(self):
-        """
-        Quit the main loop indirectly by setting quit, wait for the mainloop
-        until it has quit and close pygame.
-        """
-        #self.logger.debug("on_quit")
-        self.quitting = True
-        #self.logger.debug("Waiting for main loop to quit...")
-        while not self.quit:
-            pygame.time.wait(100)
+    def post_mainloop(self):
         #self.logger.debug("Quitting pygame.")
         self.send_parallel(self.END_EXP)
         pygame.quit()
 
 
-    def on_control_event(self, data):
-        #self.logger.debug("on_control_event: %s" % str(data))
-        self.f = data["cl_output"]
-
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-# Derived from Feedback
-################################################################################
-
-    def main_loop(self):
-        """
-        Main Loop. Represents the loop which refreshes the screen x times per
-        second. Runs forever or until the GUI emits the stop signal.
-        """
-        # just to reset the time when tick was called last time...
-        self.clock.tick(self.FPS)
-        while not self.quitting:
-            self.process_pygame_events()
-            pygame.time.wait(10)
-            self.elapsed = self.clock.tick(self.FPS)
-            self.tick()
-        #self.logger.debug("Left the main loop.")
-        self.quit = True
-
-
     def tick(self):
-        """
-        One tick of the main loop.
-        
-        Decides in which state the feedback currently is and calls the appropriate
-        tick method.
-        """
-        if self.pause:
-            self.pause_tick()
-        elif self.countdown:
+        self.process_pygame_events()
+        pygame.time.wait(10)
+        self.elapsed = self.clock.tick(self.FPS)
+
+
+    def pause_tick(self):
+        self.do_print("Pause", self.fontColor, self.size/6)
+
+
+    def play_tick(self):
+        if self.countdown:
             self.countdown_tick()
         elif self.hit or self.miss:
             self.miss_tick()
@@ -175,6 +130,11 @@ class BrainPong(Feedback):
             self.short_pause_tick()
         else:
             self.trial_tick()
+
+
+    def on_control_event(self, data):
+        #self.logger.debug("on_control_event: %s" % str(data))
+        self.f = data["cl_output"]
     
     
     def trial_tick(self):
@@ -270,15 +230,6 @@ class BrainPong(Feedback):
             center = (self.wallW+self.playWidth*self.x_transl, self.size/20)
         
         self.draw_all(True)
-        
-    def pause_tick(self):
-        """
-        One tick of the pause loop.
-        """
-        if self.showsPause:
-            return
-        self.do_print("Pause", self.fontColor, self.size/6)
-        self.showsPause = True
 
         
     def short_pause_tick(self):
