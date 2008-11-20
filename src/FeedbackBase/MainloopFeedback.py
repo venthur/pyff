@@ -43,11 +43,14 @@ class MainloopFeedback(Feedback):
         post_mainloop
         tick
         pause_tick
+        play_tick
     
     the class takes care of the typical steps needed to run a feedback with a
-    mainloop, starting, pausing, stopping, quiting, etc. While running it's 
-    internal mainloop it calls either tick or pause_tick repeadingly, all you 
-    have to do is to implement this methods.
+    mainloop, starting, pausing, stopping, quiting, etc. 
+    
+    While running it's internal mainloop it calls tick repeatedly. Additionally
+    it calls either play_tick or pause_tick repeatedly afterwards, depending
+    if the Feedback is paused or not.
     """
 
     def on_init(self):
@@ -73,14 +76,20 @@ class MainloopFeedback(Feedback):
             pass
 
     def __mainloop(self):
-        """Calls either tick or pause_tick repeatetly."""
+        """
+        Calls tick repeatedly. 
+        
+        Additionally it calls either pause_tick or
+        play_tick, depending if the Feedback is paused or not.
+        """
         self.__running = True
         self.__inMainloop = True
         while self.__running:
+            self.tick()
             if self.__paused:
                 self.pause_tick()
             else:
-                self.tick()
+                self.play_tick()
         self.__inMainloop = False
         
     def init(self):
@@ -100,14 +109,20 @@ class MainloopFeedback(Feedback):
             
     def tick(self):
         """
-        Called repeatedly in the mainloop, but not when the Feedback is 
-        paused.
+        Called repeatedly in the mainloop no matter if the Feedback is paused
+        or not.
         """
         pass
     
     def pause_tick(self):
         """
         Called repeatedly in the mainloop if the Feedback is paused.
+        """
+        pass
+    
+    def play_tick(self):
+        """
+        Called repeatedly in the mainloop if the Feedback is not paused.
         """
         pass
         

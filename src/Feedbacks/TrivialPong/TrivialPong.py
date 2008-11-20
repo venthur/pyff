@@ -50,10 +50,12 @@ class TrivialPong(MainloopFeedback):
     
     def post_mainloop(self):
         pygame.quit()
-            
+        
     def tick(self):
         self.clock.tick(self.FPS)
         pygame.event.pump()
+            
+    def play_tick(self):
         w_half = self.screen.get_width() / 2
         pos = w_half + w_half * self.val
         self.barrect.center = pos, self.height - 20
@@ -73,10 +75,6 @@ class TrivialPong(MainloopFeedback):
         self.screen.blit(self.ball, self.ballrect)
         self.screen.blit(self.bar, self.barrect)
         pygame.display.flip()
-        
-    def pause_tick(self):
-        self.clock.tick(self.FPS)
-        pygame.event.pump()
 
 
 if __name__ == "__main__":

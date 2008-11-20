@@ -57,14 +57,14 @@ class MovingRhomb(MainloopFeedback):
     
     def post_mainloop(self):
         pygame.quit()
-            
+        
     def tick(self):
         self.process_pygame_events()
         pygame.time.wait(10)
         self.elapsed = self.clock.tick(self.FPS)
-
+            
+    def play_tick(self):
         self.screen.blit(self.background, self.background.get_rect()) #, self.rhomb_rect)
-
         # calculate the new position
         speed_v = self.calc_speed_vector(self.v, self.angle)
         self.rhomb_rect.move_ip(speed_v)
@@ -78,12 +78,6 @@ class MovingRhomb(MainloopFeedback):
         self.screen.blit(self.rhomb, self.rhomb_rect)
         # for hwsurfaces and doublebuf
         pygame.display.flip()
-
-
-    def pause_tick(self):
-        self.process_pygame_events()
-        pygame.time.wait(10)
-        self.elapsed = self.clock.tick(self.FPS)
 
     
 # /From Feedback ###############################################################
