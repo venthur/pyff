@@ -22,6 +22,7 @@ feedbacks.
 
 import logging
 import threading
+import datetime
 
 
 class Feedback(object):
@@ -228,6 +229,8 @@ class Feedback(object):
     #
     def send_parallel(self, data, reset=True):
         """Sends the data to the parallel port."""
+        # FIXME: use logger instead
+        print "TRIGGER %s: %s" % (str(datetime.datetime.now()), str(data))
         if self.__pport:
             self.__pport.setData(data)
             if reset:
