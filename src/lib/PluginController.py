@@ -25,11 +25,10 @@ class PluginController(object):
     """Finds, loads and unloads plugins."""
     
 
-    def __init__(self, plugindirs, baseclass, initparams=None):
+    def __init__(self, plugindirs, baseclass):
         self.logger = logging.getLogger("PluginController")
         self.plugindirs = map(os.path.normpath, map(os.path.abspath, plugindirs))
         self.baseclass = baseclass
-        self.initparams = initparams
         self.availablePlugins = dict()
         self.oldModules = None
         
@@ -91,8 +90,8 @@ class PluginController(object):
         if not self.availablePlugins.has_key(name):
             raise ImportError("Plugin %s not available" % str(name))
         try:
-            mod = __import__(name, fromlist=[None])
-            plugin = getattr(mod, name)(self.initparams) if self.initparams else getattr(mod, name)()
+            mod = __import__(self.availablePlugins[name], fromlist=[None])
+            return getattr(mod, name)
         except:
             raise ImportError("Unable to load Plugin %s" % str(name))
 

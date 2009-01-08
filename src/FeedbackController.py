@@ -20,6 +20,7 @@
 
 from lib import bcinetwork
 from lib import bcixml
+from lib import PluginController
 from FeedbackBase.Feedback import Feedback
 
 try:
@@ -64,8 +65,11 @@ class FeedbackController(object):
                 sys.path.append(fbpath)
             else:
                 self.logger.warning("Additional Feedback path does not exist!")
-        self.additionalFBPath = fbpath
-        self.feedbacks = self.get_feedbacks()
+        fbPath = [os.path.abspath("./Feedbacks")]
+        if fbpath: fbPath.append(os.path.abspath(fbpath)) 
+        self.pluginController = PluginController.PluginController(fbPath, Feedback)
+        self.pluginController.find_plugins()
+        self.feedbacks = self.pluginController.availablePlugins.keys()
         self.logger.info("Registered the following Feedbacks:")
         for i in self.feedbacks:
             self.logger.info("\t%s" % str(i))
@@ -193,7 +197,7 @@ class FeedbackController(object):
         if cmd == bcixml.CMD_GET_FEEDBACKS:
             ip, port = signal.peeraddr[0], bcinetwork.GUI_PORT
             bcinetw = bcinetwork.BciNetwork(ip, port)
-            answer = bcixml.BciSignal({"feedbacks" : self.feedbacks.keys()}, None, bcixml.INTERACTION_SIGNAL)
+            answer = bcixml.BciSignal({"feedbacks" : self.feedbacks}, None, bcixml.INTERACTION_SIGNAL)
             self.logger.debug("Sending %s to %s:%s." % (str(answer), str(ip), str(port)))
             bcinetw.send_signal(answer)
             return
@@ -233,7 +237,11 @@ class FeedbackController(object):
             self.logger.info("Received SEND_INIT signal")
             # Working with old Feedback!
             self.feedback._Feedback__on_quit()
-            self.load_feedback()
+            name = getattr(self.feedback, "_feedback")
+            try:
+                self.feedback = self.pluginController.load_plugin(name)(self.pp)
+            except:
+                self.feedback = Feedback(self.pp)
             # Proably a new one!
             self.pre_init()
             self.feedback._Feedback__on_init()
@@ -241,97 +249,6 @@ class FeedbackController(object):
             self.feedback._Feedback__on_interaction_event(signal.data)
         else:
             self.logger.info("Received generic interaction signal")
-
-            
-    def test_feedback(self, root, file):
-        # remove trailing .py if present
-        if file.lower().endswith(".py"):
-            file2 = file[:-3]
-        root = os.path.normpath(root)
-        root = root.replace(os.sep, ".")
-        if self.additionalFBPath:
-            modPath = self.additionalFBPath.replace(os.sep, ".")
-            root = root.replace(modPath, "")
-        while root.startswith("."):
-            root = root[1:]
-        if not root.endswith(".") and not file2.startswith("."):
-            module = root + "." + file2
-        else:
-            module = root + file2
-        valid, name = False, file2
-        if name == "__init__":
-            return False, name, module
-        mod = None
-        try:
-            mod = __import__(module, fromlist=[None])
-            #print "1/3: loaded module (%s)." % str(module)
-            fb = getattr(mod, name)(None)
-            #print "2/3: loaded feedback (%s)." % str(file2)
-            if isinstance(fb, Feedback):
-                #print "3/3: feedback is valid Feedback()"
-                valid = True
-        except:
-            self.logger.debug("%s from module %s is no valid Feedback:" % (name, module))
-            self.logger.debug(traceback.format_exc())
-        del mod
-        return valid, name, module
-
-    
-    def get_feedbacks(self):
-        """Returns the valid feedbacks in this directory."""
-        feedbacks = {}
-        for root, dirs, files in os.walk("Feedbacks"):
-            for file in files:
-                if file.lower().endswith(".py"):
-                    # ok we found a candidate, check if it's a valid feedback
-                    isFeedback, name, module = self.test_feedback(root, file)
-                    if isFeedback:
-                        feedbacks[name] = module
-        if self.additionalFBPath:
-            for root, dirs, files in os.walk(self.additionalFBPath):
-                for file in files:
-                    if file.lower().endswith(".py"):
-                        # ok we found a candidate, check if it's a valid feedback
-                        isFeedback, name, module = self.test_feedback(root, file)
-                        if isFeedback:
-                            feedbacks[name] = module
-        
-        return feedbacks
-
-
-    def load_feedback(self):
-        """
-        Tries to find and load the feedback in the Feedbacks package. If the
-        desired feedback does not exist, load the dummy feedback as fallback.
-        """
-        name = getattr(self.feedback, "_feedback")
-        module = self.feedbacks[name]
-        
-        self.logger.debug("Trying to load feedback: %s from module: %s." % (name, module))
-        
-        try:
-            # check if desired module is alreadty loaded, if so just reload it
-            if sys.modules.has_key(module):
-                self.logger.debug("Feedback module %s already loaded, trying to reload it." % str(module))
-                mod = reload(sys.modules[module])
-            else:
-                self.logger.debug("Loading module %s for the first time." % str(module))
-                mod = __import__(module, fromlist=[None])
-            self.feedback = getattr(mod, name)(self.pp)
-        except:
-            self.logger.warning("Unable to load Feedback, falling back to dummy.")
-            self.logger.warning(traceback.format_exc())
-            self.feedback = Feedback(self.pp)
-            
-        # TODO: Evalutate if this is really a good idea to wrap this method
-        # arounda all Feedback-methods called by the Feedback Controller
-#    def call_method_safely(self, method):
-#        """A wrapper which encapsulates the method call in a try block."""
-#        try:
-#            method()
-#        except:
-#            self.logger.error("Caught an exception running the method, here is the stack trace. Moving on.")
-#            self.logger.error(traceback.format_exc())
 
 
 class Dispatcher(asyncore.dispatcher):
