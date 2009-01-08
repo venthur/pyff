@@ -42,6 +42,7 @@ class PluginController(object):
                 sys.path.append(dir)
             else:
                 print "Path %s does not exist!"
+            for i in sys.path: print i
                 
         
 
@@ -50,6 +51,11 @@ class PluginController(object):
         """Test if given module contains a valid plugin instance.
         
         Returns None if not or (name, modulename) otherwise."""
+
+        for plugindir in self.plugindirs:
+            if root.startswith(plugindir):
+                root = root.replace(plugindir, "")
+        
         module = root + os.sep + filename
         if module.lower().endswith(".py"):
             module = module[:-3]
