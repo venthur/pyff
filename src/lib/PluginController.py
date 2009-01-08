@@ -1,3 +1,24 @@
+# PluginController.py - 
+# Copyright (C) 2009  Bastian Venthur
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+
+import sys
+import os
+
 class PluginController(object):
     """Finds, loads and unloads plugins."""
     
@@ -8,11 +29,11 @@ class PluginController(object):
         self.availablePlugins = dict()
         self.oldModules = None
 
-    def test_plugin(self, root, file):
+    def test_plugin(self, root, filename):
         """Test if given module contains a valid plugin instance.
         
         Returns None if not or (name, modulename) otherwise."""
-        module = root + os.sep + file
+        module = root + os.sep + filename
         if module.lower().endswith(".py"):
             module = module[:-3]
         module = os.path.normpath(module)
@@ -43,11 +64,11 @@ class PluginController(object):
         for plugindir in self.plugindirs:
             for root, dirs, files in os.walk(plugindir):
                 print root, dirs, files
-                for file in files:
-                    if file.lower().endswith(".py"):
+                for filename in files:
+                    if filename.lower().endswith(".py"):
                         # ok we found a candidate, check if it's a valid feedback
                         try:
-                            name, module = self.test_plugin(root, file)
+                            name, module = self.test_plugin(root, filename)
                             self.availablePlugins[name] = module
                         except ImportError:
                             pass
