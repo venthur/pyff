@@ -19,43 +19,31 @@
 import sys
 import os
 import traceback
+import logging
 
 class PluginController(object):
-    
-    #
-    # TODO: Problem with path
-    #
-    
     """Finds, loads and unloads plugins."""
     
+
     def __init__(self, plugindirs, baseclass, initparams=None):
-        self.plugindirs = plugindirs
+        self.logger = logging.getLogger("PluginController")
+        self.plugindirs = map(os.path.normpath, map(os.path.abspath, plugindirs))
         self.baseclass = baseclass
         self.initparams = initparams
         self.availablePlugins = dict()
         self.oldModules = None
         
-        # FIXME: Does not quite work as expected
         for dir in plugindirs:
             if os.path.exists(dir):
-                dir = os.path.normpath(dir)
                 sys.path.append(dir)
             else:
-                print "Path %s does not exist!"
-            for i in sys.path: print i
-                
-        
+                self.logger.warning("Path %s does not exist, ignoring it" % str(dir))
 
 
     def test_plugin(self, root, filename):
         """Test if given module contains a valid plugin instance.
         
         Returns None if not or (name, modulename) otherwise."""
-
-        for plugindir in self.plugindirs:
-            if root.startswith(plugindir):
-                root = root.replace(plugindir, "")
-        
         module = root + os.sep + filename
         if module.lower().endswith(".py"):
             module = module[:-3]
@@ -64,25 +52,20 @@ class PluginController(object):
         while module.startswith("."):
             module = module[1:]
         
-#        # WTF? 
-#        if self.additionalFBPath:
-#            modPath = self.additionalFBPath.replace(os.sep, ".")
-#            root = root.replace(modPath, "")
-        
         # try to import
         try:
             name = module.split(".")[-1]
-            print "***", module, name
             mod = __import__(module, fromlist=[None])
-            #print "1/3: loaded module (%s)." % str(module)
+            self.logger.debug("1/3: loaded module (%s)." % str(module))
             plugin = getattr(mod, name)(None)
-            #print "2/3: loaded feedback (%s)." % str(name)
+            self.logger.debug("2/3: loaded plugin (%s)." % str(name))
             if isinstance(plugin, self.baseclass):
-                #print "3/3: feedback is valid Feedback()"
+                self.logger.debug("3/3: plugin is valid plugin class.")
                 return name, module
         except:
-            print traceback.format_exc()
+            self.logger.debug(traceback.format_exc())
             raise ImportError("Invalid Plugin")
+
 
     def find_plugins(self):
         """Returns a list of available plugins."""
@@ -92,10 +75,13 @@ class PluginController(object):
                     if filename.lower().endswith(".py"):
                         # ok we found a candidate, check if it's a valid feedback
                         try:
+                            if root.startswith(plugindir):
+                                root = root.replace(plugindir, "", 1)
                             name, module = self.test_plugin(root, filename)
                             self.availablePlugins[name] = module
                         except ImportError:
                             pass
+
         
     def load_plugin(self, name):
         """Loads the given plugin and unloads possibly sooner loaded plugins."""
@@ -109,6 +95,7 @@ class PluginController(object):
             plugin = getattr(mod, name)(self.initparams) if self.initparams else getattr(mod, name)()
         except:
             raise ImportError("Unable to load Plugin %s" % str(name))
+
     
     def unload_plugin(self):
         """Unload currently loaded plugin."""
@@ -118,14 +105,13 @@ class PluginController(object):
             if not self.oldModules.haskey(mod):
                 del sys.modules[mod]
         self.oldModules = None
-        
 
         
 def main():
     import FeedbackBase.Feedback
     pc = PluginController(["../Feedbacks", "../../../pyff-tu/src/Feedbacks"], FeedbackBase.Feedback.Feedback)
     pc.find_plugins()
-    for key in pc.availablePlugins: print key
+    for key in pc.availablePlugins: print key, pc.availablePlugins[key]
 
 if __name__ == "__main__":
     main()
