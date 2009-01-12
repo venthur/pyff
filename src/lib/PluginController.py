@@ -21,6 +21,7 @@ import os
 import traceback
 import logging
 
+
 class PluginController(object):
     """Finds, loads and unloads plugins."""
     

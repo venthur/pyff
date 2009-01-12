@@ -17,10 +17,13 @@
 
 """Stimulus-Only Feedback."""
 
-from FeedbackBase.Feedback import Feedback
-import soya
+
 import math
 import time
+
+import soya
+
+from FeedbackBase.Feedback import Feedback
 
 
 class MovingRhombGL(Feedback):

@@ -19,9 +19,12 @@
 # 2008/08/28 - Max Sagebaum
 #               - File created
 
+
+import time
+
 import win32com.client
 import pythoncom
-import time
+
 
 global recorder
 

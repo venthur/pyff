@@ -18,15 +18,6 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-from lib import bcinetwork
-from lib import bcixml
-from lib import PluginController
-from FeedbackBase.Feedback import Feedback
-
-try:
-    import parallel
-except ImportError:
-    print "Unable to import parallel module, have you pyparallel installed?"
 
 import socket
 import asyncore
@@ -36,6 +27,17 @@ import sys
 import os
 import traceback
 from optparse import OptionParser
+
+try:
+    import parallel
+except ImportError:
+    print "Unable to import parallel module, have you pyparallel installed?"
+
+from lib import bcinetwork
+from lib import bcixml
+from lib import PluginController
+from FeedbackBase.Feedback import Feedback
+
 
 class FeedbackController(object):
     def __init__(self, plugin=None, fbpath=None):

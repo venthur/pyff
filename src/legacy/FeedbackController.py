@@ -17,10 +17,6 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-from UdpDecoder import *
-from Feedback import Feedback
-
-import parallel
 
 import logging
 import socket
@@ -29,6 +25,11 @@ import Queue
 import traceback
 import sys
 from optparse import OptionParser
+
+import parallel
+
+from UdpDecoder import *
+from Feedback import Feedback
 
 
 # Port and Maximum Package Size for the Interaction Signal

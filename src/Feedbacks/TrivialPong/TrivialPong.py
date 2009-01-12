@@ -19,10 +19,12 @@
 
 """Trivial Pong BCI Feedback."""
 
-from FeedbackBase.MainloopFeedback import MainloopFeedback
+
+import os
 
 import pygame
-import os
+
+from FeedbackBase.MainloopFeedback import MainloopFeedback
 
 
 class TrivialPong(MainloopFeedback):

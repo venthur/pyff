@@ -21,8 +21,15 @@
 
 """BrainPong BCI Feedback."""
 
+
+import random
+import sys
+import os
+
+import pygame
+
 from FeedbackBase.MainloopFeedback import MainloopFeedback
-import pygame, random, sys, os
+
 
 class BrainPong(MainloopFeedback):
 

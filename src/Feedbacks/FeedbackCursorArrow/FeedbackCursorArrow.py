@@ -21,8 +21,15 @@
 
 """CursorArrow BCI Feedback."""
 
+
+import random
+import sys
+import math
+
+import pygame
+
 from FeedbackBase.MainloopFeedback import MainloopFeedback
-import pygame, random, sys, math
+
 
 class FeedbackCursorArrow(MainloopFeedback):
 

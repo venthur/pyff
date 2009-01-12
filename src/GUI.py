@@ -17,13 +17,16 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+
 import sys
 import logging
 
 from PyQt4 import QtCore, QtGui
 from gui.gui import Ui_MainWindow
+
 from lib import bcinetwork
 from lib import bcixml
+
 
 NORMAL_COLOR = QtCore.Qt.black
 MODIFIED_COLOR = QtCore.Qt.gray

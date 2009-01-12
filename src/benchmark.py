@@ -20,12 +20,12 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 
-from lib import bcinetwork
-
 import time
 import socket
 
 from pylab import *
+
+from lib import bcinetwork
 
 
 CONTROL_SIGNAL = """

@@ -20,6 +20,7 @@ import unittest
 
 from FeedbackBase.Feedback import Feedback
 
+
 class FeedbackTestCase(unittest.TestCase):
     
     def testFeedbackInitWithoutArguments(self):

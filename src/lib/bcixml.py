@@ -17,6 +17,7 @@
 
 """Encoding and decoding of bci-xml packages."""
 
+
 import logging
 import sys
 from xml.dom import minidom, Node

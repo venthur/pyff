@@ -20,15 +20,15 @@
 """A BCI-system emulator."""
 
 
-from lib import bcinetwork
-from lib.bcinetwork import BciNetwork
-from lib import bcixml
-from lib.bcixml import BciSignal
-
 import cmd
 import threading
 import math
 import time
+
+from lib import bcinetwork
+from lib.bcinetwork import BciNetwork
+from lib import bcixml
+from lib.bcixml import BciSignal
 
 
 class Emulator(cmd.Cmd):

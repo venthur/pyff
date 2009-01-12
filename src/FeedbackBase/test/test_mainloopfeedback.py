@@ -21,6 +21,7 @@ from threading import Thread
 
 from FeedbackBase.MainloopFeedback import MainloopFeedback
 
+
 class MainloopFeedbackTestCase(unittest.TestCase):
     
     def setUp(self):

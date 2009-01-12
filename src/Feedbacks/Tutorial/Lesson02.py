@@ -3,9 +3,11 @@
 #  - Pausing and unpausing it
 #  - Quitting the main loop
 
-from FeedbackBase.Feedback import Feedback
 
 import time
+
+from FeedbackBase.Feedback import Feedback
+
 
 class Lesson02(Feedback):
     

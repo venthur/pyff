@@ -15,10 +15,12 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-from lib import bcixml
 
 import unittest
 from xml.dom import minidom, Node
+
+from lib import bcixml
+
 
 class BcixmlTestCase(unittest.TestCase):
     

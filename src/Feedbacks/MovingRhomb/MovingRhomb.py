@@ -19,12 +19,14 @@
 
 """MovingRhomb Stimulus."""
 
-from FeedbackBase.MainloopFeedback import MainloopFeedback
-
-import pygame
 
 import math
 import random
+
+import pygame
+
+from FeedbackBase.MainloopFeedback import MainloopFeedback
+
 
 class MovingRhomb(MainloopFeedback):
 

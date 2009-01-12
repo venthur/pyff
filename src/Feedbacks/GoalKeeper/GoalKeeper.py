@@ -20,8 +20,18 @@
 
 """GoalKeeper BCI Feedback."""
 
+
+import random
+import sys
+import math
+import random
+import os
+import time
+
+import pygame
+
 from FeedbackBase.MainloopFeedback import MainloopFeedback
-import pygame, random, sys, math, random, os, time
+
 
 class GoalKeeper(MainloopFeedback):
 
