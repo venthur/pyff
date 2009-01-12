@@ -3,7 +3,7 @@
 # As we all know - there are "lies, damned lies, and benchmarks".
 
 # benchmark.py -
-# Copyright (C) 2008  Bastian Venthur
+# Copyright (C) 2008-2009  Bastian Venthur
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by

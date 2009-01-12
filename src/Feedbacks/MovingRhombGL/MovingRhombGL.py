@@ -1,5 +1,5 @@
 # MovingRhombGL.py - MovingRhomb implementation in OpenGL using Soya 3D
-# Copyright (C) 2007-2008  Bastian Venthur
+# Copyright (C) 2007-2009  Bastian Venthur
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
