@@ -86,11 +86,11 @@ class FeedbackCursorArrow(MainloopFeedback):
         self.logger.debug("on_init")
         self.send_parallel(self.INIT_FEEDBACK)
         
-        self.durationUntilBorder = 2000
-        self.durationPerTrial = 10000
+        self.durationUntilBorder = 1000
+        self.durationPerTrial = 4000
         self.durationIndicateGoal = 1000
-        self.trials = 5
-        self.pauseAfter = 5
+        self.trials = 20
+        self.pauseAfter = 4
         self.pauseDuration = 9000
         self.availableDirections =  ['right', 'foot']
         self.FPS =  50
@@ -188,16 +188,16 @@ class FeedbackCursorArrow(MainloopFeedback):
         """
         if self.pause:
             self.pause_tick()
+        elif self.hit or self.miss:
+            self.hit_miss_tick()
         elif self.gameover:
             self.gameover_tick()
         elif self.countdown:
             self.countdown_tick()
-        elif self.indicateGoal:
-            self.indicate_goal_tick()
-        elif self.hit or self.miss:
-            self.hit_miss_tick()
         elif self.shortPause:
             self.short_pause_tick()
+        elif self.indicateGoal:
+            self.indicate_goal_tick()
         else:
             self.trial_tick()
 
@@ -222,14 +222,14 @@ class FeedbackCursorArrow(MainloopFeedback):
             self.counter = 1
             self.nDampTicks = 0            
             self.reset_punchline_color()
-            self.cursorTransition = False
+            self.cursorTransition = False           
             
         # Teste ob zeit fuer alten Trial abgelaufen ist
         if self.trialElapsed >= self.durationPerTrial:
             self.check_for_hit_miss(); return
         
         # Calculate motion of cursor
-        self.f = (self.targetDirection-0.5)*2 * self.ran   #TODO: remove HACK
+        self.f = (self.targetDirection-0.5)*2   #TODO: remove HACK
         
         if not self.dampedMovement:
             self.pos = (self.f * self.trialElapsed * self.size * 0.5) / self.durationPerTrial
@@ -262,10 +262,12 @@ class FeedbackCursorArrow(MainloopFeedback):
         Indicate goal before start of trial (i.e. before position control).
         """
         if self.indicateGoalElapsed==0:
-            self.targetDirection = random.randint(0,1)
-            self.ran = (random.randint(0,1)-0.5)*2
+            self.targetDirection = self.targetDirections[self.completedTrials % self.pauseAfter]
             self.myarrow = pygame.transform.rotate(self.arrow, self.directions[self.availableDirections[self.targetDirection]])
             self.myarrowRect = self.myarrow.get_rect(center=self.screen.get_rect().center)
+            self.cursorRect.center = self.screen.get_rect().center
+            self.reset_punchline_color()
+            
             if self.targetDirection==0:
                 self.send_parallel(self.TARGET_LEFT)
             else:
@@ -319,6 +321,11 @@ class FeedbackCursorArrow(MainloopFeedback):
             self.countdown = False
             self.indicateGoal = True
             self.countdownElapsed = 0
+            # initialize targets for the upcoming trial block randomly (equal 'left' and 'right' trials)
+            self.targetDirections = [1] * int(self.pauseAfter)
+            self.targetDirections[0:int(self.pauseAfter / 2)] = [0] * int(self.pauseAfter / 2)
+            random.shuffle(self.targetDirections)
+            print 'targetDirections: ' + str(self.targetDirections)
             return
         t = (self.countdownFrom * 1000 - self.countdownElapsed) / 1000
         self.draw_init()
@@ -346,6 +353,7 @@ class FeedbackCursorArrow(MainloopFeedback):
             self.hitMissElapsed = 0
             self.hit, self.miss, self.reject = False, False, False            
             self.showsHitMiss = False
+            self.indicateGoal = True
             return
         if self.showsHitMiss:
             return
