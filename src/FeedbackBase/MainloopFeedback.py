@@ -56,43 +56,43 @@ class MainloopFeedback(Feedback):
     """
 
     def on_init(self):
-        self.__running = False
-        self.__paused = False
-        self.__inMainloop = False
+        self._running = False
+        self._paused = False
+        self._inMainloop = False
         self.init()
 
     def on_play(self):
         self.pre_mainloop()
-        self.__mainloop()
+        self._mainloop()
         self.post_mainloop()
 
     def on_pause(self):
-        self.__paused = not self.__paused
+        self._paused = not self._paused
 
     def on_stop(self):
-        self.__running = False
+        self._running = False
 
     def on_quit(self):
-        self.__running = False
-        while self.__inMainloop:
+        self._running = False
+        while self._inMainloop:
             pass
 
-    def __mainloop(self):
+    def _mainloop(self):
         """
         Calls tick repeatedly. 
         
         Additionally it calls either pause_tick or
         play_tick, depending if the Feedback is paused or not.
         """
-        self.__running = True
-        self.__inMainloop = True
-        while self.__running:
+        self._running = True
+        self._inMainloop = True
+        while self._running:
             self.tick()
-            if self.__paused:
+            if self._paused:
                 self.pause_tick()
             else:
                 self.play_tick()
-        self.__inMainloop = False
+        self._inMainloop = False
         
     def init(self):
         """Called at the beginning of the Feedback's lifecycle.
