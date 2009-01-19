@@ -241,8 +241,11 @@ class FeedbackController(object):
             self.feedback._on_quit()
             name = getattr(self.feedback, "_feedback")
             try:
+                self.logger.debug("Trying to load feedback: %s" % str(name))
                 self.feedback = self.pluginController.load_plugin(name)(self.pp)
             except:
+                self.logger.error("Unable to load feedback: %s" % str(name))
+                self.logger.error(traceback.format_exc())
                 self.feedback = Feedback(self.pp)
             # Proably a new one!
             self.pre_init()
