@@ -60,12 +60,12 @@ class Feedback(object):
         #self.logger = logging.getLogger("Feedback")
         self.logger = logging.getLogger("FB." + self.__class__.__name__)
         self.logger.debug("Loaded my logger.")
-        self.__pport = pport
+        self._pport = pport
  
     #
     # Internal routines not inteded for overwriting
     #
-    def __on_control_event(self, data):
+    def _on_control_event(self, data):
         """
         Store the data in the feedback and call on_control_event.
         
@@ -74,7 +74,7 @@ class Feedback(object):
         self._data = data
         self.on_control_event(data)
     
-    def __on_interaction_event(self, data):
+    def _on_interaction_event(self, data):
         """
         Store the variable-value pairs in the feedback and call 
         on_interaction_event.
@@ -96,7 +96,7 @@ class Feedback(object):
         
         self.on_interaction_event(data2)
     
-    def __on_init(self):
+    def _on_init(self):
         """
         Calls on_init.
         
@@ -104,7 +104,7 @@ class Feedback(object):
         """
         self.on_init()
     
-    def __on_play(self):
+    def _on_play(self):
         """
         Calls on_play.
         
@@ -112,7 +112,7 @@ class Feedback(object):
         """
         self.on_play()
     
-    def __on_pause(self):
+    def _on_pause(self):
         """
         Calls on_pause.
         
@@ -120,7 +120,7 @@ class Feedback(object):
         """
         self.on_pause()
         
-    def __on_stop(self):
+    def _on_stop(self):
         """
         Calls on_stop.
         
@@ -128,7 +128,7 @@ class Feedback(object):
         """
         self.on_stop()
     
-    def __on_quit(self):
+    def _on_quit(self):
         """
         Calls on_quit.
         
@@ -232,8 +232,8 @@ class Feedback(object):
         """Sends the data to the parallel port."""
         # FIXME: use logger instead
         print "TRIGGER %s: %s" % (str(datetime.datetime.now()), str(data))
-        if self.__pport:
-            self.__pport.setData(data)
+        if self._pport:
+            self._pport.setData(data)
             if reset:
                 timer = threading.Timer(0.01, self.send_parallel, (0x0, False))
                 timer.start()

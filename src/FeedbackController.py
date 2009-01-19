@@ -172,7 +172,7 @@ class FeedbackController(object):
             self.playEvent.clear()
             # run the Feedbacks on_play in our thread
             try:
-                self.feedback._Feedback__on_play()
+                self.feedback._on_play()
             except:
                 self.logger.error("Feedbacks on_play threw an exception:")
                 self.logger.error(traceback.format_exc())
@@ -187,7 +187,7 @@ class FeedbackController(object):
         
 
     def _handle_cs(self, signal):
-        self.feedback._Feedback__on_control_event(signal.data)
+        self.feedback._on_control_event(signal.data)
 
     
     def _handle_is(self, signal):
@@ -211,7 +211,7 @@ class FeedbackController(object):
             bcinetw.send_signal(answer)
             return
         
-        self.feedback._Feedback__on_interaction_event(signal.data)
+        self.feedback._on_interaction_event(signal.data)
         if cmd == bcixml.CMD_PLAY:
             self.logger.info("Received PLAY signal")
             self.pre_play()
@@ -221,24 +221,24 @@ class FeedbackController(object):
         elif cmd == bcixml.CMD_PAUSE:
             self.logger.info("Received PAUSE signal")
             self.pre_pause()
-            self.feedback._Feedback__on_pause()
+            self.feedback._on_pause()
             self.post_pause()
         elif cmd == bcixml.CMD_STOP:
             self.logger.info("Received STOP signal")
             self.pre_stop()
-            self.feedback._Feedback__on_stop()
+            self.feedback._on_stop()
             self.post_stop()
         elif cmd == bcixml.CMD_QUIT:
             self.logger.info("Received QUIT signal")
             self.pre_quit()
-            self.feedback._Feedback__on_quit()
+            self.feedback._on_quit()
             # Load the default dummy Feedback
             self.feedback = Feedback(self.pp)
             self.post_quit()
         elif cmd == bcixml.CMD_SEND_INIT:
             self.logger.info("Received SEND_INIT signal")
             # Working with old Feedback!
-            self.feedback._Feedback__on_quit()
+            self.feedback._on_quit()
             name = getattr(self.feedback, "_feedback")
             try:
                 self.feedback = self.pluginController.load_plugin(name)(self.pp)
@@ -246,9 +246,9 @@ class FeedbackController(object):
                 self.feedback = Feedback(self.pp)
             # Proably a new one!
             self.pre_init()
-            self.feedback._Feedback__on_init()
+            self.feedback._on_init()
             self.post_init()
-            self.feedback._Feedback__on_interaction_event(signal.data)
+            self.feedback._on_interaction_event(signal.data)
         else:
             self.logger.info("Received generic interaction signal")
 
