@@ -3,7 +3,7 @@
 
 
 # FeedbackCursorArrow.py -
-# Copyright (C) 2008-2009  Bastian Venthur
+# Copyright (C) 2008-2009  Bastian Venthur, Simon Scholler
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -99,9 +99,9 @@ class FeedbackCursorArrow(MainloopFeedback):
         self.screenHeight =  700
         self.countdownFrom = 2
         self.hitMissDuration =  1000
-        self.dampedMovement = True
+        self.dampedMovement = False
         self.showPunchline = True
-        self.damping = 'linear'
+        #self.damping = 'linear'
         self.damping = 'distance'
             
         self.pause = False
@@ -231,11 +231,12 @@ class FeedbackCursorArrow(MainloopFeedback):
         # Calculate motion of cursor
         self.f = (self.targetDirection-0.5)*2   #TODO: remove HACK
         
-        if not self.dampedMovement:
-            self.pos = (self.f * self.trialElapsed * self.size * 0.5) / self.durationPerTrial
+        if not self.dampedMovement:        
+            v = self.f * self.v0 
         else:       
             v = self.damp_movement()
-            self.pos += self.f * v 
+            
+        self.pos += self.f * v 
             
         # send marker if cursor hits the border for the first time
         if abs(self.pos)>self.s1 and not self.cursorTransition:
@@ -325,7 +326,6 @@ class FeedbackCursorArrow(MainloopFeedback):
             self.targetDirections = [1] * int(self.pauseAfter)
             self.targetDirections[0:int(self.pauseAfter / 2)] = [0] * int(self.pauseAfter / 2)
             random.shuffle(self.targetDirections)
-            print 'targetDirections: ' + str(self.targetDirections)
             return
         t = (self.countdownFrom * 1000 - self.countdownElapsed) / 1000
         self.draw_init()
@@ -496,13 +496,16 @@ class FeedbackCursorArrow(MainloopFeedback):
         self.size = min(self.screen.get_height(), self.screen.get_width())
         self.borderWidth = int(self.size*self.borderWidthRatio/2)
         self.offsetX = (self.screenWidth-self.size)/2
-        
-        self.dampingTime = self.durationPerTrial-self.durationUntilBorder
-        self.t1 = self.FPS * self.durationUntilBorder/1000
-        self.t2 = self.FPS * self.dampingTime/1000
         self.s1 = self.size/2-self.borderWidth
         self.s2 = self.borderWidth
-        self.v0 = self.s2/(1.0*self.t2) + self.s1/(2.0*self.t1)
+            
+        if self.dampedMovement:
+            self.v0 = self.s2/(1.0*self.t2) + self.s1/(2.0*self.t1)
+            self.dampingTime = self.durationPerTrial-self.durationUntilBorder
+            self.t1 = self.FPS * self.durationUntilBorder/1000
+            self.t2 = self.FPS * self.dampingTime/1000
+        else:
+            self.v0 = (self.size * 0.5) / (self.durationPerTrial*self.FPS/1000.0)
         
         # arrow
         scale = self.size / 3
