@@ -20,6 +20,23 @@ import socket
 import threading
 
 
+#['17\\48\\56\\421', '607', '323', 'F', 'F', '160\r\n']
+#17\48\56\437:607:322:F:F:180
+#
+#['17\\48\\56\\437', '607', '322', 'F', 'F', '180\r\n']
+#17\48\56\453:608:322:F:F:200
+#
+#['17\\48\\56\\453', '608', '322', 'F', 'F', '200\r\n']
+#17\48\56\468:609:321:F:F:220
+#
+#['17\\48\\56\\468', '609', '321', 'F', 'F', '220\r\n']
+#17\48\56\500:609:321:F:F:240
+#
+#['17\\48\\56\\500', '609', '321', 'F', 'F', '240\r\n']
+#CHE:EYE
+#['CHE', 'EYE']
+
+
 class EyeTracker(object):
     
     def __init__(self):
@@ -47,7 +64,9 @@ class EyeTracker(object):
             conn, addr = sock.accept()
             print "done."
             while not self.stopping:
-                data = conn.recv(1024)
+                # FIXME: we should probably loop recv until we got one full
+                # packet
+                data = conn.recv(4096)
                 print str(data)
                 if data == "REG:EYE":
                     print "Sennding ACK...",
@@ -59,6 +78,12 @@ class EyeTracker(object):
             print "Closing socket...",
             conn.close()
             print "done."
+
+    def parse_data(self, data):
+        self.timestamp = 0
+        self.x = 0
+        self.y = 0
+        self.duration = 0
 
 
 if __name__ == "__main__":
