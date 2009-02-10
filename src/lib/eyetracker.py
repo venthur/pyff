@@ -18,6 +18,7 @@
 
 import socket
 import threading
+import logging
 
 
 #['17\\48\\56\\421', '607', '323', 'F', 'F', '160\r\n']
@@ -40,6 +41,8 @@ import threading
 class EyeTracker(object):
     
     def __init__(self):
+        self.logger = logging.getLogger("EyeTracker")
+        self.logger.debug("Logger initialized.")
         self.thread = None
         self.stopping = True
         self.time_h = None
@@ -58,34 +61,37 @@ class EyeTracker(object):
         
     def stop(self):
         self.stopping = True
-        self.thread.join(10)
+        self.thread.join(1)
         self.thread = None
     
     def listen(self): 
-        print "Preparing socket...",
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.bind(("", 1111))
         sock.listen(1)
-        print "done."
         while not self.stopping:
-            print "Waiting for incoming connection...",
+            self.logger.debug("Waiting for incoming connection...")
             conn, addr = sock.accept()
-            print "done."
+            self.logger.debug("Got connection.")
             while not self.stopping:
                 # FIXME: we should probably loop recv until we got one full
                 # packet
                 data = conn.recv(4096)
-                self.parse_data(data)
+                if data.endswith(r"\r\n"):
+                    data = data[:-4]
                 if data == "REG:EYE":
-                    print "Sending ACK...",
+                    self.logger.debug("Sending ACK...")
                     conn.send("ACK")
-                    print "done."
-                if not data:
-                    print "Received empty packet, closing connection."
+                elif self.is_parsable(data):                 
+                    self.parse_data(data)
+                elif not data:
+                    self.logger.debug("Received empty packet, closing connection.")
                     break
-            print "Closing socket...",
+                else:
+                    self.logger.warning("Hmm got data and don't know what to do with it: %s" % str(data))
+            self.logger.debug("Closing connection.")
             conn.close()
-            print "done."
+        self.logger.debug("Closing socket.")
+        sock.close()
 
     def parse_data(self, data):
 #['17\\48\\56\\421', '607', '323', 'F', 'F', '160\r\n']
@@ -103,16 +109,20 @@ class EyeTracker(object):
 #['17\\48\\56\\500', '609', '321', 'F', 'F', '240\r\n']
 #CHE:EYE
 #['CHE', 'EYE']
-        time, x, y, crap1, crap2, duration = data.strip().split(":")
+        time, x, y, crap1, crap2, duration = data.split(":")
         h, m, s, ms = time.split("\\")
         
-        self.time_h = h
-        self.time_m = m
-        self.time_s = s
-        self.time_ms = ms
-        self.x = x
-        self.y = y
-        self.duration = duration
+        self.time_h = int(h)
+        self.time_m = int(m)
+        self.time_s = int(s)
+        self.time_ms = int(ms)
+        self.x = int(x)
+        self.y = int(y)
+        self.duration = int(duration)
+        
+    def is_parsable(self, data):
+        return data.count(":") == 5
+        
 
 
 if __name__ == "__main__":
