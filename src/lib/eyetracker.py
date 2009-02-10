@@ -42,6 +42,14 @@ class EyeTracker(object):
     def __init__(self):
         self.thread = None
         self.stopping = True
+        self.time_h = None
+        self.time_m = None
+        self.time_s = None
+        self.time_ms = None
+        self.x = None
+        self.y = None
+        self.duration = None
+        
     
     def start(self):
         self.thread = threading.Thread(target=self.listen)
@@ -67,9 +75,9 @@ class EyeTracker(object):
                 # FIXME: we should probably loop recv until we got one full
                 # packet
                 data = conn.recv(4096)
-                print str(data)
+                self.parse_data(data)
                 if data == "REG:EYE":
-                    print "Sennding ACK...",
+                    print "Sending ACK...",
                     conn.send("ACK")
                     print "done."
                 if not data:
@@ -80,10 +88,31 @@ class EyeTracker(object):
             print "done."
 
     def parse_data(self, data):
-        self.timestamp = 0
-        self.x = 0
-        self.y = 0
-        self.duration = 0
+#['17\\48\\56\\421', '607', '323', 'F', 'F', '160\r\n']
+#17\48\56\437:607:322:F:F:180
+#
+#['17\\48\\56\\437', '607', '322', 'F', 'F', '180\r\n']
+#17\48\56\453:608:322:F:F:200
+#
+#['17\\48\\56\\453', '608', '322', 'F', 'F', '200\r\n']
+#17\48\56\468:609:321:F:F:220
+#
+#['17\\48\\56\\468', '609', '321', 'F', 'F', '220\r\n']
+#17\48\56\500:609:321:F:F:240
+#
+#['17\\48\\56\\500', '609', '321', 'F', 'F', '240\r\n']
+#CHE:EYE
+#['CHE', 'EYE']
+        time, x, y, crap1, crap2, duration = data.strip().split(":")
+        h, m, s, ms = time.split("\\")
+        
+        self.time_h = h
+        self.time_m = m
+        self.time_s = s
+        self.time_ms = ms
+        self.x = x
+        self.y = y
+        self.duration = duration
 
 
 if __name__ == "__main__":
