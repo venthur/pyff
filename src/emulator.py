@@ -58,6 +58,19 @@ class Emulator(cmd.Cmd):
     def do_generate_cs3(self, line):
         """Generates a control signal and sends it to the Feedback Controller."""
         self._do_generate_cs(line, 3)
+
+    def do_generate_cs4(self, line):
+        """Generates a control signal and sends it to the Feedback Controller."""
+        self._do_generate_cs(line, 4)
+
+    def do_generate_cs5(self, line):
+        """Generates a control signal and sends it to the Feedback Controller."""
+        self._do_generate_cs(line, 5)
+
+    def do_generate_cs6(self, line):
+        """Generates a control signal and sends it to the Feedback Controller."""
+        self._do_generate_cs(line, 6)
+
         
     def _do_generate_cs(self, line, numbers):
         self.net = BciNetwork("localhost", bcinetwork.FC_PORT)
@@ -76,13 +89,17 @@ class Emulator(cmd.Cmd):
             sample1 = math.sin(c)
             sample2 = math.sin(c/90.0)
             sample3 = math.sin(c/180.0)
+            sample4 = math.sin(c/270.0)
+            sample5 = math.sin(c/45.0)
+            sample6 = math.sin(c/135.0)
+            
+            samples = [sample1, sample2, sample3, sample4, sample5, sample6]
+
             #self.signal.data = {"data" : [sample1, sample2, sample3]}
             if numbers == 1: 
-                self.signal.data = {"cl_output" : sample1}
-            elif numbers == 2: 
-                self.signal.data = {"cl_output" : (sample1, sample2)}
-            elif numbers == 3:
-                self.signal.data = {"cl_output" : (sample1, sample2, sample3)}
+                self.signal.data = {"cl_output" : samples[0]}
+            elif numbers <= 6:
+                self.signal.data = {"cl_output" : samples[:numbers]}
             else:
                 print "Error don't know how to handle %i numbers." % numbers
                 
