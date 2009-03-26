@@ -20,15 +20,17 @@ Use TestIt to test your new visual elements.
 Test it opens a test screen, displays the element and goes through
 its states. 
 """
+
     
 import sys
+
 import pygame
+
 import Textrow
 
 
-
-bgcolor = 0,0,0
-screenSize = 500,500
+bgcolor = 0, 0, 0
+screenSize = 500, 500
 
 """ Import & define your element here"""
 #import Hexagon,math
@@ -43,26 +45,26 @@ pygame.init()
 screen = pygame.display.set_mode(screenSize)
 background = pygame.Surface(screenSize) 
 background.fill(bgcolor)
-screen.blit(background,[0,0])
+screen.blit(background, [0, 0])
 pygame.display.update()
 
 """ Loop between the states and pause in between """
-width,height = screenSize
-e.pos = (width/2,height/2)
+width, height = screenSize
+e.pos = (width / 2, height / 2)
 e.refresh()
 e.update(0)
-pos=0
+pos = 0
 while 1:
-    screen.blit(background,[0,0])
+    screen.blit(background, [0, 0])
     screen.blit(e.image, e.rect)
     pygame.display.flip()
     e.update()
     pygame.time.delay(400)
     e.highlight = [pos]
     e.refresh()
-    pos = (pos+1)%len(text)
+    pos = (pos + 1) % len(text)
     for event in pygame.event.get():
-        if event.type in (pygame.KEYDOWN,pygame.MOUSEBUTTONDOWN):
+        if event.type in (pygame.KEYDOWN, pygame.MOUSEBUTTONDOWN):
             sys.exit(0)
             break
             

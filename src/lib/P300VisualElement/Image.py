@@ -29,11 +29,15 @@ The features can be used to specify different states. If some of
 these features are constant (eg, the file is used in all
 states), you should provide a common value for this feature when you 
 instantiate a P300Text.
+
 """
 
 import os.path
+
 import pygame
+
 from VisualElement import VisualElement
+
 
 class Image(VisualElement):
 
@@ -43,8 +47,8 @@ class Image(VisualElement):
     DEFAULT_SCALE = None
 
     
-    def __init__(self,nr_states=2,pos=(0,0),file=DEFAULT_FILE,fliplr=DEFAULT_FLIPLR,flipud=DEFAULT_FLIPUD,scale=DEFAULT_SCALE):
-        VisualElement.__init__(self,nr_states,pos)
+    def __init__(self, nr_states=2, pos=(0, 0), file=DEFAULT_FILE, fliplr=DEFAULT_FLIPLR, flipud=DEFAULT_FLIPUD, scale=DEFAULT_SCALE):
+        VisualElement.__init__(self, nr_states, pos)
         self.file = os.path.normpath(file)
         self.fliplr = self.DEFAULT_FLIPLR
         self.flipud = self.DEFAULT_FLIPUD
@@ -65,14 +69,14 @@ class Image(VisualElement):
             else: scale = self.scale            # Take standard value
             image = self.load_image(file)
             if fliplr or flipud:
-                image = pygame.transform.flip(image,fliplr,flipud)
+                image = pygame.transform.flip(image, fliplr, flipud)
             if scale is not None:
-                image = pygame.transform.smoothscale(image,scale)
+                image = pygame.transform.smoothscale(image, scale)
             image = image.convert()
             self.images[i] = image
             self.rects[i] = self.images[i].get_rect(center=self.pos)
     
-    def load_image(self,file):
+    def load_image(self, file):
         image = None
 #        try:
         image = pygame.image.load_basic(file)

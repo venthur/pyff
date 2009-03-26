@@ -30,8 +30,11 @@ Many of these functions use pygame
 
 """
 
+
 import pygame
+
 from lib.P300VisualElement.Textbox import Textbox
+
 
 " *** Interfacing with the keyboard *** "
 
@@ -62,26 +65,26 @@ def wait_for_key():
 Graphical and auditory countdown
 **************************** """
 
-def countdown(self,centerxy,screen,start_time=3):
+def countdown(self, centerxy, screen, start_time=3):
     """
     Presents a countdown, starting by start_time in seconds.
     If a centerxy is not provided, the object will be centered 
     on the screen center.
     """
-    font = pygame.font.Font(None,self.textsize)
+    font = pygame.font.Font(None, self.textsize)
     for i in range(start_time):
         # Get number and back background
-        nr = font.render( str(start_time-i), True, self.textcolor)
+        nr = font.render(str(start_time - i), True, self.textcolor)
         rect = nr.get_rect(center=centerxy)
-        back = pygame.Surface( (rect.width,rect.height))
+        back = pygame.Surface((rect.width, rect.height))
         # Paint background and number 
         back.fill(self.bgcolor)
-        screen.blit(back,back.get_rect(center=centerxy))
-        screen.blit(nr,rect)
+        screen.blit(back, back.get_rect(center=centerxy))
+        screen.blit(nr, rect)
         pygame.display.flip()
         pygame.time.wait(1000)
 
-def OLD_auditory_countdown(sound,nr_beeps=3):
+def OLD_auditory_countdown(sound, nr_beeps=3):
     """
     Presents an auditory countdown, giving nr_beeps beeps in
     1 second intervals.As sound, provide an instance of
@@ -97,7 +100,7 @@ Displaying messages
 & some graphics FX
 ************************** """
 
-def show_message(self,text,box=False):
+def show_message(self, text, box=False):
     """
     Uses pygame to puts text on the screen. Optionally, the size and color
     of the message can be provided. The text will be centered.
@@ -105,22 +108,22 @@ def show_message(self,text,box=False):
     in a textbox
     """
     if not box:
-        self.screen.blit(self.background,self.background_rect)
-        font = pygame.font.Font(None,self.textsize)
-        textimage = font.render(text,True,self.textcolor);
-        textrect = textimage.get_rect( center= (self.screenWidth/2,self.screenHeight/2) )
-        self.screen.blit(textimage,textrect)
+        self.screen.blit(self.background, self.background_rect)
+        font = pygame.font.Font(None, self.textsize)
+        textimage = font.render(text, True, self.textcolor);
+        textrect = textimage.get_rect(center=(self.screenWidth / 2, self.screenHeight / 2))
+        self.screen.blit(textimage, textrect)
         pygame.display.flip()
     else:
-        edgecolor = 100,100,255
-        boxsize = (500,300)
-        textbox = Textbox(pos=(self.screenWidth/2,self.screenHeight/2),text=text,textsize=self.textsize,size=boxsize,edgecolor=edgecolor)
+        edgecolor = 100, 100, 255
+        boxsize = (500, 300)
+        textbox = Textbox(pos=(self.screenWidth / 2, self.screenHeight / 2), text=text, textsize=self.textsize, size=boxsize, edgecolor=edgecolor)
         textbox.refresh()
-        self.screen.blit(self.background,self.background_rect)
-        self.screen.blit(textbox.image,textbox.rect)
+        self.screen.blit(self.background, self.background_rect)
+        self.screen.blit(textbox.image, textbox.rect)
         pygame.display.flip()
     
-def fadeout_message(self,text,box=False,opts=None):
+def fadeout_message(self, text, box=False, opts=None):
     """
     A fancy fading-out message. 
     You can provide options in form of a dictionary:
@@ -130,7 +133,7 @@ def fadeout_message(self,text,box=False,opts=None):
         the value in show_time is not used)
     * "textsize", "textcolor" - size and color of text
     """
-    back,TRANSPARENT = None,(1,2,3)
+    back, TRANSPARENT = None, (1, 2, 3)
     show_time, fadeout_time, wait_for_key = 1500, 500, False
     textsize = self.textsize
     textcolor = self.textcolor
@@ -140,26 +143,26 @@ def fadeout_message(self,text,box=False,opts=None):
         if opts.has_key("wait_for_key"): wait_for_key = opts["wait_for_key"]
         if opts.has_key("textsize"): textsize = opts["textsize"]
         if opts.has_key("textcolor"): textcolor = opts["textcolor"]
-    textimage,textrect= None,None
+    textimage, textrect = None, None
     if not box:
-        font = pygame.font.Font(None,textsize)
-        textimage = font.render(text,True,textcolor);
-        textrect = textimage.get_rect( center= (self.screenWidth/2,self.screenHeight/2) )
+        font = pygame.font.Font(None, textsize)
+        textimage = font.render(text, True, textcolor);
+        textrect = textimage.get_rect(center=(self.screenWidth / 2, self.screenHeight / 2))
     else:
-        edgecolor = 100,100,255
-        boxsize = (500,300)
-        textbox = Textbox(pos=(self.screenWidth/2,self.screenHeight/2),text=text,textsize=textsize,size=boxsize,edgecolor=edgecolor)
+        edgecolor = 100, 100, 255
+        boxsize = (500, 300)
+        textbox = Textbox(pos=(self.screenWidth / 2, self.screenHeight / 2), text=text, textsize=textsize, size=boxsize, edgecolor=edgecolor)
         textbox.refresh()
         textimage = textbox.image
         textrect = textbox.rect
     # Make a transparent back upon which the text is set (otherwise transparency fails)
-    back = pygame.Surface((textrect.width,textrect.height))
+    back = pygame.Surface((textrect.width, textrect.height))
     back.fill(TRANSPARENT)
     back.set_colorkey(TRANSPARENT)
-    back.blit(textimage,(0,0,textrect.width,textrect.height))
+    back.blit(textimage, (0, 0, textrect.width, textrect.height))
     
-    self.screen.blit(self.background,[0,0])
-    self.screen.blit(back,textrect)
+    self.screen.blit(self.background, [0, 0])
+    self.screen.blit(back, textrect)
     pygame.display.flip()
     if wait_for_key: self.wait_for_key()
     else: pygame.time.delay(show_time)
@@ -168,22 +171,22 @@ def fadeout_message(self,text,box=False,opts=None):
     end_time = current_time + fadeout_time
     # Start fading out in 50 ms steps
     while current_time < end_time:
-        fade = 255 * (end_time-current_time)/fadeout_time   # Fading value 255 - 0
+        fade = 255 * (end_time - current_time) / fadeout_time   # Fading value 255 - 0
         back.set_alpha(round(fade))
         #bef = pygame.time.get_ticks()
-        self.screen.blit(self.background,[0,0])
+        self.screen.blit(self.background, [0, 0])
         #aft = pygame.time.get_ticks()
         #print "Time :",str(aft-bef)
     
-        self.screen.blit(back,textrect)
+        self.screen.blit(back, textrect)
         pygame.display.flip()
         pygame.time.delay(50)
         current_time = pygame.time.get_ticks()
     
-    self.screen.blit(self.background,[0,0])
+    self.screen.blit(self.background, [0, 0])
     pygame.display.flip()
         
-def fade_image(self, surface,rect,fade_time=1000,fade_in=True,transparent=(1,2,3)):
+def fade_image(self, surface, rect, fade_time=1000, fade_in=True, transparent=(1, 2, 3)):
     """
     Fades the image that is given by the surface and the rect (the latter specifies
     where it is to be put on the screen). If you want to fade a whole display 
@@ -196,10 +199,10 @@ def fade_image(self, surface,rect,fade_time=1000,fade_in=True,transparent=(1,2,3
     Note: This method is VERY slow with DOUBLEBUF.
     """
     # Make a transparent back upon which the text is set (otherwise transparency fails)
-    back = pygame.Surface((rect.width,rect.height))
+    back = pygame.Surface((rect.width, rect.height))
     back.fill(transparent)
     back.set_colorkey(transparent)
-    back.blit(surface,(0,0,rect.width,rect.height))
+    back.blit(surface, (0, 0, rect.width, rect.height))
     #back.convert()
 
     current_time = pygame.time.get_ticks() 
@@ -208,13 +211,13 @@ def fade_image(self, surface,rect,fade_time=1000,fade_in=True,transparent=(1,2,3
     #cnt=0            # Count the number of iterations through the loop
     while current_time < end_time:
         if fade_in:
-            fade = 255 * (1 - (end_time-current_time)/float(fade_time))   # Fade in
+            fade = 255 * (1 - (end_time - current_time) / float(fade_time))   # Fade in
         else:
-            fade = 255 * (end_time-current_time)/float(fade_time)   # Fade out
+            fade = 255 * (end_time - current_time) / float(fade_time)   # Fade out
         back.set_alpha(round(fade))
-        self.screen.blit(self.background,[0,0])
+        self.screen.blit(self.background, [0, 0])
         #bef = pygame.time.get_ticks()
-        self.screen.blit(back,rect)
+        self.screen.blit(back, rect)
         #aft = pygame.time.get_ticks()
         #print "Time :",str(aft-bef)
         pygame.display.flip()
@@ -224,7 +227,7 @@ def fade_image(self, surface,rect,fade_time=1000,fade_in=True,transparent=(1,2,3
         #cnt += 1
     #print cnt
          
-def fade_and_zoom(self, surface,start_rect,end_rect,anim_time=1000,fade_in=True,transparent=(1,2,3)):
+def fade_and_zoom(self, surface, start_rect, end_rect, anim_time=1000, fade_in=True, transparent=(1, 2, 3)):
     """
     Fades and zooms/scales the image given by surface at the same time. start_rect
     specifies the rect (position, size) of the object in the beginning and end_rect
@@ -240,29 +243,29 @@ def fade_and_zoom(self, surface,start_rect,end_rect,anim_time=1000,fade_in=True,
     """
     # Make a transparent back upon which the text is set (otherwise transparency fails)
     image_rect = surface.get_rect()
-    back = pygame.Surface((image_rect.width,image_rect.height))
-    back.fill((0,0,0))
+    back = pygame.Surface((image_rect.width, image_rect.height))
+    back.fill((0, 0, 0))
     back.fill(transparent)
     back.set_colorkey(transparent)
-    back.blit(surface,image_rect)
+    back.blit(surface, image_rect)
 
     f = 0          # Gives how many percent/what fraction of the animation is finished  
     start_time = current_time = pygame.time.get_ticks() 
     # Fade in 20 ms steps
     while current_time < start_time + anim_time:
-        f = (current_time-start_time)/float(anim_time)
-        fade = (255 * f if fade_in else 255*(1-f) )
+        f = (current_time - start_time) / float(anim_time)
+        fade = (255 * f if fade_in else 255 * (1 - f))
         back.set_alpha(round(fade))
         # Get new rect
-        left,top = int(f*end_rect.left+(1-f)*start_rect.left),int(f*end_rect.top +(1-f)*start_rect.top)
-        width,height = int(f*end_rect.width+(1-f)*start_rect.width),int(f*end_rect.height+(1-f)*start_rect.height)
-        new_rect = pygame.Rect(left,top,width,height)
+        left, top = int(f * end_rect.left + (1 - f) * start_rect.left), int(f * end_rect.top + (1 - f) * start_rect.top)
+        width, height = int(f * end_rect.width + (1 - f) * start_rect.width), int(f * end_rect.height + (1 - f) * start_rect.height)
+        new_rect = pygame.Rect(left, top, width, height)
         # Get new surface version
-        new_back = pygame.transform.smoothscale(back,(width,height)) 
+        new_back = pygame.transform.smoothscale(back, (width, height)) 
         # Paint everything
-        self.screen.blit(self.background,[0,0])
+        self.screen.blit(self.background, [0, 0])
         #bef = pygame.time.get_ticks()
-        self.screen.blit(new_back,new_rect)
+        self.screen.blit(new_back, new_rect)
         #aft = pygame.time.get_ticks()
         #print "Time :",str(aft-bef)
         pygame.display.flip()
@@ -273,7 +276,7 @@ def clear_screen(self):
     """
     Fills the screen with the background color 
     """
-    self.screen.blit(self.background,[0,0])
+    self.screen.blit(self.background, [0, 0])
     pygame.display.flip()
 
 """ *************
@@ -286,13 +289,13 @@ def reset_states(self):
 
 def randomize_states(self):
     """ Sets each elements into a random state """
-    for element in self.elements: element.update(random.randint(0,element.nr_states-1))
+    for element in self.elements: element.update(random.randint(0, element.nr_states - 1))
 
 """  ***************
 Make flash sequences 
 **************** """
 
-def random_flash_sequence(self,set=None,min_dist=0,seq_len=None,repetition=False):
+def random_flash_sequence(self, set=None, min_dist=0, seq_len=None, repetition=False):
     """
     Generates a random sequence of flashes. If flash_sequence is not 
     empty, min_dist is taken into account for the previously included elements.
@@ -316,13 +319,13 @@ def random_flash_sequence(self,set=None,min_dist=0,seq_len=None,repetition=False
         """ Find the no go's (indices which were used in the 
         previous sequence and can't be used now) and remove them """
         for j in range(min_dist):
-            if len(self.flash_sequence)>j:           
+            if len(self.flash_sequence) > j:           
                 try:        # if element is not in the subset, an exception is cast 
-                    subset.remove(self.flash_sequence[-1-j])
+                    subset.remove(self.flash_sequence[ - 1 - j])
                 except:
                     pass
         " From the remaining subset, randomly chose element and append to sequence "
-        e = self.random.sample(subset,1)
+        e = self.random.sample(subset, 1)
         e = e[0]                # Element is a list, use [0] to unpack it
         self.flash_sequence.append(e)
         " If no repetitions, remove this element from set "

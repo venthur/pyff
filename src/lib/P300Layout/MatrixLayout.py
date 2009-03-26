@@ -23,20 +23,20 @@ left corner.
 
 class MatrixLayout(object):
     
-    def __init__(self,size=(200,200),rows=6,cols=6):
+    def __init__(self, size=(200, 200), rows=6, cols=6):
         self.positions = []
         self.rows = rows
         self.cols = cols
-        width,height = size
+        width, height = size
         # Determine positions
-        distx = width / (cols-1)    # x distance between elements
-        disty = height / (rows-1)   # y distance between elements
+        distx = width / (cols - 1)    # x distance between elements
+        disty = height / (rows - 1)   # y distance between elements
         
         for r in range(rows):
             for c in range(cols):
-                x = round(distx * c - width/2)
-                y = round(disty * r - height/2)
-                self.positions.append( (x,y) )
+                x = round(distx * c - width / 2)
+                y = round(disty * r - height / 2)
+                self.positions.append((x, y))
 
     def get_rows_cols(self):
         """
@@ -51,12 +51,12 @@ class MatrixLayout(object):
         rows_cols = []
         # Get rows
         for r in range(self.rows):
-            rows_cols.append(range(r*self.cols,(r+1)*self.cols))
+            rows_cols.append(range(r * self.cols, (r + 1) * self.cols))
         # Get columns
         for c in range(self.cols):
             column = []
             for r in range(self.rows):
-                column.append(c+r*self.cols)
+                column.append(c + r * self.cols)
             rows_cols.append(column)
         return rows_cols
              

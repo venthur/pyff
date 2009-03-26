@@ -30,8 +30,10 @@ instantiate a P300Text.
 Example:
 t = P300Text(text="A",size=30) 
 """
+
     
 import pygame
+
 from VisualElement import VisualElement
 
 
@@ -39,12 +41,12 @@ class Text(VisualElement):
 
     
     DEFAULT_TEXT = "#"
-    DEFAULT_COLOR = 255,255,255
+    DEFAULT_COLOR = 255, 255, 255
     DEFAULT_SIZE = 30
 
     
-    def __init__(self,nr_states=2,pos=(0,0),text=DEFAULT_TEXT,color=DEFAULT_COLOR,size=DEFAULT_SIZE):
-        VisualElement.__init__(self,nr_states,pos)
+    def __init__(self, nr_states=2, pos=(0, 0), text=DEFAULT_TEXT, color=DEFAULT_COLOR, size=DEFAULT_SIZE):
+        VisualElement.__init__(self, nr_states, pos)
         self.text = text
         self.color = color
         self.size = size    
@@ -58,6 +60,6 @@ class Text(VisualElement):
             else: color = self.color          # Take standard value
             if self.states[i].has_key("size"):    size = self.states[i]["size"]
             else: size = self.size            # Take standard value
-            font = pygame.font.Font(None,size)
-            self.images[i] = font.render(text,True,color);
+            font = pygame.font.Font(None, size)
+            self.images[i] = font.render(text, True, color);
             self.rects[i] = self.images[i].get_rect(center=self.pos)

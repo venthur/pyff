@@ -21,14 +21,17 @@ Copyright (c) 2009  Matthias Sebastian Treder
 
 The base class for elements in a P300 speller 
 """
+
 import random
+
 import pygame
+
 
 class VisualElement(pygame.sprite.Sprite):
     
     DEFAULT_PICK_RANDOM_STATE = False
     
-    def __init__(self,nr_states=2,pos=(0,0)):
+    def __init__(self, nr_states=2, pos=(0, 0)):
         pygame.sprite.Sprite.__init__(self)
         self.state = 0                # Holds the current state of the element as a number (0,1,...)
         self.nr_states = nr_states    # Total number of states the element can have (default 2)
@@ -36,13 +39,13 @@ class VisualElement(pygame.sprite.Sprite):
         self.states = []              # A list of dictionaries specifying the states
         self.pos = pos                # Position of the element's center in pixel coordinates
         """ The images and rectangles corresponding to the different states """
-        self.images = [None]*nr_states
-        self.rects  = [None]*nr_states
+        self.images = [None] * nr_states
+        self.rects = [None] * nr_states
         self.states = []
         " Each state is specified by a dictionary of (feature,value) combinations"
         for i in range(nr_states): self.states.append(dict())
 
-    def update(self, new_state = None):
+    def update(self, new_state=None):
         """ 
         This is a sprite method automatically called when the sprite is to be 
         updated. Each call makes the element progress to another state. When 
@@ -62,12 +65,12 @@ class VisualElement(pygame.sprite.Sprite):
             # Pick 2 random states: if first one is equal to current state, pick second one
             s = range(self.nr_states)
             state2 = rnd.sample(s, 2)
-            new_state = (state2[1] if state2[0]==self.state else state2[0])
+            new_state = (state2[1] if state2[0] == self.state else state2[0])
         else:
             if new_state is None: 
-                new_state = self.state+1
-            elif new_state == -1:
-                new_state = self.state-1
+                new_state = self.state + 1
+            elif new_state == - 1:
+                new_state = self.state - 1
         self.state = new_state % self.nr_states
         self.image = self.images[self.state]
         self.rect = self.rects[self.state]
@@ -81,7 +84,7 @@ class VisualElement(pygame.sprite.Sprite):
         """ 
         pass
    
-    def set_states(self,nr,features):
+    def set_states(self, nr, features):
         """ 
         Sets the features belonging each state. Upon each call, provide the number
         of the state you want to change and a dictionary of features you want to
@@ -90,5 +93,5 @@ class VisualElement(pygame.sprite.Sprite):
         features are allowed for each subclass are given in the description of the 
         subclass. 
         """
-        for key,value in features.iteritems():
+        for key, value in features.iteritems():
             self.states[nr][key] = value

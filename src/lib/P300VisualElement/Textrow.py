@@ -38,25 +38,28 @@ its features manually and calling refresh.
   
   
 """
+
     
 import pygame
+
 from VisualElement import VisualElement
+
 
 class Textrow(VisualElement):
 
     
     DEFAULT_TEXT = "#"
-    DEFAULT_COLOR = 255,255,255
+    DEFAULT_COLOR = 255, 255, 255
     DEFAULT_TEXTSIZE = 20
-    DEFAULT_SIZE = (100,100)
+    DEFAULT_SIZE = (100, 100)
     DEFAULT_EDGECOLOR = None
     DEFAULT_ANTIALIAS = True
-    DEFAULT_COLORKEY = 0,0,0
+    DEFAULT_COLORKEY = 0, 0, 0
     DEFAULT_HIGHLIGHT = None
     DEFAULT_HIGHLIGHT_COLOR = None
     
-    def __init__(self,pos=(0,0),text=DEFAULT_TEXT,color=DEFAULT_COLOR,textsize=DEFAULT_TEXTSIZE,size=DEFAULT_SIZE,edgecolor=DEFAULT_EDGECOLOR,highlight=DEFAULT_HIGHLIGHT,highlight_color=DEFAULT_HIGHLIGHT_COLOR,highlight_size=DEFAULT_TEXTSIZE,antialias=DEFAULT_ANTIALIAS,colorkey=DEFAULT_COLORKEY):
-        VisualElement.__init__(self,1,pos)
+    def __init__(self, pos=(0, 0), text=DEFAULT_TEXT, color=DEFAULT_COLOR, textsize=DEFAULT_TEXTSIZE, size=DEFAULT_SIZE, edgecolor=DEFAULT_EDGECOLOR, highlight=DEFAULT_HIGHLIGHT, highlight_color=DEFAULT_HIGHLIGHT_COLOR, highlight_size=DEFAULT_TEXTSIZE, antialias=DEFAULT_ANTIALIAS, colorkey=DEFAULT_COLORKEY):
+        VisualElement.__init__(self, 1, pos)
         self.text = text
         self.color = color
         self.textsize = textsize
@@ -70,34 +73,34 @@ class Textrow(VisualElement):
         self.leftmarge = 4          # marge between text and the left box boundaries
 
     def refresh(self):
-        font = pygame.font.Font(None,self.textsize)
-        hi_font = pygame.font.Font(None,self.highlight_size) 
-        boxw,boxh = self.size
+        font = pygame.font.Font(None, self.textsize)
+        hi_font = pygame.font.Font(None, self.highlight_size) 
+        boxw, boxh = self.size
         chunks = []
         if self.highlight is not None:
             # Run through the text and create letter for letter
             for pos in range(len(self.text)):
                 letter = self.text[pos]
                 if pos in self.highlight:
-                    chunks.append(hi_font.render(letter,self.antialias,self.highlight_color))
+                    chunks.append(hi_font.render(letter, self.antialias, self.highlight_color))
                 else:
-                    chunks.append(font.render(letter,self.antialias,self.color))
+                    chunks.append(font.render(letter, self.antialias, self.color))
         else:
-            chunks.append(font.render(self.text,self.antialias,self.color)) # render whole text
+            chunks.append(font.render(self.text, self.antialias, self.color)) # render whole text
             
         # Prepare surface & draw border
         self.image = pygame.Surface(self.size)
-        self.image.fill( self.colorkey )
+        self.image.fill(self.colorkey)
         if self.edgecolor is not None:
-            pygame.draw.rect(self.image, self.edgecolor, (0,0,boxw,boxh), 1)
-        self.image.set_colorkey( self.colorkey )
+            pygame.draw.rect(self.image, self.edgecolor, (0, 0, boxw, boxh), 1)
+        self.image.set_colorkey(self.colorkey)
         
         # Put text
         xpos = self.leftmarge
         for s in chunks:
             w = s.get_width()
-            r = s.get_rect(center = (xpos+w/2, self.size[1]/2+2) )  # +2 for vertical alignment
-            self.image.blit(s,r)
+            r = s.get_rect(center=(xpos + w / 2, self.size[1] / 2 + 2))  # +2 for vertical alignment
+            self.image.blit(s, r)
             xpos += w
 
         self.image = self.image.convert()

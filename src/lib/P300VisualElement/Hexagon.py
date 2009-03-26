@@ -43,8 +43,11 @@ Hexagon objects have the following features:
     if true and circular layout is used, each letter is assigned a unique color provided in textcolor
 """
 
+
 import math
+
 import pygame
+
 from VisualElement import VisualElement
 
 
@@ -52,21 +55,21 @@ class Hexagon(VisualElement):
 
     
     DEFAULT_TEXT = None
-    DEFAULT_TEXTCOLOR = 200,200,200
+    DEFAULT_TEXTCOLOR = 200, 200, 200
     DEFAULT_TEXTSIZE = 20
     DEFAULT_EDGECOLOR = None
-    DEFAULT_COLOR = 255,255,0
+    DEFAULT_COLOR = 255, 255, 0
     DEFAULT_RADIUS = 30
     DEFAULT_ANTIALIAS = True
-    DEFAULT_COLORKEY= None
+    DEFAULT_COLORKEY = None
     """ If true, text will be split into single letters that are placed equi-spaced 
     on the hexagon """
     DEFAULT_CIRCULAR_LAYOUT = False   
     DEFAULT_CIRCULAR_OFFSET = 0
     DEFAULT_BUNTER_KREIS = False
         
-    def __init__(self,nr_states=2,pos=(0,0),text=DEFAULT_TEXT,textcolor=DEFAULT_TEXTCOLOR,textsize=DEFAULT_TEXTSIZE,color=DEFAULT_COLOR,radius=DEFAULT_RADIUS,edgecolor=DEFAULT_EDGECOLOR,antialias=DEFAULT_ANTIALIAS,colorkey=DEFAULT_COLORKEY,circular_layout=DEFAULT_CIRCULAR_LAYOUT,circular_offset=DEFAULT_CIRCULAR_OFFSET,bunter_kreis=DEFAULT_BUNTER_KREIS):
-        VisualElement.__init__(self,nr_states,pos)
+    def __init__(self, nr_states=2, pos=(0, 0), text=DEFAULT_TEXT, textcolor=DEFAULT_TEXTCOLOR, textsize=DEFAULT_TEXTSIZE, color=DEFAULT_COLOR, radius=DEFAULT_RADIUS, edgecolor=DEFAULT_EDGECOLOR, antialias=DEFAULT_ANTIALIAS, colorkey=DEFAULT_COLORKEY, circular_layout=DEFAULT_CIRCULAR_LAYOUT, circular_offset=DEFAULT_CIRCULAR_OFFSET, bunter_kreis=DEFAULT_BUNTER_KREIS):
+        VisualElement.__init__(self, nr_states, pos)
         self.text = text
         self.textcolor = textcolor
         self.textsize = textsize
@@ -81,8 +84,8 @@ class Hexagon(VisualElement):
         self.circular_offset = circular_offset
         self.bunter_kreis = bunter_kreis 
         if circular_layout:
-            self.textimages = [None]*len(text)
-            self.textrects = [None]*len(text)
+            self.textimages = [None] * len(text)
+            self.textrects = [None] * len(text)
 
     def refresh(self):
         # For each state, generate image and rect
@@ -100,51 +103,51 @@ class Hexagon(VisualElement):
             if self.states[i].has_key("radius"):    radius = self.states[i]["radius"]
             else: radius = self.radius         # Take standard value
             if self.states[i].has_key("circular_offset"): circular_offset = self.states[i]["circular_offset"]
-            else: circular_offset= self.circular_offset # Take standard value
+            else: circular_offset = self.circular_offset # Take standard value
             
             # Get the text image
-            font = pygame.font.Font(None,textsize)
+            font = pygame.font.Font(None, textsize)
             if not self.circular_layout:  # Just normal text
-                textimage = font.render(text,self.antialias,textcolor);
+                textimage = font.render(text, self.antialias, textcolor);
                 textrect = textimage.get_rect()
-                w2,h2 = textrect.width/2,textrect.height/2
+                w2, h2 = textrect.width / 2, textrect.height / 2
             else:
                 # Calculate the letter positions
                 nrLetters = len(text)
-                angDistance = 2*math.pi/nrLetters     # Angular distance between letters
+                angDistance = 2 * math.pi / nrLetters     # Angular distance between letters
                 for j in range(nrLetters):
                     " Check if multiple colors are available "
                     if self.bunter_kreis: color_now = textcolor[j]
                     else: color_now = textcolor
                     theta = angDistance * j + circular_offset
-                    x = (radius-textsize/2) * math.cos(theta) + radius
-                    y = (radius-textsize/2) * math.sin(theta) + radius
-                    self.textimages[j] = font.render(text[j],self.antialias,color_now)
-                    self.textrects[j] = self.textimages[j].get_rect(center=(x,y))
+                    x = (radius - textsize / 2) * math.cos(theta) + radius
+                    y = (radius - textsize / 2) * math.sin(theta) + radius
+                    self.textimages[j] = font.render(text[j], self.antialias, color_now)
+                    self.textrects[j] = self.textimages[j].get_rect(center=(x, y))
 
             # Draw hexagon fill
             r = radius
-            ri = math.ceil(r/2*math.sqrt(3)) # Inner radius (distance from middle to top/bottom)
-            dx,dy = radius+2,ri+2           # add to polygon coordinates to center them on the surface
-            xy = [(-r+dx,0+dy),(-r/2+dx,ri+dy),(r/2+dx,ri+dy),(r+dx,0+dy),(r/2+dx,-ri+dy),(-r/2+dx,-ri+dy)]    # points from left clockwise
-            image = pygame.Surface((2*r+4,round(2*ri+4)))   # add +4 marge for antialiasing
+            ri = math.ceil(r / 2 * math.sqrt(3)) # Inner radius (distance from middle to top/bottom)
+            dx, dy = radius + 2, ri + 2           # add to polygon coordinates to center them on the surface
+            xy = [(-r + dx, 0 + dy), (-r / 2 + dx, ri + dy), (r / 2 + dx, ri + dy), (r + dx, 0 + dy), (r / 2 + dx, - ri + dy), (-r / 2 + dx, - ri + dy)]    # points from left clockwise
+            image = pygame.Surface((2 * r + 4, round(2 * ri + 4)))   # add +4 marge for antialiasing
             if color is not None:
-                pygame.draw.polygon(image,color,xy)
+                pygame.draw.polygon(image, color, xy)
             
             # Draw edge
             if edgecolor is not None:
                 if self.antialias:
-                    pygame.draw.aalines(image,edgecolor,True,xy)
+                    pygame.draw.aalines(image, edgecolor, True, xy)
                 else:
-                    pygame.draw.lines(image,edgecolor,True,xy)
+                    pygame.draw.lines(image, edgecolor, True, xy)
              
             # Put text and circle together
             if self.text is not None: 
                 if not self.circular_layout:
-                    image.blit(textimage,(radius-w2+2,ri-h2+2))
+                    image.blit(textimage, (radius - w2 + 2, ri - h2 + 2))
                 else: 
                     for j in range(len(self.textimages)):
-                        image.blit(self.textimages[j],self.textrects[j])
+                        image.blit(self.textimages[j], self.textrects[j])
 
             if self.colorkey is not None: image.set_colorkey(self.colorkey)
             

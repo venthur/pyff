@@ -36,6 +36,7 @@ its features manually and calling refresh.
 """
     
 import pygame
+
 from VisualElement import VisualElement
 
 
@@ -43,15 +44,15 @@ class Textbox(VisualElement):
 
     
     DEFAULT_TEXT = "#"
-    DEFAULT_COLOR = 255,255,255
+    DEFAULT_COLOR = 255, 255, 255
     DEFAULT_TEXTSIZE = 20
-    DEFAULT_SIZE = (100,100)
+    DEFAULT_SIZE = (100, 100)
     DEFAULT_EDGECOLOR = None
     DEFAULT_ANTIALIAS = True
-    DEFAULT_COLORKEY = 0,0,0
+    DEFAULT_COLORKEY = 0, 0, 0
     
-    def __init__(self,pos=(0,0),text=DEFAULT_TEXT,color=DEFAULT_COLOR,textsize=DEFAULT_TEXTSIZE,size=DEFAULT_SIZE,edgecolor=DEFAULT_EDGECOLOR,antialias=DEFAULT_ANTIALIAS,colorkey=DEFAULT_COLORKEY):
-        VisualElement.__init__(self,1,pos)
+    def __init__(self, pos=(0, 0), text=DEFAULT_TEXT, color=DEFAULT_COLOR, textsize=DEFAULT_TEXTSIZE, size=DEFAULT_SIZE, edgecolor=DEFAULT_EDGECOLOR, antialias=DEFAULT_ANTIALIAS, colorkey=DEFAULT_COLORKEY):
+        VisualElement.__init__(self, 1, pos)
         self.text = text
         self.color = color
         self.textsize = textsize
@@ -62,43 +63,43 @@ class Textbox(VisualElement):
         self.marge = 4          # marge between text and the box boundaries
 
     def refresh(self):
-        font = pygame.font.Font(None,self.textsize)
-        boxw,boxh = self.size
+        font = pygame.font.Font(None, self.textsize)
+        boxw, boxh = self.size
         lines = []
         # To process enforced linebreaks, split according to '\n's
         chunks = self.text.split("\n")
         for chunk in chunks:
             text = chunk.split(" ")     # Get a list of single words
-            word=None
+            word = None
             currenth = self.marge
-            while  currenth < boxh and len(text)>0:
+            while  currenth < boxh and len(text) > 0:
                 linetext = text.pop(0)          # Get first word
-                w,h = font.size(linetext)
-                if w >= boxw-2*self.marge or len(text)==0:
+                w, h = font.size(linetext)
+                if w >= boxw - 2 * self.marge or len(text) == 0:
                     oldtext = linetext
                 else:
-                    while w<boxw-self.marge and len(text)>0:
+                    while w < boxw - self.marge and len(text) > 0:
                         oldtext = linetext
                         word = text.pop(0)
                         linetext += " " + word # Attach next word
-                        w,h = font.size(linetext)
+                        w, h = font.size(linetext)
                         
                     # Check if one word too much was popped, then put it back
-                    if w>=boxw-self.marge: text.insert(0,word)
+                    if w >= boxw - self.marge: text.insert(0, word)
                     else:       # Finished
                         oldtext = linetext 
-                lines.append(font.render(oldtext,self.antialias,self.color))
+                lines.append(font.render(oldtext, self.antialias, self.color))
                 currenth += h
 
         # Blit them together
         self.image = pygame.Surface(self.size)
-        self.image.fill( self.colorkey )
+        self.image.fill(self.colorkey)
         if self.edgecolor is not None:
-            pygame.draw.rect(self.image, self.edgecolor, (0,0,boxw,boxh), 1)
-        self.image.set_colorkey( self.colorkey )
-        x,y = self.marge,self.marge 
+            pygame.draw.rect(self.image, self.edgecolor, (0, 0, boxw, boxh), 1)
+        self.image.set_colorkey(self.colorkey)
+        x, y = self.marge, self.marge 
         for i in range(len(lines)):
-            self.image.blit(lines[i],(x,y+i*h))
+            self.image.blit(lines[i], (x, y + i * h))
         self.image = self.image.convert()
         self.rect = self.image.get_rect(center=self.pos)
         self.images[0] = self.image

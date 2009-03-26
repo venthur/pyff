@@ -31,11 +31,11 @@ import math
 
 class CircularLayout(object):
     
-    def __init__(self,nr_elements=20,radius=200,start=-math.pi/2):
+    def __init__(self, nr_elements=20, radius=200, start= - math.pi / 2):
         self.positions = []
-        step = 2*math.pi / nr_elements
+        step = 2 * math.pi / nr_elements
         for i in range(nr_elements):
-            phi = start + i*step
-            x = round (radius * math.cos(phi) ) 
-            y = round (radius * math.sin(phi) )
-            self.positions.append( (x,y) )
+            phi = start + i * step
+            x = round (radius * math.cos(phi)) 
+            y = round (radius * math.sin(phi))
+            self.positions.append((x, y))
