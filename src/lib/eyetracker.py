@@ -22,7 +22,7 @@
 
 import threading
 import logging
-import sys
+import sys,os
 import ctypes
 import struct
 import signal
@@ -85,7 +85,8 @@ class EyeTracker(object):
     def initialise_api(self):
         
         # Load dll
-        self.api = WinDLL("CEtAPI")           
+        path = os.path.dirname(globals()["__file__"]) 
+        self.api = WinDLL(os.path.join(path, 'CEtAPI'))
         
         #Open API
         result = self.api.Open()
