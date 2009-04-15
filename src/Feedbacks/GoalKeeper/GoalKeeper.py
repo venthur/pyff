@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 
+
+# TODO:
+# - adaptive timing (class dependent)
+
  
 # GoalKeeper.py -
 # Copyright (C) 2008-2009  Simon Scholler
@@ -27,6 +31,7 @@ import math
 import random
 import os
 import time
+from PIL import Image
 
 import pygame
 
@@ -59,20 +64,24 @@ class GoalKeeper(MainloopFeedback):
         # WTF?
         #self.__pport = 8240
         #self.logger.debug("on_init")
+        self.counter = 0
         self.durationPerTrial = [3000, 3000]    # time per trial at the beginning and the end (in seconds)
+        self.adaptive_trial_time = True
+        self.stepsize = 5                    # stepsize of the adaptive procedure 
+                                             # (in percent of the initial trial time (=self.durationPerTrial[0])
         self.trials = 100
         self.pauseAfter = 20
         self.pauseDuration = 15000
-        self.FPS = 60
+        self.FPS = 40
         self.fullscreen = False
-#        self.screenPos = [100, 100, 640, 480]
+        self.screenPos = [100, 100, 640, 480]
 #        self.screenPos = [-1919, 400, 1920, 1200]
-        self.screenPos = [ - 1024, 1600768, 1024, 768]
-        self.countdownFrom = 7  # should be 7
+#        self.screenPos = [ - 1024, 1600768, 1024, 768]
+        self.countdownFrom = 2  # should be 7
         self.hitMissDuration = 1000
         self.timeUntilNextTrial = [500, 1000]  # randomly between the two values        
         self.showGameOverDuration = 3000
-        self.timeOfStartAnimation = 500
+        self.timeOfStartAnimation = 2000
         self.showTrialStartAnimation = True
         self.showCounter = True
         self.control = "relative"  # or "absolute"
@@ -100,7 +109,6 @@ class GoalKeeper(MainloopFeedback):
         self.f = 0.0
         self.hitMissFalse = [0, 0, 0]
         self.resized = False
-        self.trial = - 1
         self.barX = 0
         self.memoResize = False
         self.c = 0
@@ -115,6 +123,7 @@ class GoalKeeper(MainloopFeedback):
         self.backgroundColor = (50, 50, 50)
         self.fontColor = (0, 150, 150)
         self.countdownColor = (200, 80, 118)
+        self.fixcrossColor = (130,130,130)
         
         # Keeper specifications
         self.contKeeperMotion = 750   # if 0:  jump between the three positions
@@ -135,6 +144,10 @@ class GoalKeeper(MainloopFeedback):
         self.falsestr = ":" # " False: "
         self.x_transl = 0.95
 
+        # Define colorbar
+        self.colorbar = list()
+        for n in range(101):
+            self.colorbar.append((int(round(255*(n/100.0))), int(round(255*(1-n/100.0))),0))
 
     def pre_mainloop(self):
         #self.logger.debug("on_play")
@@ -161,6 +174,7 @@ class GoalKeeper(MainloopFeedback):
 
 
     def play_tick(self):
+        
         if self.countdown:
             self.nt = 0
             self.countdown_tick()
@@ -176,7 +190,7 @@ class GoalKeeper(MainloopFeedback):
         elif self.trialStartAnimation:
             self.animate_trial_start()
         else:
-            self.nt += 1
+            self.nt += 1            
             self.trial_tick()
 
 
@@ -189,7 +203,7 @@ class GoalKeeper(MainloopFeedback):
         self.countdown, self.firstTickOfTrial = True, True
         self.elapsed, self.completedTrials = 0, 0
         self.hitMissFalse = [0, 0, 0]
-        self.trial = - 1
+        self.completedTrials = 0
     
     
     def trial_tick(self):
@@ -201,17 +215,15 @@ class GoalKeeper(MainloopFeedback):
         # save old move-rectangles for efficient drawing
         self.bMR, self.kMR = self.ballMoveRect.move(0, 0), self.keeperMoveRect.move(0, 0)
         
-        if self.firstTickOfTrial:
-            print "*************************************"
+        if self.firstTickOfTrial:            
             self.f = 0.0
             self.init_time = time.clock() 
             # initialize feedback start screen
             resized = False
             self.firstChange = True
             self.markerSent = False
-            self.init_graphics()
+            #self.init_graphics()
             self.trialElapsed = 0
-            self.trial += 1
             self.c = 0
             self.barX = 0;
             if not self.showTrialStartAnimation:
@@ -219,7 +231,7 @@ class GoalKeeper(MainloopFeedback):
             self.firstTickOfTrial = False
             self.keeperPos = 'middle'
             self.keeperChanged = False
-            self.direction = self.digitToDirection[self.directions[self.trial % self.pauseAfter]]
+            self.direction = self.digitToDirection[self.directions[self.completedTrials % self.pauseAfter]]
             if self.direction == 'left':    self.send_parallel(self.TARGET_LEFT)
             else:                           self.send_parallel(self.TARGET_RIGHT)  
                    
@@ -286,8 +298,10 @@ class GoalKeeper(MainloopFeedback):
         if self.totalTrialTicks == self.nt:
             self.ballMoveRect = self.ball.get_rect(midbottom=(self.ballX, self.keeperSurface))
             if self.init_time != 0:
-                print "Trial time: " + str(time.clock() - self.init_time)       
+                print 'Optimal trial time: ' + str(self.trialDuration)
+                print "Actual trial time: " + str(int((time.clock()-self.init_time)*1000)) + ' ms'       
                 print "Ticks: " + str(self.nt)
+                print "*************************************"
                 self.init_time = 0
             if self.keeperMoveRect.left - self.ballX > self.tol or self.ballX - self.keeperMoveRect.right > self.tol:
                 if self.keeperPos == 'middle' or self.keeperPos == self.direction:
@@ -339,7 +353,7 @@ class GoalKeeper(MainloopFeedback):
             self.ballX = self.ballX + stepX     
             self.ballY = self.ballY + self.stepY
             self.ballMoveRect = self.ball.get_rect(midbottom=(self.ballX, self.ballY))
-                        
+        
         self.draw_all()
 
         
@@ -371,7 +385,7 @@ class GoalKeeper(MainloopFeedback):
             self.draw_initial()
         self.countdownElapsed += self.elapsed
         if self.countdownElapsed >= (self.countdownFrom) * 1000:
-            if self.trial == - 1:
+            if self.completedTrials == 0:
                 self.send_parallel(self.START_EXP)
             self.countdown = False
             self.countdownElapsed = 0
@@ -405,9 +419,15 @@ class GoalKeeper(MainloopFeedback):
             self.completedTrials += 1; 
             self.firstTickOfTrial = True
             self.keeperChange = False
-            if self.hit:        self.hitMissFalse[0] += 1          
-            elif self.false:    self.hitMissFalse[2] += 1
-            else:               self.hitMissFalse[1] += 1
+            if self.hit:
+                self.lastTrial = 'hit'        
+                self.hitMissFalse[0] += 1          
+            elif self.false:
+                self.lastTrial = 'miss'    
+                self.hitMissFalse[2] += 1
+            else:
+                self.lastTrial = 'late'               
+                self.hitMissFalse[1] += 1
                 
             print "Score: " + str(self.hitMissFalse[0]) + ":" + str(self.hitMissFalse[1]) + ":" + str(self.hitMissFalse[2])
         
@@ -470,6 +490,7 @@ class GoalKeeper(MainloopFeedback):
         self.screen.blit(self.frame, self.frameRect)
         self.screen.blit(self.tb1, self.tb1Rect)
         self.screen.blit(self.tb2, self.tb2Rect)
+        self.screen.blit(self.fix, self.fixRect)
         if drawhbs:
             self.screen.blit(self.hbLeft, self.hbLeftRect)
             self.screen.blit(self.hbRight, self.hbRightRect)
@@ -483,7 +504,7 @@ class GoalKeeper(MainloopFeedback):
         if drawall or drawhbs:
             pygame.display.update()
         else:
-            pygame.display.update([self.ballMoveRect, self.ballRect, self.barRect_init, self.keeperMoveRect, self.kMR, self.bMR])
+            pygame.display.update([self.ballMoveRect, self.ballRect, self.barRect_init, self.keeperMoveRect, self.kMR, self.bMR, self.fixRect])
         
     def wait_before_trial(self):
         if self.waitBeforeTrialElapsed == 0:
@@ -515,8 +536,18 @@ class GoalKeeper(MainloopFeedback):
         self.hbLeftRect = self.hbLeft.get_rect(midright=(self.ballRect.centerx - offset, self.ballRect.centery)) 
         self.hbRightRect = self.hbRight.get_rect(midleft=(self.ballRect.centerx + offset, self.ballRect.centery))
         self.barAreaRect = pygame.Rect(0, 0, 0, 0)
+        
+        self.counter = self.counter+1
+        self.mu_left = abs(math.sin(self.counter*0.01))
+        self.mu_right = abs(math.cos(self.counter*0.01))
+        im1 = Image.blend(self.pilball_lg, self.pilball_lr, self.mu_left)
+        im2 = Image.blend(self.pilball_rg, self.pilball_rr, self.mu_right)
+        self.hbLeft = pygame.image.fromstring(im1.tostring(),(101, 200),'RGBA')
+        self.hbRight = pygame.image.fromstring(im2.tostring(),(100,200),'RGBA')
+        self.hbLeft = pygame.transform.scale(self.hbLeft, self.hbSize)
+        self.hbRight = pygame.transform.scale(self.hbRight, self.hbSize) 
         self.draw_all(True, True)
-
+    
     def do_print(self, text, color, size=None, center=None, superimpose=True):
         """
         Print the given text in the given color and size on the screen.
@@ -531,7 +562,7 @@ class GoalKeeper(MainloopFeedback):
         font = pygame.font.Font(None, size)
         if not superimpose:
             self.screen.blit(self.background, self.backgroundRect)
-        surface = font.render(text, 1, color, self.backgroundColor)
+        surface = font.render(text, 1, color, self.backgroundColor)    
         self.screen.blit(surface, surface.get_rect(center=center))
         if superimpose:
             pygame.display.update(surface.get_rect(center=center))
@@ -546,6 +577,11 @@ class GoalKeeper(MainloopFeedback):
         self.ball_missCircle = pygame.image.load(os.path.join(path, 'ball_missCircle3.png')).convert()
         self.hbLeft = pygame.image.load(os.path.join(path, 'halfball_left.png')).convert()
         self.hbRight = pygame.image.load(os.path.join(path, 'halfball_right.png')).convert()
+        self.pilball_lg = Image.open(os.path.join(path, 'halfball_left_green.png'))
+        self.pilball_lr = Image.open(os.path.join(path, 'halfball_left_red.png'))
+        self.pilball_rg = Image.open(os.path.join(path, 'halfball_right_green.png'))
+        self.pilball_rr = Image.open(os.path.join(path, 'halfball_right_red.png'))
+        im1 = Image.blend(self.pilball_lg, self.pilball_lr, 0.5)
         self.ballMemo = self.ball
         
     def init_graphics(self):
@@ -556,7 +592,7 @@ class GoalKeeper(MainloopFeedback):
         self.screen = pygame.display.get_surface()
         self.size = min(self.screen.get_height(), self.screen.get_width())
         #barWidth = int(self.screenPos[2] * 0.7)
-        barHeight = int(self.screenPos[3] * 0.05)
+        barHeight = int(self.screenPos[3] * 0.08)
         
         # init background
         self.background = pygame.Surface((self.screenPos[2], self.screenPos[3]))
@@ -578,6 +614,16 @@ class GoalKeeper(MainloopFeedback):
         self.keeperRect = self.keeper.get_rect(center=self.keeperCenter['middle'], size=self.keeperSize)
         self.keeperSurface = self.keeperRect.top
         self.keeperRange = (self.keeperCenter['middle'][self.X] - self.keeperCenter['left'][self.X])
+        
+        # init fixation cross
+        fc = self.keeperRect.height*(2.0/3)
+        d = fc/10
+        self.fix = pygame.Surface((fc, fc)) # border of fixtation cross
+        self.fixRect = self.fix.get_rect(center=(self.screen.get_width()/2,self.screen.get_height()/3))
+        self.fix.set_colorkey((0,0,0))
+        fc2 = fc/2
+        pointlist = [(fc2-d,0),(fc2-d,fc2-d),(0,fc2-d),(0,fc2+d),(fc2-d,fc2+d),(fc2-d,fc),(fc2+d,fc),(fc2+d,fc2+d),(fc,fc2+d),(fc,fc2-d),(fc2+d,fc2-d),(fc2+d,0)]
+        pygame.draw.polygon(self.fix, self.fixcrossColor, pointlist)
         
         # init classifier bar frame
         self.frameSize = (self.keeperRange * 2 + self.keeperSize[0], barHeight)
@@ -614,22 +660,22 @@ class GoalKeeper(MainloopFeedback):
         self.ballRect = self.ball.get_rect(midtop=(self.screenPos[2] / 2, ballOffsetY))
         self.ballX, self.ballY = self.ballRect.centerx, self.ballRect.bottom
         self.distBallKeeper = self.keeperRect.top - self.ballRect.bottom
+        self.ball.set_colorkey((0,0,0))
         
         # init hbs
         if self.showTrialStartAnimation:
-            hbSize = (diameter / 2, diameter)
+            self.hbSize = (diameter / 2, diameter)
             self.hbOffset = self.screenPos[2] * (self.distanceBetweenHalfBalls / 2) / 100
-            self.hbLeft = pygame.transform.scale(self.hbLeft, hbSize)
+            self.hbLeft = pygame.transform.scale(self.hbLeft, self.hbSize)
             self.hbLeftRect = self.hbLeft.get_rect(midright=(self.ballRect.centerx - self.hbOffset, self.ballRect.centery))
-            self.hbRight = pygame.transform.scale(self.hbRight, hbSize)
+            self.hbRight = pygame.transform.scale(self.hbRight, self.hbSize)
             self.hbRightRect = self.hbRight.get_rect(midleft=(self.ballRect.centerx + self.hbOffset, self.ballRect.centery))
             
         self.counterCenter = (self.frameRect.right * self.x_transl, self.size / 20)
         self.counterSize = self.screenPos[3] / 15
 
-        # Calculate stepsize in x- and y-direction of the ball dependend on the ball speed
-        alpha = 1.0 * (self.trial + 1) / self.trials
-        self.trialDuration = (1 - alpha) * self.durationPerTrial[0] + alpha * self.durationPerTrial[1]
+        # Calculate stepsize in x- and y-direction of the ball dependend on the ball speed                
+        self.set_trial_time()         
         self.stepY = self.distBallKeeper / (self.trialDuration / 1000.0 * self.FPS)
         tangens = 1.0 * self.keeperRange / self.distBallKeeper
         self.stepX = tangens * self.stepY
@@ -660,6 +706,15 @@ class GoalKeeper(MainloopFeedback):
             else:
                 self.draw_all(True)
 
+    def set_trial_time(self):
+        if self.adaptive_trial_time and self.completedTrials > 0:            
+            if self.lastTrial == 'hit':
+                self.trialDuration = self.trialDuration - self.durationPerTrial[0] * (self.stepsize/100.0)
+            else:
+                self.trialDuration = self.trialDuration + self.durationPerTrial[0] * (self.stepsize/100.0)
+        else:
+            alpha = 1.0 * self.completedTrials / self.trials
+            self.trialDuration = (1 - alpha) * self.durationPerTrial[0] + alpha * self.durationPerTrial[1]
 
     def draw_initial(self, draw=True):
         """
@@ -670,6 +725,7 @@ class GoalKeeper(MainloopFeedback):
         self.screen.blit(self.frame, self.frameRect)
         self.screen.blit(self.tb1, self.tb1Rect)
         self.screen.blit(self.tb2, self.tb2Rect)
+        self.screen.blit(self.fix, self.fixRect)
         if self.showTrialStartAnimation:
             self.screen.blit(self.hbLeft, self.hbLeftRect)
             self.screen.blit(self.hbRight, self.hbRightRect)
