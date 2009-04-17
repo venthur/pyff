@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 
 
-# TODO:
-# - adaptive timing (class dependent)
-
  
 # GoalKeeper.py -
 # Copyright (C) 2008-2009  Simon Scholler
@@ -64,12 +61,14 @@ class GoalKeeper(MainloopFeedback):
         # WTF?
         #self.__pport = 8240
         #self.logger.debug("on_init")
+        self.testing = 0
         self.counter = 0
-        self.durationPerTrial = [3000, 3000]    # time per trial at the beginning and the end (in seconds)
+        self.durationPerTrial = [2000, 2000]    # time per trial at the beginning and the end (in seconds)
+        self.max_durationPerTrial = 2500
         self.adaptive_trial_time = True
         self.stepsize = 5                    # stepsize of the adaptive procedure 
                                              # (in percent of the initial trial time (=self.durationPerTrial[0])
-        self.trials = 100
+        self.trials = 50
         self.pauseAfter = 20
         self.pauseDuration = 15000
         self.FPS = 40
@@ -93,6 +92,10 @@ class GoalKeeper(MainloopFeedback):
         self.continueAfterMiss = True
         self.playTimeAfterMiss = 1500        # in ms   
         self.distanceBetweenHalfBalls = 25             # in percent of the screen width
+        
+        self.mu_left, self.mu_right = 1,1
+        self.mu_bound_left = [0,1]
+        self.mu_bound_right = [0,1]
         
         # Feedback state booleans
         self.shortPause = False
@@ -196,7 +199,7 @@ class GoalKeeper(MainloopFeedback):
 
     def on_control_event(self, data):
         ##self.logger.debug("on_control_event: %s" % str(data))
-        self.f = data["cl_output"]
+        self.f, self.mu_right, self.mu_left = data["cl_output"]
         
         
     def init_run(self):
@@ -222,7 +225,7 @@ class GoalKeeper(MainloopFeedback):
             resized = False
             self.firstChange = True
             self.markerSent = False
-            #self.init_graphics()
+            self.init_graphics()
             self.trialElapsed = 0
             self.c = 0
             self.barX = 0;
@@ -537,11 +540,14 @@ class GoalKeeper(MainloopFeedback):
         self.hbRightRect = self.hbRight.get_rect(midleft=(self.ballRect.centerx + offset, self.ballRect.centery))
         self.barAreaRect = pygame.Rect(0, 0, 0, 0)
         
-        self.counter = self.counter+1
-        self.mu_left = abs(math.sin(self.counter*0.01))
-        self.mu_right = abs(math.cos(self.counter*0.01))
-        im1 = Image.blend(self.pilball_lg, self.pilball_lr, self.mu_left)
-        im2 = Image.blend(self.pilball_rg, self.pilball_rr, self.mu_right)
+
+        if self.testing:
+            self.counter = self.counter+1
+            self.mu_left = abs(math.sin(self.counter*0.01))
+            self.mu_right = abs(math.cos(self.counter*0.01))
+        #TODO: init mu
+        im1 = Image.blend(self.pilball_lr, self.pilball_lg, min(self.mu_bound_left[1],max(self.mu_bound_left[0],self.mu_left)))
+        im2 = Image.blend(self.pilball_rr, self.pilball_rg, min(self.mu_bound_right[1],max(self.mu_bound_left[0],self.mu_right)))
         self.hbLeft = pygame.image.fromstring(im1.tostring(),(101, 200),'RGBA')
         self.hbRight = pygame.image.fromstring(im2.tostring(),(100,200),'RGBA')
         self.hbLeft = pygame.transform.scale(self.hbLeft, self.hbSize)
@@ -674,8 +680,9 @@ class GoalKeeper(MainloopFeedback):
         self.counterCenter = (self.frameRect.right * self.x_transl, self.size / 20)
         self.counterSize = self.screenPos[3] / 15
 
-        # Calculate stepsize in x- and y-direction of the ball dependend on the ball speed                
-        self.set_trial_time()         
+        # Calculate stepsize in x- and y-direction of the ball dependend on the ball speed     
+        if not self.waitBeforeTrial:           
+            self.set_trial_time()         
         self.stepY = self.distBallKeeper / (self.trialDuration / 1000.0 * self.FPS)
         tangens = 1.0 * self.keeperRange / self.distBallKeeper
         self.stepX = tangens * self.stepY
@@ -709,9 +716,12 @@ class GoalKeeper(MainloopFeedback):
     def set_trial_time(self):
         if self.adaptive_trial_time and self.completedTrials > 0:            
             if self.lastTrial == 'hit':
-                self.trialDuration = self.trialDuration - self.durationPerTrial[0] * (self.stepsize/100.0)
+                td = self.trialDuration - self.durationPerTrial[0] * (self.stepsize/100.0)
             else:
-                self.trialDuration = self.trialDuration + self.durationPerTrial[0] * (self.stepsize/100.0)
+                td = self.trialDuration + self.durationPerTrial[0] * (self.stepsize/100.0)
+            self.trialDuration = min(self.max_durationPerTrial, td)
+        elif self.adaptive_trial_time and self.completedTrials == 0:
+            self.trialDuration = self.durationPerTrial[0]
         else:
             alpha = 1.0 * self.completedTrials / self.trials
             self.trialDuration = (1 - alpha) * self.durationPerTrial[0] + alpha * self.durationPerTrial[1]
