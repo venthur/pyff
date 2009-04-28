@@ -61,14 +61,25 @@ class GoalKeeper(MainloopFeedback):
         # WTF?
         #self.__pport = 8240
         #self.logger.debug("on_init")
-        self.testing = 0
-        self.counter = 0
-        self.durationPerTrial = [2000, 2000]    # time per trial at the beginning and the end (in seconds)
-        self.max_durationPerTrial = 2500
+        self.testing = 1
         self.adaptive_trial_time = True
+        if self.testing:            
+            print('WARNING: testing option ON!')
+            self.TODAY_DIR = 'C:/'
+            self.keyboard = 0
+            self.counter = 0  # for sinewavy mu-rhythm feedback
+            
+        if self.adaptive_trial_time and not self.keyboard and os.access(self.TODAY_DIR+'/adaptive_endtimes.txt', os.F_OK):
+            f = open(self.TODAY_DIR+'/adaptive_endtimes.txt', 'r')
+            endtimes = f.readlines()
+            self.durationPerTrial = [int(endtimes[-1][0:-3])]
+        else:
+            self.durationPerTrial = [2000, 2000]    # time per trial at the beginning and the end (in seconds)
+        
+        self.max_durationPerTrial = 2500        
         self.stepsize = 5                    # stepsize of the adaptive procedure 
                                              # (in percent of the initial trial time (=self.durationPerTrial[0])
-        self.trials = 50
+        self.trials = 2
         self.pauseAfter = 20
         self.pauseDuration = 15000
         self.FPS = 40
@@ -191,6 +202,7 @@ class GoalKeeper(MainloopFeedback):
         elif self.waitBeforeTrial:
             self.wait_before_trial()
         elif self.trialStartAnimation:
+            self.update_mu_rhythm_fb()
             self.animate_trial_start()
         else:
             self.nt += 1            
@@ -409,7 +421,11 @@ class GoalKeeper(MainloopFeedback):
         self.draw_all(False)
         self.do_print("(%i : %i : %i)" % (self.hitMissFalse[0], self.hitMissFalse[1], self.hitMissFalse[2]), self.fontColor, self.size / 10)
         pygame.time.wait(self.showGameOverDuration)
-
+        self.send_parallel(self.END_EXP)
+        if self.adaptive_trial_time and not self.keyboard:
+            self.set_trial_time()
+            file = open(self.TODAY_DIR + '//adaptive_endtimes.txt', 'a')
+            file.write(str(self.trialDuration)+'\n')
         
     def hit_miss_tick(self):
         """
@@ -493,7 +509,9 @@ class GoalKeeper(MainloopFeedback):
         self.screen.blit(self.frame, self.frameRect)
         self.screen.blit(self.tb1, self.tb1Rect)
         self.screen.blit(self.tb2, self.tb2Rect)
-        self.screen.blit(self.fix, self.fixRect)
+        self.screen.blit(self.fixl, self.fixlRect)
+        self.screen.blit(self.fixr, self.fixrRect)
+        self.screen.blit(self.fixb, self.fixbRect)
         if drawhbs:
             self.screen.blit(self.hbLeft, self.hbLeftRect)
             self.screen.blit(self.hbRight, self.hbRightRect)
@@ -507,7 +525,7 @@ class GoalKeeper(MainloopFeedback):
         if drawall or drawhbs:
             pygame.display.update()
         else:
-            pygame.display.update([self.ballMoveRect, self.ballRect, self.barRect_init, self.keeperMoveRect, self.kMR, self.bMR, self.fixRect])
+            pygame.display.update([self.ballMoveRect, self.ballRect, self.barRect_init, self.keeperMoveRect, self.kMR, self.bMR, self.fixbRect])
         
     def wait_before_trial(self):
         if self.waitBeforeTrialElapsed == 0:
@@ -528,6 +546,7 @@ class GoalKeeper(MainloopFeedback):
         self.animationElapsed += self.elapsed
         if self.timeOfStartAnimation < self.animationElapsed:
             self.trialStartAnimation = False
+            self.reset_cursor_colors()
             self.animationElapsed = 0
             self.hbLeftRect = self.hbLeft.get_rect(midright=self.ballRect.center) 
             self.hbRightRect = self.hbRight.get_rect(midleft=self.ballRect.center)
@@ -539,19 +558,6 @@ class GoalKeeper(MainloopFeedback):
         self.hbLeftRect = self.hbLeft.get_rect(midright=(self.ballRect.centerx - offset, self.ballRect.centery)) 
         self.hbRightRect = self.hbRight.get_rect(midleft=(self.ballRect.centerx + offset, self.ballRect.centery))
         self.barAreaRect = pygame.Rect(0, 0, 0, 0)
-        
-
-        if self.testing:
-            self.counter = self.counter+1
-            self.mu_left = abs(math.sin(self.counter*0.01))
-            self.mu_right = abs(math.cos(self.counter*0.01))
-        #TODO: init mu
-        im1 = Image.blend(self.pilball_lr, self.pilball_lg, min(self.mu_bound_left[1],max(self.mu_bound_left[0],self.mu_left)))
-        im2 = Image.blend(self.pilball_rr, self.pilball_rg, min(self.mu_bound_right[1],max(self.mu_bound_left[0],self.mu_right)))
-        self.hbLeft = pygame.image.fromstring(im1.tostring(),(101, 200),'RGBA')
-        self.hbRight = pygame.image.fromstring(im2.tostring(),(100,200),'RGBA')
-        self.hbLeft = pygame.transform.scale(self.hbLeft, self.hbSize)
-        self.hbRight = pygame.transform.scale(self.hbRight, self.hbSize) 
         self.draw_all(True, True)
     
     def do_print(self, text, color, size=None, center=None, superimpose=True):
@@ -573,6 +579,36 @@ class GoalKeeper(MainloopFeedback):
         if superimpose:
             pygame.display.update(surface.get_rect(center=center))
             
+    def update_mu_rhythm_fb(self):
+        if self.testing:
+            self.counter = self.counter+1
+            self.mu_left = abs(math.sin(self.counter*0.05))
+            self.mu_right = abs(math.cos(self.counter*0.05))
+        self.mu_left = self.normalize_mu(self.mu_left, 'left')
+        self.mu_right = self.normalize_mu(self.mu_right, 'right')
+        colorl = self.colorbar[int(self.mu_left*(len(self.colorbar)-1) )]
+        colorr = self.colorbar[int(self.mu_right*(len(self.colorbar)-1) )]
+        pygame.draw.polygon(self.fixl, colorl, self.pointlistl)
+        pygame.draw.polygon(self.fixr, colorr, self.pointlistr)
+            
+    def normalize_mu(self, mu, mu_class):
+        if mu_class=='left':
+            bound = self.mu_bound_left
+        elif mu_class=='right':
+            bound = self.mu_bound_right
+        if mu>bound[1]:
+            mu = 1
+        elif mu<bound[0]:
+            mu = 0
+        else:
+            mu = (1/(bound[1]-bound[0])) * (mu-bound[0])
+        return mu
+        
+        
+    def reset_cursor_colors(self):
+        pygame.draw.polygon(self.fixl, self.fixcrossColor, self.pointlistl)
+        pygame.draw.polygon(self.fixr, self.fixcrossColor, self.pointlistr)
+            
     def load_images(self):
         path = os.path.dirname(globals()["__file__"]) 
         self.keeper = pygame.image.load(os.path.join(path, 'keeper.png')).convert()
@@ -583,11 +619,6 @@ class GoalKeeper(MainloopFeedback):
         self.ball_missCircle = pygame.image.load(os.path.join(path, 'ball_missCircle3.png')).convert()
         self.hbLeft = pygame.image.load(os.path.join(path, 'halfball_left.png')).convert()
         self.hbRight = pygame.image.load(os.path.join(path, 'halfball_right.png')).convert()
-        self.pilball_lg = Image.open(os.path.join(path, 'halfball_left_green.png'))
-        self.pilball_lr = Image.open(os.path.join(path, 'halfball_left_red.png'))
-        self.pilball_rg = Image.open(os.path.join(path, 'halfball_right_green.png'))
-        self.pilball_rr = Image.open(os.path.join(path, 'halfball_right_red.png'))
-        im1 = Image.blend(self.pilball_lg, self.pilball_lr, 0.5)
         self.ballMemo = self.ball
         
     def init_graphics(self):
@@ -622,14 +653,24 @@ class GoalKeeper(MainloopFeedback):
         self.keeperRange = (self.keeperCenter['middle'][self.X] - self.keeperCenter['left'][self.X])
         
         # init fixation cross
-        fc = self.keeperRect.height*(2.0/3)
-        d = fc/10
-        self.fix = pygame.Surface((fc, fc)) # border of fixtation cross
-        self.fixRect = self.fix.get_rect(center=(self.screen.get_width()/2,self.screen.get_height()/3))
-        self.fix.set_colorkey((0,0,0))
+        fc = self.keeperRect.height
+        d = fc/6
+        self.fixl = pygame.Surface((fc, fc)) # left part
+        self.fixr = pygame.Surface((fc, fc)) # right part
+        self.fixb = pygame.Surface((fc, fc)) # border of fixtation cross
+        self.fixlRect = self.fixl.get_rect(center=(self.screen.get_width()/2,self.screen.get_height()/3))
+        self.fixrRect = self.fixr.get_rect(center=(self.screen.get_width()/2,self.screen.get_height()/3))
+        self.fixbRect = self.fixb.get_rect(center=(self.screen.get_width()/2,self.screen.get_height()/3))
+        self.fixl.set_colorkey((0,0,0))
+        self.fixr.set_colorkey((0,0,0))
+        self.fixb.set_colorkey((0,0,0))
         fc2 = fc/2
-        pointlist = [(fc2-d,0),(fc2-d,fc2-d),(0,fc2-d),(0,fc2+d),(fc2-d,fc2+d),(fc2-d,fc),(fc2+d,fc),(fc2+d,fc2+d),(fc,fc2+d),(fc,fc2-d),(fc2+d,fc2-d),(fc2+d,0)]
-        pygame.draw.polygon(self.fix, self.fixcrossColor, pointlist)
+        self.pointlistl = [(fc2-d,0),(fc2-d,fc2-d),(0,fc2-d),(0,fc2+d),(fc2-d,fc2+d),(fc2-d,fc),(fc2,fc),(fc2,0)]
+        self.pointlistr = [(fc2+d,0),(fc2+d,fc2-d),(fc,fc2-d),(fc,fc2+d),(fc2+d,fc2+d),(fc2+d,fc),(fc2,fc),(fc2,0)]
+        pointlistb = [(fc2-d,0),(fc2-d,fc2-d),(0,fc2-d),(0,fc2+d),(fc2-d,fc2+d),(fc2-d,fc),(fc2+d,fc),(fc2+d,fc2+d),(fc,fc2+d),(fc,fc2-d),(fc2+d,fc2-d),(fc2+d,0)]
+        pygame.draw.polygon(self.fixl, self.fixcrossColor, self.pointlistl)
+        pygame.draw.polygon(self.fixr, self.fixcrossColor, self.pointlistr)
+        pygame.draw.polygon(self.fixb, self.fixcrossColor, pointlistb, 3)
         
         # init classifier bar frame
         self.frameSize = (self.keeperRange * 2 + self.keeperSize[0], barHeight)
@@ -735,7 +776,9 @@ class GoalKeeper(MainloopFeedback):
         self.screen.blit(self.frame, self.frameRect)
         self.screen.blit(self.tb1, self.tb1Rect)
         self.screen.blit(self.tb2, self.tb2Rect)
-        self.screen.blit(self.fix, self.fixRect)
+        self.screen.blit(self.fixl, self.fixlRect)
+        self.screen.blit(self.fixr, self.fixrRect)
+        self.screen.blit(self.fixb, self.fixbRect)
         if self.showTrialStartAnimation:
             self.screen.blit(self.hbLeft, self.hbLeftRect)
             self.screen.blit(self.hbRight, self.hbRightRect)
