@@ -58,27 +58,43 @@ class GoalKeeper(MainloopFeedback):
         """
         Initializes variables etc., but not pygame itself.
         """
-        # WTF?
-        #self.__pport = 8240
         #self.logger.debug("on_init")
-        self.testing = 1
-        self.adaptive_trial_time = True
-        if self.testing:            
-            print('WARNING: testing option ON!')
+        ### TESTING                 
+        if __name__ == '__main__':
+            self.testing = 1         
+            print('WARNING: Testing Option ON!')
             self.TODAY_DIR = 'C:/'
             self.keyboard = 0
             self.counter = 0  # for sinewavy mu-rhythm feedback
-            
-        if self.adaptive_trial_time and not self.keyboard and os.access(self.TODAY_DIR+'/adaptive_endtimes.txt', os.F_OK):
-            f = open(self.TODAY_DIR+'/adaptive_endtimes.txt', 'r')
-            endtimes = f.readlines()
-            self.durationPerTrial = [int(endtimes[-1][0:-3])]
         else:
-            self.durationPerTrial = [2000, 2000]    # time per trial at the beginning and the end (in seconds)
+            self.testing = 0
+        ### end ###
         
+        self.durationPerTrial = [2000, 2000]    # time of the trial at the beginning and the end 
+                                                # (linear interpolation in between); unused if
+                                                # self.adaptive_trial_time = True  
+        
+        ### adaptation specific settings (used only if self.adaptive_trial_time = True) ###
+        self.adaptive_trial_time = True
+        if self.adaptive_trial_time and not self.keyboard:
+            self.read_log()
+        self.log_written = 0
         self.max_durationPerTrial = 2500        
-        self.stepsize = 5                    # stepsize of the adaptive procedure 
-                                             # (in percent of the initial trial time (=self.durationPerTrial[0])
+        self.endtimes = []          # trial endtimes for log-file        
+        self.stepsize = 5           # stepsize of the adaptive procedure 
+                                    # (in percent of the initial trial time (=self.durationPerTrial[0])
+        ### end ###
+        
+        ### mu-rhythm settings (used only if mu_fb = 1) ###
+        self.mu_fb = 1
+        self.mu_left, self.mu_right = 1,1
+        self.mu_bound_left = [0,1]
+        self.mu_bound_right = [0,1]        
+        self.colorbar = list()
+        for n in range(101):
+            self.colorbar.append((int(round(255*(n/100.0))), int(round(255*(1-n/100.0))),0))
+        ### end ###
+            
         self.trials = 2
         self.pauseAfter = 20
         self.pauseDuration = 15000
@@ -104,9 +120,6 @@ class GoalKeeper(MainloopFeedback):
         self.playTimeAfterMiss = 1500        # in ms   
         self.distanceBetweenHalfBalls = 25             # in percent of the screen width
         
-        self.mu_left, self.mu_right = 1,1
-        self.mu_bound_left = [0,1]
-        self.mu_bound_right = [0,1]
         
         # Feedback state booleans
         self.shortPause = False
@@ -133,7 +146,7 @@ class GoalKeeper(MainloopFeedback):
         self.eps = 0.5
         
         
-        # Colours
+        # Colour settings
         self.backgroundColor = (50, 50, 50)
         self.fontColor = (0, 150, 150)
         self.countdownColor = (200, 80, 118)
@@ -158,10 +171,6 @@ class GoalKeeper(MainloopFeedback):
         self.falsestr = ":" # " False: "
         self.x_transl = 0.95
 
-        # Define colorbar
-        self.colorbar = list()
-        for n in range(101):
-            self.colorbar.append((int(round(255*(n/100.0))), int(round(255*(1-n/100.0))),0))
 
     def pre_mainloop(self):
         #self.logger.debug("on_play")
@@ -202,8 +211,9 @@ class GoalKeeper(MainloopFeedback):
         elif self.waitBeforeTrial:
             self.wait_before_trial()
         elif self.trialStartAnimation:
-            self.update_mu_rhythm_fb()
-            self.animate_trial_start()
+            if self.mu_fb:
+                self.update_mu_fb()
+                self.animate_trial_start()
         else:
             self.nt += 1            
             self.trial_tick()
@@ -230,7 +240,7 @@ class GoalKeeper(MainloopFeedback):
         # save old move-rectangles for efficient drawing
         self.bMR, self.kMR = self.ballMoveRect.move(0, 0), self.keeperMoveRect.move(0, 0)
         
-        if self.firstTickOfTrial:            
+        if self.firstTickOfTrial:                        
             self.f = 0.0
             self.init_time = time.clock() 
             # initialize feedback start screen
@@ -238,6 +248,7 @@ class GoalKeeper(MainloopFeedback):
             self.firstChange = True
             self.markerSent = False
             self.init_graphics()
+            self.endtimes.append(int(self.trialDuration))
             self.trialElapsed = 0
             self.c = 0
             self.barX = 0;
@@ -422,11 +433,31 @@ class GoalKeeper(MainloopFeedback):
         self.do_print("(%i : %i : %i)" % (self.hitMissFalse[0], self.hitMissFalse[1], self.hitMissFalse[2]), self.fontColor, self.size / 10)
         pygame.time.wait(self.showGameOverDuration)
         self.send_parallel(self.END_EXP)
-        if self.adaptive_trial_time and not self.keyboard:
-            self.set_trial_time()
-            file = open(self.TODAY_DIR + '//adaptive_endtimes.txt', 'a')
-            file.write(str(self.trialDuration)+'\n')
+        if self.adaptive_trial_time and not self.keyboard and not self.log_written:
+            self.write_log()
+            
+    def write_log(self):
+        self.set_trial_time()
+        self.endtimes.append(self.trialDuration)
+        file = open(self.logfilename, 'w')
+        for n in range(len(self.endtimes)):
+            file.write(str(int(self.endtimes[n]))+'\n')
+        self.log_written = 1
         
+    def read_log(self):
+        subdir = '/adaptive_trial_times/'
+        file = 'gk_block'
+        file_no = 1
+        if not os.access(self.TODAY_DIR + subdir, os.F_OK):
+            os.mkdir(self.TODAY_DIR + subdir)
+        elif os.listdir(self.TODAY_DIR + subdir):  # if not empty
+            while os.access(self.TODAY_DIR+subdir+file+str(file_no)+'.txt', os.F_OK):
+                file_no += 1
+            f = open(self.TODAY_DIR+subdir+file+str(file_no-1)+'.txt')            
+            endtimes = f.readlines()
+            self.durationPerTrial = [int(endtimes[-1][:]) * 1.2]
+        self.logfilename = self.TODAY_DIR + subdir + file + str(file_no) + '.txt'
+                
     def hit_miss_tick(self):
         """
         One tick of the Hit/Miss loop.
@@ -579,7 +610,7 @@ class GoalKeeper(MainloopFeedback):
         if superimpose:
             pygame.display.update(surface.get_rect(center=center))
             
-    def update_mu_rhythm_fb(self):
+    def update_mu_fb(self):
         if self.testing:
             self.counter = self.counter+1
             self.mu_left = abs(math.sin(self.counter*0.05))
