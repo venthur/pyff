@@ -197,7 +197,7 @@ class VisualP300(MainloopFeedback):
         
         # pygame specific variables
         self.pygame_info = self.DEFAULT_PYGAME_INFO     
-        self.video_driver = self.DEFAULT_VIDEO_DRIVER
+#        self.video_driver = self.DEFAULT_VIDEO_DRIVER
 
     def pre_mainloop(self):
         self.current_flash = 0                  # Index of the flash presented last
