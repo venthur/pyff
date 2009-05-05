@@ -27,7 +27,10 @@ import sys
 import os
 import traceback
 from optparse import OptionParser
-from ctypes import windll
+try:
+    from ctypes import windll
+except ImportError:
+    print "Unable to import ctypes.windll"
 try:
     import parallel
 except ImportError:
