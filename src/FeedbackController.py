@@ -27,7 +27,7 @@ import sys
 import os
 import traceback
 from optparse import OptionParser
-
+from ctypes import windll
 try:
     import parallel
 except ImportError:
@@ -40,18 +40,32 @@ from FeedbackBase.Feedback import Feedback
 
 
 class FeedbackController(object):
-    def __init__(self, plugin=None, fbpath=None):
+    def __init__(self, plugin=None, fbpath=None, port=None):
         # Setup my stuff:
         self.logger = logging.getLogger("FeedbackController")
         self.encoder = bcixml.XmlEncoder()
         self.decoder = bcixml.XmlDecoder()
+        self.port = port
         # Setup the parallel port
+        
+        
         self.pp = None
-        try:
-            self.pp = parallel.Parallel()
-        except:
-            self.logger.warning("Unable to open parallel port!")
-        self.feedback = Feedback(self.pp)
+        self.logger.debug("Platform: " + sys.platform)
+        if sys.platform == 'win32':        
+            try:
+                self.pp = windll.inpout32
+                
+            except:
+                self.logger.warning("Could not load inpout32.dll. Please make sure it is located in the system32 directory")        
+        else:
+            try:
+                self.pp = parallel.Parallel()
+                
+            except:
+                self.logger.warning("Unable to open parallel port!")
+                
+        
+        self.feedback = Feedback(self.pp, port)
         self.playEvent = threading.Event()
         if plugin:
             self.logger.debug("Loading plugin %s" % str(plugin))
@@ -77,6 +91,7 @@ class FeedbackController(object):
             self.logger.info("\t%s" % str(i))
         
         self.fc_data = {}
+        
         
 #
 # Feedback Controller Plugin-Methods
@@ -233,7 +248,7 @@ class FeedbackController(object):
             self.pre_quit()
             self.feedback._on_quit()
             # Load the default dummy Feedback
-            self.feedback = Feedback(self.pp)
+            self.feedback = Feedback(self.pp, self.port)
             self.post_quit()
         elif cmd == bcixml.CMD_SEND_INIT:
             self.logger.info("Received SEND_INIT signal")
@@ -242,11 +257,11 @@ class FeedbackController(object):
             name = getattr(self.feedback, "_feedback")
             try:
                 self.logger.debug("Trying to load feedback: %s" % str(name))
-                self.feedback = self.pluginController.load_plugin(name)(self.pp)
+                self.feedback = self.pluginController.load_plugin(name)(self.pp, self.port)
             except:
                 self.logger.error("Unable to load feedback: %s" % str(name))
                 self.logger.error(traceback.format_exc())
-                self.feedback = Feedback(self.pp)
+                self.feedback = Feedback(self.pp, self.port)
             # Proably a new one!
             self.pre_init()
             self.feedback._on_init()
@@ -275,8 +290,8 @@ class Dispatcher(asyncore.dispatcher):
         self.feedbackController.on_signal(self.addr, datagram)    
 
 
-def start_fc(plugin=None, fbpath=None):
-    fc = FeedbackController(plugin, fbpath)
+def start_fc(plugin=None, fbpath=None, port=None):
+    fc = FeedbackController(plugin, fbpath, port)
     fc.start()
 
 def stop_fc():
@@ -313,6 +328,10 @@ the Free Software Foundation; either version 2 of the License, or
     parser.add_option('-a', '--additional-feedback-path', dest='fbpath',
                       help="Additional path to search for Feedbacks.",
                       metavar="DIR")
+    parser.add_option('--port', dest='port',
+                      help="Set the Parallel port address to use. Windows only. Should be in Hex (eg: 0x378)",
+                      metavar="PORTNUM")
+
 
     options, args = parser.parse_args()
 
@@ -334,9 +353,13 @@ the Free Software Foundation; either version 2 of the License, or
     # get the rest
     plugin = options.plugin
     fbpath = options.fbpath
+    port = None
+    if options.port != None:
+        port = int(options.port, 16)
 
+    
     try:
-        start_fc(plugin, fbpath)
+        start_fc(plugin, fbpath, port)
     except (KeyboardInterrupt, SystemExit):
         logging.info("Caught keyboard interrupt or system exit; quitting")
         stop_fc()

@@ -24,7 +24,7 @@ feedbacks.
 import logging
 import threading
 import datetime
-
+import sys
 
 class Feedback(object):
     """
@@ -47,7 +47,7 @@ class Feedback(object):
     method in your feedback.
     """
 
-    def __init__(self, pport=None):
+    def __init__(self, pport=None, port_num=None):
         """
         Initializes the feedback.
         
@@ -61,6 +61,11 @@ class Feedback(object):
         self.logger = logging.getLogger("FB." + self.__class__.__name__)
         self.logger.debug("Loaded my logger.")
         self._pport = pport
+        if port_num != None:
+            self._port_num = port_num # used in windows only''
+        else:
+            self._port_num = 0x378
+        
  
     #
     # Internal routines not inteded for overwriting
@@ -233,7 +238,10 @@ class Feedback(object):
         # FIXME: use logger instead
         print "TRIGGER %s: %s" % (str(datetime.datetime.now()), str(data))
         if self._pport:
-            self._pport.setData(data)
+            if sys.platform == 'win32':
+                self._pport.Out32(self._port_num, data)
+            else:
+                self._pport.setData(data)
             if reset:
                 timer = threading.Timer(0.01, self.send_parallel, (0x0, False))
                 timer.start()
