@@ -5,21 +5,23 @@ import time
 
 from FeedbackBase.MainloopFeedback import MainloopFeedback
 
+LEFT = -1.
+RIGHT = 1.
+NONE = 0.
 
 class TobiQLAdapter(MainloopFeedback):
     
-    LEFT_SIGNAL = "l"
-    RIGHT_SIGNAL = "r"
-    
     def init(self):
         self.server_address = ("127.0.0.1", 10001)
+        self.left_signal = "l"
+        self.right_signal = "r"
         
         # control_signal = bias + gain * control_signal
         self.gain = 1.0
         self.bias = 0.0
         
         # Last selected, value
-        self.last = 0
+        self.last = NONE
         
         # current control signal
         self.cs = 0.0
@@ -27,12 +29,12 @@ class TobiQLAdapter(MainloopFeedback):
     
     def play_tick(self):
         time.sleep(0.5)
-        if self.cs <= -1. and (self.last == 1 or self.last == 0):
-            self.send_signal(TobiQLAdapter.LEFT_SIGNAL)
-            self.last = -1
-        elif self.cs >= 1. and (self.last == -1 or self.last == 0):
-            self.send_signal(TobiQLAdapter.RIGHT_SIGNAL)
-            self.last = 1
+        if self.cs <= LEFT and (self.last == RIGHT or self.last == NONE):
+            self.send_signal(self.left_signal)
+            self.last = LEFT
+        elif self.cs >= RIGHT and (self.last == LEFT or self.last == NONE):
+            self.send_signal(self.right_signal)
+            self.last = RIGHT
         print "%i \t %f\r" % (self.last, self.cs)
 
     
@@ -85,4 +87,3 @@ class TobiQLAdapter(MainloopFeedback):
         """Reads the configuration file and returns the IPendPoint object or
         throws an exception."""
         return self.server_address
-    
