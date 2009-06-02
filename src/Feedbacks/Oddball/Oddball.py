@@ -3,18 +3,17 @@
 
 # ODDBALL BASE CLASS from which all the subclasses inherit.
 #
-#
 # Currently existing subclasses:
 #     - AuditoryOddball
 #     - VisualOddball
 #     - TactileOddball
 #
-# Methods that have to be implemented by a subclass
+# Methods that have to be implemented by a subclass:
 # - init:                       if some default settings should be changed
 # - load_stimulus:              if stimuli are files (e.g. images, audio-files)    
 # - get_predefined_stimuli:     if stimuli are created by a python module
-# - present_stimulus:           determines how the stimuli are presented
-#
+# - start_stimulus:             determines how the stimulus presentation is started
+# - stop_stimulus:              determines how the stimulus presentation is stopped
 #
 # Copyright (C) 2009  Simon Scholler
 #
@@ -46,40 +45,41 @@ from FeedbackBase.MainloopFeedback import MainloopFeedback
 
 class Oddball(MainloopFeedback):
     
-    RUN_START, RUN_END = 252, 253
+    RUN_START, RUN_END = 252,253
     COUNTDOWN_START, COUNTDOWN_END = 40,41
-    STANDARD, DEVIANT = 10,20
+    STANDARD, DEVIANT = list(),list()    
+    # standards have markers 10,11,12,... ; deviants 20,21,22,... (cf. get_stimuli())
     RESP_STD, RESP_DEV = 1,2
     SHORTPAUSE_START, SHORTPAUSE_END = 249, 250
     
     def init(self):
         self.screen_pos = [100, 100, 640, 480]
         self.FPS = 40
-    
-        self.DIR_DEV = ''
-        self.DIR_STD= ''
-        self.stimuli = 'predefined'
-        self.get_stimuli()
-        
         self.nStim = 100
         self.pause_after = 50        
         self.dev_prob = 0.1        
         self.countdown_from = 2
         self.show_standards = True
         self.give_feedback = True
+    
+        self.DIR_DEV = ''
+        self.DIR_STD= ''
+        stimuli_opts = ['load', 'predefined']
+        self.stimuli = stimuli_opts[1]
+        self.get_stimuli()
         
         # response options        
         self.rsp_key_dev = 'f'
         self.rsp_key_std = 'j' 
-        self.response_opts = ['none', 'dev_only', 'both'] # none: subject should not press a key
-                                                          # dev_only: subject should press only for deviants
-                                                          # both: subject reponse for both stds and devs        
-        self.response = self.response_opts[2]            
+        response_opts = ['none', 'dev_only', 'both'] # none: subject should not press a key
+                                                     # dev_only: subject should press only for deviants
+                                                     # both: subject reponse for both stds and devs        
+        self.response = response_opts[2]            
 
         # Durations of the different blocks
-        self.feedback_duration, self.stim_duration = 200,  500      
+        self.feedback_duration, self.stim_duration = 300,  400      
         self.gameover_duration = 3000
-        self.responsetime_duration = 0 
+        self.responsetime_duration = 100
         self.beforestim_ival = [200, 300]  # randomly between the two values
                 
         # Feedback state booleans        
@@ -111,25 +111,33 @@ class Oddball(MainloopFeedback):
                                     
     def get_stimuli(self):
         if self.stimuli == 'load':              # load stimuli from files
-            self.load_stimuli()
+            self.stds, self.devs = self.load_stimuli()
         elif self.stimuli == 'predefined':      # use predefined stimuli
-            self.define_stimuli()
+            self.stds, self.devs = self.define_stimuli()
         else:
             raise Exception('Stimuli option unknown.')
-    
+        
+        # create parallel port markers for deviants and standards
+        [self.STANDARD.append(10+s) for s in range(len(self.stds))]
+        [self.DEVIANT.append(20+d) for d in range(len(self.devs))]
+            
         
     def load_stimuli(self):
         """
         Loads deviant and standard stimuli from files (in folders
         self.FIG_DIR_DEV and self.FIG_DIR_STD)
         """
-        self.stds, self.devs = [], []        
+        stds, devs = [], []
+        if self.DIR_DEV == '':
+            raise Exception('Directory containing deviant stimuli has to be defined.')        
+        elif self.DIR_STD=='' and self.show_standards:
+            raise Exception('Directory containing standard stimuli has to be defined.')
+            
         for filename in os.listdir(self.DIR_STD):
-            self.stds.append(load_stimulus(self.DIR_STD+filename))
+            stds.append(load_stimulus(self.DIR_STD+filename))
         for filename in os.listdir(self.DIR_DEV):
-            self.devs.append(load_stimulus(self.DIR_DEV+filename))  
-        nDevs = length(self.devs)                  
-    
+            devs.append(load_stimulus(self.DIR_DEV+filename))               
+        return stds, devs
     
     def load_stimulus(self,filename):
         """
@@ -145,12 +153,17 @@ class Oddball(MainloopFeedback):
         raise Exception('Method has to implemented by a subclass')
         
 
-    def present_stimulus(self):
+    def start_stimulus(self, stim):
         """
-        Draw the stimulus onto the screen.
+        Start the stimulus presentation.
         """
         raise Exception('Method has to implemented by a subclass')
 
+    def stop_stimulus(self, stim):
+        """
+        Stop the stimulus presentation.
+        """
+        raise Exception('Method has to implemented by a subclass')
                 
     def pre_mainloop(self):
         self.send_parallel(self.RUN_START)
@@ -210,23 +223,23 @@ class Oddball(MainloopFeedback):
             self.draw_initial()
             self.timeAfterStim = 0
             if self.stim_sequence[self.stimuliShown]==0:
-                self.send_parallel(self.DEVIANT)
+                self.send_parallel(self.DEVIANT[0])
                 self.isdeviant = True
                 self.stim = self.get_deviant()
-                self.present_stimulus()        
+                self.start_stimulus(self.stim)        
             else:
-                self.send_parallel(self.STANDARD)
+                self.send_parallel(self.STANDARD[0])
                 self.isdeviant = False
                 if self.show_standards:
                     self.stim = self.get_standard()
-                    self.present_stimulus()        
+                    self.start_stimulus(self.stim)        
                 
         if self.stimElapsed>self.stim_duration:
             self.firstStimTick = True
             self.responsetime = True
             self.stimElapsed = 0
             self.stimuliShown += 1
-            self.draw_initial()
+            self.stop_stimulus(self.stim)
 
 
     def get_deviant(self):
@@ -365,7 +378,8 @@ class Oddball(MainloopFeedback):
         One tick of the game over loop.
         """
         self.draw_all(False)
-        self.do_print("(%i : %i, %i)" % (self.reponses[0], self.reponses[1], self.reponses[2]), self.feedbackColor, self.size / 10)
+        s = self.hitstr + str(self.responses[0]) + self.missstr + str(self.responses[1]) + self.falsestr + str(self.responses[ - 1])
+        self.do_print(s, self.size / 10)
         pygame.time.wait(self.gameover_duration)
        
        

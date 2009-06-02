@@ -24,7 +24,7 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-"""VisualOddball Experiments."""
+"""Class for Visual Oddball Experiments."""
 
 import pygame
 
@@ -47,25 +47,32 @@ class VisualOddball(Oddball.Oddball):
     def define_stimuli(self):
         """
         Creates standard and deviant stimuli.          
-        """
+        """        
         size = (self.screen_pos[-1]/3,self.screen_pos[-1]/3)
+        # create deviant stimulus
         dev1 = pygame.Surface(size)
         dev1.fill((255,0,0))
+        # create standard stimulus
         std1 = pygame.Surface(size)
         std1Rect = std1.get_rect(center=(320,240))
         hs = int(size[0]/2)
         pygame.draw.circle(std1, (0,255,0), (hs,hs), hs)
-        self.devs =[dev1]
-        self.stds =[std1]
+        return [std1], [dev1]
 
-    def present_stimulus(self):
+    def start_stimulus(self, stim):
         """
         Draw the stimulus onto the screen.
         """           
-        self.stimRect = self.stim.get_rect(center=self.screen.get_rect().center)     
-        self.stim.set_colorkey((0,0,0))
-        self.screen.blit(self.stim, self.stimRect)
+        stimRect = stim.get_rect(center=self.screen.get_rect().center)     
+        stim.set_colorkey((0,0,0))
+        self.screen.blit(stim, stimRect)
         pygame.display.update()
+
+    def stop_stimulus(self, stim):
+        """
+        Remove the stimulus from the screen.
+        """           
+        self.draw_initial()
         
 if __name__ == '__main__':
     vo = VisualOddball()
