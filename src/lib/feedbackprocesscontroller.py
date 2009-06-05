@@ -16,6 +16,7 @@ def pipe_loop(self):
         except UnpicklingError, e:
             print item
             print e
+            print traceback.format_exc()
             continue
         self.logger.debug("Received via pipe: %s", str(item))
         if not isinstance(item, BciSignal):
@@ -137,6 +138,7 @@ class FeedbackProcessController(object):
         if self.currentProc.isAlive():
             self.logger.debug("process still alive, killing it...",)
             self.currentProc.terminate()
+            # The above does not always work... maybe os.kill does?
         self.logger.debug("done.")
         
     
