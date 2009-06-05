@@ -6,14 +6,17 @@ from FeedbackBase.Feedback import Feedback
 class Timer(Feedback):
     
     def on_init(self):
-        self.iterations = 100000000
+        self.iterations = 10000
     
     def on_play(self):
+        print self.idle_loop(self.iterations)
+        
+    def idle_loop(self, iterations):
         t1 = time.time()
-        for i in xrange(self.iterations):
+        for i in range(iterations):
             pass
         t2 = time.time()
-        print t2 - t1
+        return t2 - t1
         
         
 if __name__ == "__main__":
