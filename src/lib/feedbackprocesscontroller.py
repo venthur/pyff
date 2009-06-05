@@ -14,9 +14,10 @@ def pipe_loop(self):
         try:
             item = self.conn[0].recv()
         except UnpicklingError, e:
-            print item
-            print e
-            print traceback.format_exc()
+            self.logger.error("Unable to unpickle Data:")
+            self.logger.error(str(item))
+            self.logger.error(str(e))
+            self.logger.error(traceback.format_exc())
             continue
         self.logger.debug("Received via pipe: %s", str(item))
         if not isinstance(item, BciSignal):
@@ -118,14 +119,14 @@ class FeedbackProcessController(object):
         while True:
             feedback.playEvent.wait()
             try:
-                print """Trying to start Feedback's on_play...""",
+                self.logger.debug("Trying to start Feedback's on_play...",)
                 feedback.on_play()
-                print """done."""
+                self.logger.debug("done.")
             except:
-                print "Feedbacks on_play threw an exception:"
-                print traceback.format_exc()
+                self.logger.error("Feedbacks on_play threw an exception:")
+                self.logger.error(traceback.format_exc())
             feedback.playEvent.clear()
-            print "Feedback's on_play terminated."
+            self.logger.debug("Feedback's on_play terminated.")
 
     
     def stop_feedback(self):
