@@ -3,7 +3,19 @@ from threading import Thread
 
 class IOThread(Thread):
     """A thread that reads and writes a pipe.
+    
+    This thread reads and writes the given end of a pipe. You should not use
+    this class directly but derive it and overwrite it's 
+    
+      process_object(obj)
+      
+    method to do something useful with the data the thread received from the
+    pipe.
+    
+    Before you join() this thread you must call stop() to quit the internal
+    loop which polls the pipe.
     """
+    
     
     def __init__(self, pipeEnd, timeout=1):
         """
@@ -19,6 +31,10 @@ class IOThread(Thread):
         
 
     def stop(self):
+        """Stop the thread.
+        
+        This method must be called before join()-ing it.
+        """
         self.stopping = True
         
 
@@ -79,4 +95,3 @@ if __name__ == "__main__":
     ioThread.stop()
     ioThread.join()
     print "done."
-    
