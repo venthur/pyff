@@ -1,14 +1,37 @@
-from processing import Process, Pipe
+# feedbackprocesscontroller.py -
+# Copyright (C) 2009  Bastian Venthur
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+
+import sys
 from threading import Thread, Event
 from pickle import UnpicklingError
 import logging
 import traceback
 
+from processing import Process, Pipe
+
 from lib.PluginController import PluginController
 from bcixml import BciSignal
 import bcixml
 
+
 def pipe_loop(self):
+    # Where are we: 
+    # Proc/Thread: FC/IO
     while True:
         self.conn[0].poll(None)
         try:
@@ -28,9 +51,12 @@ def pipe_loop(self):
         except:
             self.logger.error("Exception during _process_sigal:")
             self.logger.error(traceback.format_exc())
+            sys.exit(1)
 
 
 def _process_signal(signal, feedback):
+    # Where are we: 
+    # Proc/Thread: FB/IO
     if signal.type == bcixml.CONTROL_SIGNAL:
         feedback._on_control_event(signal.data)
         return
@@ -69,14 +95,7 @@ def _process_signal(signal, feedback):
 #  - send and get various data
 #4. stop_feedback
 
-#class FeedbackProcessController(object):
-#    
-#    def __init__(self, plugindirs, baseclass, timeout): pass
-#    def get_feedbacks(self): pass
-#    def start_feedback(self, name): pass
-#    def stop_feedback(self): pass
-#    def send_signal(self, signal): pass
-
+# TODO: If the pipe overrunns, then the last send() becomes blocking -- this means the FC will freeze if the pipe is not cleared regularily
 
 class FeedbackProcessController(object):
     """Takes care of starting and stopping of Feedback Processes."""
@@ -89,6 +108,8 @@ class FeedbackProcessController(object):
         @param baseclass:
         @param timeout:
         """
+        # Where are we: 
+        # Proc/Thread: FB/??
         self.logger = logging.getLogger("FeedbackProcessController")
         self.currentProc = None
         self.fbPipe = None
@@ -99,6 +120,8 @@ class FeedbackProcessController(object):
     
     def start_feedback(self, name):
         """Starts the given Feedback in a new process."""
+        # Where are we: 
+        # Proc/Thread: FC/??
         self.logger.debug("Starting new Process...",)
         if self.currentProc:
             self.logger.warning("Trying to start feedback but another one is still running. Killing the old one now and proceed.")
@@ -110,6 +133,8 @@ class FeedbackProcessController(object):
 
     
     def __start_feedback(self, name):
+        # Where are we: 
+        # Proc/Thread: FB/Main
         try:
             feedbackClass = self.pluginController.load_plugin(name)
         except ImportError:
@@ -131,18 +156,26 @@ class FeedbackProcessController(object):
                 feedback.on_play()
                 self.logger.debug("done.")
             except:
+                # The feedback's main thread crashed and we need to take care
+                # that the pipe does not run full, otherwise the feedback
+                # controller freezes on the last pipe[foo].send()
+                # So let's just terminate the feedback process.
                 self.logger.error("Feedbacks on_play threw an exception:")
                 self.logger.error(traceback.format_exc())
+                return
             feedback.playEvent.clear()
             self.logger.debug("Feedback's on_play terminated.")
 
     
     def stop_feedback(self):
+
         """Stops the current Process.
         
         First it tries to join the process with the given timeout, if that fails
         it terminates the process the hard way.
         """
+        # Where are we: 
+        # Proc/Thread: FC/??
         self.logger.debug("Stopping process...",)
         if not self.currentProc:
             self.logger.debug("No process running, nothing to do.")
@@ -161,28 +194,40 @@ class FeedbackProcessController(object):
     
     def is_alive(self):
         """Return whether the current Process is alive or not."""
+        # Where are we: 
+        # Proc/Thread: FC/??
+        if not self.currentProc:
+            return False
         return self.currentProc.isAlive() if self.currentProc else False
 
     
     def get_feedbacks(self):
         """Returns a list of available Feedbacks."""
+        # Where are we: 
+        # Proc/Thread: FC/??
         return self.pluginController.availablePlugins.keys()
     
     def send_signal(self, signal):
         """Send the signal to the Feedback process."""
-        if not self.currentProc:
+        # Where are we: 
+        # Proc/Thread: FC/??
+        if not self.is_alive():
             return
         self.fbPipe[1].send(signal)
         
     def poll(self):
         """Return if there is something to read from the Feedback process."""
-        if not self.currentProc:
+        # Where are we: 
+        # Proc/Thread: FC/??
+        if not self.is_alive():
             return
         return self.fbPipe[1].poll()
     
     def receive_signal(self):
         """Read from the Feedback process."""
-        if not self.currentProc:
+        # Where are we: 
+        # Proc/Thread: FC/??
+        if not self.is_alive():
             return
         return self.fbPipe[1].recv()
 
