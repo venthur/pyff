@@ -9,14 +9,29 @@ import bcixml
 
 def pipe_loop(self):
     while True:
+        self.conn[0].poll(None)
         item = self.conn[0].recv()
+        print "***", item
         if not isinstance(item, BciSignal):
             # ok got something fishy
             self.logger.warning("Received something which is not a BciSignal, ignoring it.")
             continue
-        if item.commands == bcixml.CMD_PLAY:
-            self.playEvent.set()
-        
+        _process_signal(item, self)
+
+
+def _process_signal(signal, feedback):
+    cmd = signal.commands[0] if len(signal.commands) > 0 else None
+    if cmd == bcixml.CMD_PLAY:
+        feedback.playEvent.set()
+    elif cmd == bcixml.CMD_PAUSE:
+        feedback._on_pause()
+    elif cmd == bcixml.CMD_STOP:
+        feedback._on_stop()
+    elif cmd == bcixml.CMD_QUIT:
+        feedback._on_quit()
+    elif cmd == bcixml.CMD_SEND_INIT:
+        feedback._on_init()
+
 #FeedbackProcessController:
 #
 #* Get available Feedbacks
@@ -87,7 +102,9 @@ class FeedbackProcessController(object):
         while True:
             feedback.playEvent.wait()
             try:
+                print """Trying to start Feedback's on_play...""",
                 feedback.on_play()
+                print """done."""
             except:
                 print "Feedbacks on_play threw an exception:"
                 print traceback.format_exc()
@@ -117,6 +134,18 @@ class FeedbackProcessController(object):
     def get_feedbacks(self):
         """Returns a list of available Feedbacks."""
         return self.pluginController.availablePlugins.keys()
+    
+    def send_signal(self, signal):
+        """Send the signal to the Feedback process."""
+        self.fbPipe[1].send(signal)
+        
+    def poll(self):
+        """Return if there is something to read from the Feedback process."""
+        return self.fbPipe[1].poll()
+    
+    def receive_signal(self):
+        """Read from the Feedback process."""
+        return self.fbPipe[1].recv()
 
     
 if __name__ == "__main__":

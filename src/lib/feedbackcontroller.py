@@ -25,7 +25,6 @@ try:
     import parallel
 except ImportError:
     print "Unable to import parallel module, have you pyparallel installed?"
-from processing import Pipe
 
 from lib import bcinetwork
 from lib import bcixml
@@ -43,8 +42,6 @@ class FeedbackController(object):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.socket.bind(("", bcinetwork.FC_PORT))
         self.socket.settimeout(1.0)
-        # Set up the pipe
-        self.pipe = Pipe()
         # Setup the parallel port
         self.pp = None
         try:
@@ -61,7 +58,7 @@ class FeedbackController(object):
         fbdirs = ["Feedbacks"]
         if fbpath:
             fbdirs.append(fbpath)
-        fbProcCtrl = FeedbackProcessController(fbdirs, Feedback, 1)
+        self.fbProcCtrl = FeedbackProcessController(fbdirs, Feedback, 1)
         
         self.fc_data = {}
         
@@ -116,16 +113,7 @@ class FeedbackController(object):
         self.logger.debug("Left I/O loop.")
 
     
-    def on_signal(self, address, datagram):
-        signal = None
-        try:
-            signal = self.decoder.decode_packet(datagram)
-            signal.peeraddr = address
-        except bcixml.DecodingError, e:
-            # ok, somehow the parsing failed, just drop the packet and print a
-            # warning
-            self.logger.warning("Parsing of signal failed, ignoring it. (%s)" % str(e))
-            return
+    def handle_signal(self, signal):
         # check our signal if it contains anything useful, if not drop it and
         # print a warning
         try:
@@ -146,76 +134,41 @@ class FeedbackController(object):
         # We assume, that the signal only contains variables which are to set
         # in the Feedback Controller
         self.fc_data = signal.data.copy()
-        
 
     def _handle_cs(self, signal):
-        self.feedback._on_control_event(signal.data)
+        # We don't care about control signals, send it to the feedback
+        self.send_to_feedback(signal)
 
     
     def _handle_is(self, signal):
         self.logger.info("Got interaction signal: %s" % str(signal))
-        cmd = None
-        if len(signal.commands) > 0:
-            cmd = signal.commands[0]
-        # check if this signal is for the FC only (and not for the feedback)
+        cmd = signal.commands[0] if len(signal.commands) > 0 else None
+        
+        # A few commands need to be handled by the Feedback Controller, the
+        # rest goes to the Feedback
         if cmd == bcixml.CMD_GET_FEEDBACKS:
             ip, port = signal.peeraddr[0], bcinetwork.GUI_PORT
             bcinetw = bcinetwork.BciNetwork(ip, port)
-            answer = bcixml.BciSignal({"feedbacks" : self.feedbacks}, None, bcixml.INTERACTION_SIGNAL)
+            feedbacks = self.fbProcCtrl.get_feedbacks()
+            answer = bcixml.BciSignal({"feedbacks" : feedbacks}, None, bcixml.INTERACTION_SIGNAL)
             self.logger.debug("Sending %s to %s:%s." % (str(answer), str(ip), str(port)))
             bcinetw.send_signal(answer)
             return
         elif cmd == bcixml.CMD_GET_VARIABLES:
+            return
             ip, port = signal.peeraddr[0], bcinetwork.GUI_PORT
             bcinetw = bcinetwork.BciNetwork(ip, port)
             answer = bcixml.BciSignal({"variables" : self.feedback.__dict__}, None, bcixml.INTERACTION_SIGNAL)
             self.logger.debug("Sending %s to %s:%s." % (str(answer), str(ip), str(port)))
             bcinetw.send_signal(answer)
             return
-        
-        self.feedback._on_interaction_event(signal.data)
-        if cmd == bcixml.CMD_PLAY:
-            self.logger.info("Received PLAY signal")
-            self.pre_play()
-            self.playEvent.set()
-            self.post_play()
-            #self.feedback._Feedback__on_play()
-        elif cmd == bcixml.CMD_PAUSE:
-            self.logger.info("Received PAUSE signal")
-            self.pre_pause()
-            self.feedback._on_pause()
-            self.post_pause()
-        elif cmd == bcixml.CMD_STOP:
-            self.logger.info("Received STOP signal")
-            self.pre_stop()
-            self.feedback._on_stop()
-            self.post_stop()
         elif cmd == bcixml.CMD_QUIT:
-            self.logger.info("Received QUIT signal")
-            self.pre_quit()
-            self.feedback._on_quit()
-            # Load the default dummy Feedback
-            self.feedback = Feedback(self.pp)
-            self.post_quit()
+            self.fbProcCtrl.stop_feedback()
         elif cmd == bcixml.CMD_SEND_INIT:
-            self.logger.info("Received SEND_INIT signal")
-            # Working with old Feedback!
-            self.feedback._on_quit()
-            name = getattr(self.feedback, "_feedback")
-            try:
-                self.logger.debug("Trying to load feedback: %s" % str(name))
-                self.feedback = self.pluginController.load_plugin(name)(self.pp)
-            except:
-                self.logger.error("Unable to load feedback: %s" % str(name))
-                self.logger.error(traceback.format_exc())
-                self.feedback = Feedback(self.pp)
-            # Proably a new one!
-            self.pre_init()
-            self.feedback._on_init()
-            self.post_init()
-            self.feedback._on_interaction_event(signal.data)
+            name = signal.data["_feedback"]
+            self.fbProcCtrl.start_feedback(name)
         else:
-            self.logger.info("Received generic interaction signal")
+            self.send_to_feedback(signal)
             
     def io_loop(self):
         timeout = 1.0
@@ -231,12 +184,23 @@ class FeedbackController(object):
         except socket.timeout:
             # Currently no data available on the socket, this is ok
             return
-        print "From socket: ", data, address
+        try:
+            signal = self.decoder.decode_packet(data)
+            signal.peeraddr = address
+        except bcixml.DecodingError, e:
+            # ok, somehow the parsing failed, just drop the packet and print a
+            # warning
+            self.logger.warning("Parsing of signal failed, ignoring it. (%s)" % str(e))
+            return
+        self.handle_signal(signal)
     
     def process_pipe(self):
-        if not self.pipe[0].poll():
+        if not self.fbProcCtrl.poll():
             # Currently no data available on the pipe, this is ok
             return
-        data = self.pipe[0].recv()
-        print "From pipe: ", str(data)
+        data = self.fbProcCtrl.receive_signal()
+        self.handle_signal(data)
 
+    def send_to_feedback(self, signal):
+        # TODO: what if feedback does not exist?
+        self.fbProcCtrl.send_signal(signal)
