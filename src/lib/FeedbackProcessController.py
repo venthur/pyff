@@ -17,6 +17,22 @@ def pipe_loop(self):
         if item.commands == bcixml.CMD_PLAY:
             self.playEvent.set()
         
+#FeedbackProcessController:
+#
+#* Get available Feedbacks
+#* Start a Feedback in a new Process
+#* Stop Feedback
+#* Send data (Signals) to the Feedback
+#* Get Data from the Feedback
+#* Test if Feedback is alive
+#
+#How to use:
+#
+#1. instantiate FPC
+#2. get_feedbacks
+#3. start_feedback(name)
+#  - send and get various data
+#4. stop_feedback
 
 class FeedbackProcessController(object):
     """Takes care of starting and stopping of Feedback Processes."""
