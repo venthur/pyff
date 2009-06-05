@@ -83,7 +83,8 @@ the Free Software Foundation; either version 2 of the License, or
     if options.port != None:
         port = int(options.port, 16)
     try:
-        start_fc(plugin, fbpath, port)
+        fc = FeedbackController(plugin, fbpath, port)
+        fc.start()
     except (KeyboardInterrupt, SystemExit):
         print "*** KILLED ***"
         logging.info("Caught keyboard interrupt or system exit; quitting")

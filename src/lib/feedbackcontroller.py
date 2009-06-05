@@ -20,11 +20,16 @@ import socket
 import threading
 import logging
 import traceback
+import sys
 
 try:
     import parallel
 except ImportError:
     print "Unable to import parallel module, have you pyparallel installed?"
+try:
+    from ctypes import windll
+except ImportError:
+    print "Unable to import ctypes.windll"
 
 from lib import bcinetwork
 from lib import bcixml
@@ -33,7 +38,7 @@ from lib.feedbackprocesscontroller import FeedbackProcessController
 
 
 class FeedbackController(object):
-    def __init__(self, plugin=None, fbpath=None):
+    def __init__(self, plugin=None, fbpath=None, port=None):
         # Setup my stuff:
         self.logger = logging.getLogger("FeedbackController")
         self.encoder = bcixml.XmlEncoder()
@@ -42,12 +47,20 @@ class FeedbackController(object):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.socket.bind(("", bcinetwork.FC_PORT))
         self.socket.settimeout(1.0)
+        self.port = port
         # Setup the parallel port
         self.pp = None
-        try:
-            self.pp = parallel.Parallel()
-        except:
-            self.logger.warning("Unable to open parallel port!")
+        self.logger.debug("Platform: " + sys.platform)
+        if sys.platform == 'win32':
+            try:
+                self.pp = windll.inpout32
+            except:
+                self.logger.warning("Could not load inpout32.dll. Please make sure it is located in the system32 directory")
+        else:
+            try:
+                self.pp = parallel.Parallel()
+            except:
+                self.logger.warning("Unable to open parallel port!")
         self.playEvent = threading.Event()
         if plugin:
             self.logger.debug("Loading plugin %s" % str(plugin))
