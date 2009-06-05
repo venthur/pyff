@@ -119,7 +119,7 @@ class FeedbackController(object):
         try:
             if signal.type == bcixml.REPLY_SIGNAL:
                 self.send_to_peer(signal)
-            if signal.type == bcixml.CONTROL_SIGNAL:
+            elif signal.type == bcixml.CONTROL_SIGNAL:
                 self._handle_cs(signal)
             elif signal.type == bcixml.INTERACTION_SIGNAL:
                 self._handle_is(signal)

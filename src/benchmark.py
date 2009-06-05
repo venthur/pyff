@@ -22,6 +22,7 @@
 
 import time
 import socket
+import logging
 
 from pylab import *
 
@@ -130,6 +131,8 @@ def _send_cs(packets, delay, id=0):
     
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.DEBUG, 
+                        format='[%(threadName)-10s] %(name)-25s: %(levelname)-8s %(message)s')
     
     d = test_clock_precision()
     pretty_print(d, "Clock resolution", 1000000)

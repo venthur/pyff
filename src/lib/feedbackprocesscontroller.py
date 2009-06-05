@@ -1,5 +1,6 @@
 from processing import Process, Pipe
 from threading import Thread, Event
+from pickle import UnpicklingError
 import logging
 import traceback
 
@@ -10,7 +11,12 @@ import bcixml
 def pipe_loop(self):
     while True:
         self.conn[0].poll(None)
-        item = self.conn[0].recv()
+        try:
+            item = self.conn[0].recv()
+        except UnpicklingError, e:
+            print item
+            print e
+            continue
         self.logger.debug("Received via pipe: %s", str(item))
         if not isinstance(item, BciSignal):
             self.logger.warning("Received something which is not a BciSignal, ignoring it.")
@@ -19,9 +25,13 @@ def pipe_loop(self):
 
 
 def _process_signal(signal, feedback):
+    if signal.type == bcixml.CONTROL_SIGNAL:
+        feedback._on_control_event(signal.data)
+        return
+    
     cmd = signal.commands[0] if len(signal.commands) > 0 else None
     if cmd == bcixml.CMD_GET_VARIABLES:
-        reply = bcixml.BciSignal({"variables" : feedback.__dict__}, None,
+        reply = bcixml.BciSignal({"variables" : feedback._get_variables()}, None,
                                  bcixml.REPLY_SIGNAL)
         reply.peeraddr = signal.peeraddr
         feedback.conn[0].send(reply)

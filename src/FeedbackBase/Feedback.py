@@ -245,3 +245,19 @@ class Feedback(object):
             if reset:
                 timer = threading.Timer(0.01, self.send_parallel, (0x0, False))
                 timer.start()
+                
+    def _get_variables(self):
+        """Return a dictionary of variables and their values."""
+        # try everything from self.__dict__:
+        # must be pickable
+        import pickle
+        d = {}
+        for key, val in self.__dict__.iteritems():
+            if key.startswith("_"):
+                continue
+            try:
+                s = pickle.dumps(val)
+            except:
+                continue
+            d[key] = val
+        return d
