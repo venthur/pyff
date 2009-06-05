@@ -34,6 +34,15 @@ def pipe_loop(self):
 #  - send and get various data
 #4. stop_feedback
 
+#class FeedbackProcessController(object):
+#    
+#    def __init__(self, plugindirs, baseclass, timeout): pass
+#    def get_feedbacks(self): pass
+#    def start_feedback(self, name): pass
+#    def stop_feedback(self): pass
+#    def send_signal(self, signal): pass
+
+
 class FeedbackProcessController(object):
     """Takes care of starting and stopping of Feedback Processes."""
     
