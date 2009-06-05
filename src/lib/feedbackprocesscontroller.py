@@ -78,6 +78,37 @@ def _process_signal(signal, feedback):
     elif cmd == bcixml.CMD_SEND_INIT:
         feedback._on_init()
 
+
+def start_feedback_proc_wrapper(feedbackClass, fbPipe, logger):
+    # Where are we: 
+    # Proc/Thread: FB/Main
+    feedbackClass.pipe_loop = pipe_loop
+    feedback = feedbackClass()
+
+    feedback.conn = fbPipe
+    feedback.playEvent = Event()
+    feedback.on_init()
+    # TODO: Do we need to kill the thread?
+    pipeThread = Thread(target=feedback.pipe_loop)
+    pipeThread.start()
+    while True:
+        feedback.playEvent.wait()
+        try:
+            logger.debug("Trying to start Feedback's on_play...",)
+            feedback.on_play()
+            logger.debug("done.")
+        except:
+            # The feedback's main thread crashed and we need to take care
+            # that the pipe does not run full, otherwise the feedback
+            # controller freezes on the last pipe[foo].send()
+            # So let's just terminate the feedback process.
+            logger.error("Feedbacks on_play threw an exception:")
+            logger.error(traceback.format_exc())
+            return
+        feedback.playEvent.clear()
+        logger.debug("Feedback's on_play terminated.")
+
+
 #FeedbackProcessController:
 #
 #* Get available Feedbacks
@@ -127,44 +158,14 @@ class FeedbackProcessController(object):
             self.logger.warning("Trying to start feedback but another one is still running. Killing the old one now and proceed.")
             self.stop_feedback()
         self.fbPipe = Pipe()
-        self.currentProc = Process(target=self.__start_feedback, args=(name,))
-        self.currentProc.start()
-        self.logger.debug("done.")
-
-    
-    def __start_feedback(self, name):
-        # Where are we: 
-        # Proc/Thread: FB/Main
         try:
             feedbackClass = self.pluginController.load_plugin(name)
         except ImportError:
             # TODO: Hmm anything else we can do?
             raise
-        feedbackClass.pipe_loop = pipe_loop
-        feedback = feedbackClass()
-
-        feedback.conn = self.fbPipe
-        feedback.playEvent = Event()
-        feedback.on_init()
-        # TODO: Do we need to kill the thread?
-        pipeThread = Thread(target=feedback.pipe_loop)
-        pipeThread.start()
-        while True:
-            feedback.playEvent.wait()
-            try:
-                self.logger.debug("Trying to start Feedback's on_play...",)
-                feedback.on_play()
-                self.logger.debug("done.")
-            except:
-                # The feedback's main thread crashed and we need to take care
-                # that the pipe does not run full, otherwise the feedback
-                # controller freezes on the last pipe[foo].send()
-                # So let's just terminate the feedback process.
-                self.logger.error("Feedbacks on_play threw an exception:")
-                self.logger.error(traceback.format_exc())
-                return
-            feedback.playEvent.clear()
-            self.logger.debug("Feedback's on_play terminated.")
+        self.currentProc = Process(target=start_feedback_proc_wrapper, args=(feedbackClass, self.fbPipe, self.logger))
+        self.currentProc.start()
+        self.logger.debug("done.")
 
     
     def stop_feedback(self):
