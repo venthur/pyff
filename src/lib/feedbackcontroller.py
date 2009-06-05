@@ -163,6 +163,7 @@ class FeedbackController(object):
             bcinetw.send_signal(answer)
             return
         elif cmd == bcixml.CMD_QUIT:
+            self.send_to_feedback(signal)
             self.fbProcCtrl.stop_feedback()
         elif cmd == bcixml.CMD_SEND_INIT:
             name = signal.data["_feedback"]
