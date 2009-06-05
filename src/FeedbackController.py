@@ -85,6 +85,7 @@ the Free Software Foundation; either version 2 of the License, or
     try:
         start_fc(plugin, fbpath, port)
     except (KeyboardInterrupt, SystemExit):
+        print "*** KILLED ***"
         logging.info("Caught keyboard interrupt or system exit; quitting")
 
 

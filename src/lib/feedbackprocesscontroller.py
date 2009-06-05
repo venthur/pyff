@@ -11,7 +11,7 @@ def pipe_loop(self):
     while True:
         self.conn[0].poll(None)
         item = self.conn[0].recv()
-        print "***", item
+        self.logger.debug("Received via pipe: %s", str(item))
         if not isinstance(item, BciSignal):
             # ok got something fishy
             self.logger.warning("Received something which is not a BciSignal, ignoring it.")
