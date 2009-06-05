@@ -113,8 +113,8 @@ class FeedbackController(object):
 # /Feedback Controller Plugin-Methods
 #    
 
-    SUPPORTED_PLUGIN_METHODS = ["pre_init", "post_init", 
-                                "pre_play", "post_play", 
+    SUPPORTED_PLUGIN_METHODS = ["pre_init", "post_init",
+                                "pre_play", "post_play",
                                 "pre_pause", "post_pause",
                                 "pre_stop", "post_stop",
                                 "pre_quit", "post_quit"]
