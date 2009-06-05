@@ -4,12 +4,19 @@ import logging
 import traceback
 
 from lib.PluginController import PluginController
-
+from bcixml import BciSignal
+import bcixml
 
 def pipe_loop(self):
     while True:
         item = self.conn[0].recv()
-        print processing.currentProcess().getPid(), item   
+        if not isinstance(item, BciSignal):
+            # ok got something fishy
+            self.logger.warning("Received something which is not a BciSignal, ignoring it.")
+            continue
+        if item.commands == bcixml.CMD_PLAY:
+            self.playEvent.set()
+        
 
 class FeedbackProcessController(object):
     """Takes care of starting and stopping of Feedback Processes."""
@@ -96,6 +103,9 @@ if __name__ == "__main__":
     print "Is alive: ", fpc.is_alive()
     fpc.start_feedback(fpc.get_feedbacks()[1])
     print "Is alive: ", fpc.is_alive()
+    fpc.fbPipe[1].send("foo")
+    fpc.fbPipe[1].send(BciSignal(None, bcixml.CMD_PLAY, bcixml.INTERACTION_SIGNAL))
+    time.sleep(10)
     fpc.stop_feedback()
     time.sleep(1)
     print "Is alive: ", fpc.is_alive()
