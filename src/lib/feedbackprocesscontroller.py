@@ -79,9 +79,10 @@ def _process_signal(signal, feedback):
         feedback._on_init()
 
 
-def start_feedback_proc_wrapper(feedbackClass, fbPipe, logger):
+def start_feedback_proc_wrapper(feedbackClass, fbPipe):
     # Where are we: 
     # Proc/Thread: FB/Main
+    logger = logging.getLogger("start_fb_proc_wrapper")
     feedbackClass.pipe_loop = pipe_loop
     feedback = feedbackClass()
 
@@ -163,7 +164,7 @@ class FeedbackProcessController(object):
         except ImportError:
             # TODO: Hmm anything else we can do?
             raise
-        self.currentProc = Process(target=start_feedback_proc_wrapper, args=(feedbackClass, self.fbPipe, self.logger))
+        self.currentProc = Process(target=start_feedback_proc_wrapper, args=(feedbackClass, self.fbPipe))
         self.currentProc.start()
         self.logger.debug("done.")
 
