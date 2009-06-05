@@ -102,7 +102,7 @@ class PluginController(object):
         if not self.oldModules:
             return
         for mod in sys.modules.keys():
-            if not self.oldModules.haskey(mod):
+            if not self.oldModules.has_key(mod):
                 del sys.modules[mod]
         self.oldModules = None
 
@@ -115,4 +115,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
+
