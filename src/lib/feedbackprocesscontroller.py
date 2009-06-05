@@ -23,7 +23,11 @@ def pipe_loop(self):
         if not isinstance(item, BciSignal):
             self.logger.warning("Received something which is not a BciSignal, ignoring it.")
             continue
-        _process_signal(item, self)
+        try:
+            _process_signal(item, self)
+        except:
+            self.logger.error("Exception during _process_sigal:")
+            self.logger.error(traceback.format_exc())
 
 
 def _process_signal(signal, feedback):
@@ -87,15 +91,19 @@ class FeedbackProcessController(object):
         """
         self.logger = logging.getLogger("FeedbackProcessController")
         self.currentProc = None
+        self.fbPipe = None
         self.timeout = timeout
         self.pluginController = PluginController(plugindirs, baseclass)
         self.pluginController.find_plugins()
-        self.fbPipe = Pipe()
         
     
     def start_feedback(self, name):
         """Starts the given Feedback in a new process."""
         self.logger.debug("Starting new Process...",)
+        if self.currentProc:
+            self.logger.warning("Trying to start feedback but another one is still running. Killing the old one now and proceed.")
+            self.stop_feedback()
+        self.fbPipe = Pipe()
         self.currentProc = Process(target=self.__start_feedback, args=(name,))
         self.currentProc.start()
         self.logger.debug("done.")
@@ -136,11 +144,18 @@ class FeedbackProcessController(object):
         it terminates the process the hard way.
         """
         self.logger.debug("Stopping process...",)
+        if not self.currentProc:
+            self.logger.debug("No process running, nothing to do.")
+            return
         self.currentProc.join(self.timeout)
         if self.currentProc.isAlive():
             self.logger.debug("process still alive, killing it...",)
             self.currentProc.terminate()
             # The above does not always work... maybe os.kill does?
+        self.fbPipe[0].close()
+        self.fbPipe[1].close()
+        del(self.currentProc)
+        self.currentProc = None
         self.logger.debug("done.")
         
     
@@ -155,14 +170,20 @@ class FeedbackProcessController(object):
     
     def send_signal(self, signal):
         """Send the signal to the Feedback process."""
+        if not self.currentProc:
+            return
         self.fbPipe[1].send(signal)
         
     def poll(self):
         """Return if there is something to read from the Feedback process."""
+        if not self.currentProc:
+            return
         return self.fbPipe[1].poll()
     
     def receive_signal(self):
         """Read from the Feedback process."""
+        if not self.currentProc:
+            return
         return self.fbPipe[1].recv()
 
     
