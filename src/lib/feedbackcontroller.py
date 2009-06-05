@@ -17,21 +17,18 @@
 
 
 import socket
-import asyncore
 import threading
 import logging
-import sys
-import os
 import traceback
 
 try:
     import parallel
 except ImportError:
     print "Unable to import parallel module, have you pyparallel installed?"
+from processing import Pipe
 
 from lib import bcinetwork
 from lib import bcixml
-from lib import PluginController
 from FeedbackBase.Feedback import Feedback
 from lib.feedbackprocesscontroller import FeedbackProcessController
 
@@ -42,6 +39,12 @@ class FeedbackController(object):
         self.logger = logging.getLogger("FeedbackController")
         self.encoder = bcixml.XmlEncoder()
         self.decoder = bcixml.XmlDecoder()
+        # Set up the socket
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.socket.bind(("", bcinetwork.FC_PORT))
+        self.socket.settimeout(1.0)
+        # Set up the pipe
+        self.pipe = Pipe()
         # Setup the parallel port
         self.pp = None
         try:
@@ -108,15 +111,9 @@ class FeedbackController(object):
 
     def start(self):
         """Start the Feedback Controllers activities."""
-        # Listen on the network in a second thread
-        Dispatcher(bcinetwork.FC_PORT, self)
-        self.networkThread = threading.Thread(target=asyncore.loop, args=())
-        self.networkThread.start()
-        
-        # start my main loop
-        self.logger.debug("Started main loop.")
-        self.main_loop()
-        self.logger.debug("Left main loop.")
+        self.logger.debug("Started I/O loop.")
+        self.io_loop()
+        self.logger.debug("Left I/O loop.")
 
     
     def on_signal(self, address, datagram):
@@ -143,23 +140,6 @@ class FeedbackController(object):
         except:
             self.logger.error("Handling is or cs caused an exception.")
             self.logger.error(traceback.format_exc())
-
-        
-    def main_loop(self):
-        while True:
-            # Block until we received a play signal
-            self.logger.debug("Waiting for play-event.")
-            self.playEvent.wait()
-            self.logger.debug("Got play-event, starting Feedback's on_play()")
-            self.playEvent.clear()
-            # run the Feedbacks on_play in our thread
-            try:
-                self.feedback._on_play()
-            except:
-                self.logger.error("Feedbacks on_play threw an exception:")
-                self.logger.error(traceback.format_exc())
-            #self.call_method_safely(self.feedback._Feedback__on_play())
-            self.logger.debug("Feedback's on_play terminated.")
 
 
     def _handle_fcs(self, signal):
@@ -236,21 +216,27 @@ class FeedbackController(object):
             self.feedback._on_interaction_event(signal.data)
         else:
             self.logger.info("Received generic interaction signal")
+            
+    def io_loop(self):
+        timeout = 1.0
+        while True:
+            # check the socket for new data
+            self.process_socket()
+            # check the pipe for new data
+            self.process_pipe()
+            
+    def process_socket(self):
+        try:
+            (data, address) = self.socket.recvfrom(bcinetwork.BUFFER_SIZE)
+        except socket.timeout:
+            # Currently no data available on the socket, this is ok
+            return
+        print "From socket: ", data, address
+    
+    def process_pipe(self):
+        if not self.pipe[0].poll():
+            # Currently no data available on the pipe, this is ok
+            return
+        data = self.pipe[0].recv()
+        print "From pipe: ", str(data)
 
-
-class Dispatcher(asyncore.dispatcher):
-    def __init__(self, port, feedbackController):
-        asyncore.dispatcher.__init__(self)
-        self.create_socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.bind(("", port))
-        self.feedbackController = feedbackController
-        
-    def writable(self):
-        return False
-
-    def handle_connect(self):
-        pass
-        
-    def handle_read(self):
-        datagram = self.recv(bcinetwork.BUFFER_SIZE)
-        self.feedbackController.on_signal(self.addr, datagram)    
