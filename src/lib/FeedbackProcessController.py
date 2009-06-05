@@ -1,7 +1,15 @@
 from processing import Process, Pipe
+from threading import Thread, Event
 import logging
+import traceback
 
 from lib.PluginController import PluginController
+
+
+def pipe_loop(self):
+    while True:
+        item = self.conn[0].recv()
+        print processing.currentProcess().getPid(), item   
 
 class FeedbackProcessController(object):
     """Takes care of starting and stopping of Feedback Processes."""
@@ -19,6 +27,7 @@ class FeedbackProcessController(object):
         self.timeout = timeout
         self.pluginController = PluginController(plugindirs, baseclass)
         self.pluginController.find_plugins()
+        self.fbPipe = Pipe()
         
     
     def start_feedback(self, name):
@@ -35,7 +44,25 @@ class FeedbackProcessController(object):
         except ImportError:
             # TODO: Hmm anything else we can do?
             raise
+        feedbackClass.pipe_loop = pipe_loop
         feedback = feedbackClass()
+
+        feedback.conn = self.fbPipe
+        feedback.playEvent = Event()
+        feedback.on_init()
+        pipeThread = Thread(target=feedback.pipe_loop)
+        pipeThread.start()
+        while True:
+            feedback.playEvent.wait()
+            try:
+                feedback.on_play()
+            except:
+                print "Feedbacks on_play threw an exception:"
+                print traceback.format_exc()
+            feedback.playEvent.clear()
+            print "Feedback's on_play terminated."
+
+
     
     
     def stop_feedback(self):
