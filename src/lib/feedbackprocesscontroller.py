@@ -112,6 +112,7 @@ class FeedbackProcessController(object):
         feedback.conn = self.fbPipe
         feedback.playEvent = Event()
         feedback.on_init()
+        # TODO: Do we need to kill the thread?
         pipeThread = Thread(target=feedback.pipe_loop)
         pipeThread.start()
         while True:
