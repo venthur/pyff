@@ -15,13 +15,13 @@ class FeedbackProcessController(object):
     """Takes care of starting and stopping of Feedback Processes."""
     
     def __init__(self, plugindirs, baseclass, timeout):
-        '''
+        """
         Initializes the Feedback Process Controller.
         
         @param plugindirs:
         @param baseclass:
         @param timeout:
-        '''
+        """
         self.logger = logging.getLogger("FeedbackProcessController")
         self.currentProc = None
         self.timeout = timeout
@@ -62,8 +62,6 @@ class FeedbackProcessController(object):
             feedback.playEvent.clear()
             print "Feedback's on_play terminated."
 
-
-    
     
     def stop_feedback(self):
         """Stops the current Process.
@@ -82,20 +80,22 @@ class FeedbackProcessController(object):
     def is_alive(self):
         """Return whether the current Process is alive or not."""
         return self.currentProc.isAlive() if self.currentProc else False
+
     
     def get_feedbacks(self):
         """Returns a list of available Feedbacks."""
         return self.pluginController.availablePlugins.keys()
+
     
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
     from FeedbackBase.Feedback import Feedback
+    import time
     fpc = FeedbackProcessController(["../Feedbacks"], Feedback, 1)
     print fpc.get_feedbacks()
     print "Is alive: ", fpc.is_alive()
     fpc.start_feedback(fpc.get_feedbacks()[1])
     print "Is alive: ", fpc.is_alive()
     fpc.stop_feedback()
+    time.sleep(1)
     print "Is alive: ", fpc.is_alive()
-    
-    
