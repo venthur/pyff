@@ -117,6 +117,8 @@ class FeedbackController(object):
         # check our signal if it contains anything useful, if not drop it and
         # print a warning
         try:
+            if signal.type == bcixml.REPLY_SIGNAL:
+                self.send_to_peer(signal)
             if signal.type == bcixml.CONTROL_SIGNAL:
                 self._handle_cs(signal)
             elif signal.type == bcixml.INTERACTION_SIGNAL:
@@ -147,29 +149,23 @@ class FeedbackController(object):
         # A few commands need to be handled by the Feedback Controller, the
         # rest goes to the Feedback
         if cmd == bcixml.CMD_GET_FEEDBACKS:
-            ip, port = signal.peeraddr[0], bcinetwork.GUI_PORT
-            bcinetw = bcinetwork.BciNetwork(ip, port)
-            feedbacks = self.fbProcCtrl.get_feedbacks()
-            answer = bcixml.BciSignal({"feedbacks" : feedbacks}, None, bcixml.INTERACTION_SIGNAL)
-            self.logger.debug("Sending %s to %s:%s." % (str(answer), str(ip), str(port)))
-            bcinetw.send_signal(answer)
+            reply = bcixml.BciSignal({"feedbacks" : self.fbProcCtrl.get_feedbacks()}, 
+                                     None, bcixml.REPLY_SIGNAL)
+            reply.peeraddr = signal.peeraddr
+            self.send_to_peer(reply)
             return
         elif cmd == bcixml.CMD_GET_VARIABLES:
+            # Put it in the pipe and hope that the reply will appear on our end.
+            self.send_to_feedback(signal)
             return
-            ip, port = signal.peeraddr[0], bcinetwork.GUI_PORT
-            bcinetw = bcinetwork.BciNetwork(ip, port)
-            answer = bcixml.BciSignal({"variables" : self.feedback.__dict__}, None, bcixml.INTERACTION_SIGNAL)
-            self.logger.debug("Sending %s to %s:%s." % (str(answer), str(ip), str(port)))
-            bcinetw.send_signal(answer)
-            return
-        elif cmd == bcixml.CMD_QUIT:
+
+        self.send_to_feedback(signal)
+        if cmd == bcixml.CMD_QUIT:
             self.send_to_feedback(signal)
             self.fbProcCtrl.stop_feedback()
         elif cmd == bcixml.CMD_SEND_INIT:
             name = signal.data["_feedback"]
             self.fbProcCtrl.start_feedback(name)
-        else:
-            self.send_to_feedback(signal)
             
     def io_loop(self):
         timeout = 1.0
@@ -205,3 +201,11 @@ class FeedbackController(object):
     def send_to_feedback(self, signal):
         # TODO: what if feedback does not exist?
         self.fbProcCtrl.send_signal(signal)
+        
+    def send_to_peer(self, signal):
+        ip, port = signal.peeraddr[0], bcinetwork.GUI_PORT
+        bcinetw = bcinetwork.BciNetwork(ip, port)
+        self.logger.debug("Sending %s to %s:%s." % (str(signal), str(ip), str(port)))
+        thread = threading.Thread(target=bcinetw.send_signal, args=(signal,))
+        thread.run()
+

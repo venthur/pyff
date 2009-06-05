@@ -32,6 +32,7 @@ CONTROL_SIGNAL = "control-signal"
 INTERACTION_SIGNAL = "interaction-signal"
 # FIXME: temporary
 FC_SIGNAL = "fc-signal"
+REPLY_SIGNAL = "reply"
 
 NAME = "name"
 VALUE = "value"
@@ -99,7 +100,7 @@ class XmlDecoder(object):
         for node in root.childNodes:
             if node.nodeType == Node.ELEMENT_NODE:
                 #if node.nodeName == INTERACTION_SIGNAL or node.nodeName == CONTROL_SIGNAL or node.nodeName == FC_SIGNAL:
-                if node.nodeName in [INTERACTION_SIGNAL, CONTROL_SIGNAL, FC_SIGNAL]:
+                if node.nodeName in [INTERACTION_SIGNAL, CONTROL_SIGNAL, FC_SIGNAL, REPLY_SIGNAL]:
                     t = node.nodeName
                 else:
                     self.logger.warning("Received a signal which contains neither an interaction- nor a control-signal. (%s)" % str(node.nodeName))
@@ -223,7 +224,7 @@ class XmlEncoder(object):
         dom.appendChild(root)
         
         # Write the type
-        if signal.type not in [CONTROL_SIGNAL, INTERACTION_SIGNAL, FC_SIGNAL]:
+        if signal.type not in [CONTROL_SIGNAL, INTERACTION_SIGNAL, FC_SIGNAL, REPLY_SIGNAL]:
             raise EncodingError("Unknown signal type: %s" % str(signal.type))
         root2 = dom.createElement(signal.type)
         root.appendChild(root2)

@@ -13,7 +13,6 @@ def pipe_loop(self):
         item = self.conn[0].recv()
         self.logger.debug("Received via pipe: %s", str(item))
         if not isinstance(item, BciSignal):
-            # ok got something fishy
             self.logger.warning("Received something which is not a BciSignal, ignoring it.")
             continue
         _process_signal(item, self)
@@ -21,7 +20,12 @@ def pipe_loop(self):
 
 def _process_signal(signal, feedback):
     cmd = signal.commands[0] if len(signal.commands) > 0 else None
-    if cmd == bcixml.CMD_PLAY:
+    if cmd == bcixml.CMD_GET_VARIABLES:
+        reply = bcixml.BciSignal({"variables" : feedback.__dict__}, None,
+                                 bcixml.REPLY_SIGNAL)
+        reply.peeraddr = signal.peeraddr
+        feedback.conn[0].send(reply)
+    elif cmd == bcixml.CMD_PLAY:
         feedback.playEvent.set()
     elif cmd == bcixml.CMD_PAUSE:
         feedback._on_pause()

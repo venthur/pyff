@@ -167,6 +167,13 @@ class BcixmlTestCase(unittest.TestCase):
         self.assertEqual(signal2.type, signal.type)
         self.assertEqual(signal2.data, data)
         
+    def test_Reply_Signal(self):
+        """Should support Reply Signal type."""
+        signal = bcixml.BciSignal(None, None, bcixml.REPLY_SIGNAL)
+        xml = self.encoder.encode_packet(signal)
+        signal2 = self.decoder.decode_packet(xml)
+        self.assertEqual(signal.type, signal2.type)
+
         
 #suite = unittest.makeSuite(BcixmlTestCase)
 def suite():
