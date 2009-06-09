@@ -26,11 +26,15 @@ from Feedbacks.Oddball import Oddball
 
 class AuditoryOddball(Oddball.Oddball):
     
-    def init(self):
-        self.au = audiere.open_device()
-        super(AuditoryOddball,self).init()  
-        self.dev_prob = 0.5      
-    
+    def init(self):        
+        super(AuditoryOddball,self).init()
+        self.DIR_DEV = 'C:/stim_test/dev'    
+        self.DIR_STD = 'C:/stim_test/std'
+        self.stimuli = 'predefined'
+        self.nStim = 15
+        self.au = audiere.open_device()  
+        self.dev_perc = 0.3  
+        
     def load_stimulus(self,filename):
         """
         Loads a stimulus from a file and returns it.
@@ -55,7 +59,7 @@ class AuditoryOddball(Oddball.Oddball):
         """
         Stop audio file.
         """           
-        stim.pause()
+        stim.pause()  #stim.stop()
             
 if __name__ == '__main__':
     vo = AuditoryOddball()

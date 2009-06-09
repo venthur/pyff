@@ -35,7 +35,10 @@ class VisualOddball(Oddball.Oddball):
     
     def init(self):
         super(VisualOddball,self).init()
-        self.dev_prob = 0.5
+        self.dev_perc = 0.25
+        self.nStim = 21
+        self.dd_dist = 3
+        
     
     def load_stimulus(self,filename):
         """
