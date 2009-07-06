@@ -22,10 +22,10 @@ class StroopFeedback(PygameFeedback.PygameFeedback):
         # all possible colors
         colors = ["red", "blue", "green", "brown", "purple"]
         self.colors = {"red" : [255,0,0],
-                       "green" : [0, 255, 0],
+                       "green" : [0, 191, 0],
                        "blue" : [0,0,255],
-                       "brown" : [128, 0, 0],
-                       "purple" : [128, 0, 255]}
+                       "brown" : [150, 75, 0],
+                       "purple" : [128, 0, 128]}
         
         # all possible combinations of [color1, color2] where color1 != color2
         # color1 is the printed word, color2 the actual color
@@ -37,7 +37,7 @@ class StroopFeedback(PygameFeedback.PygameFeedback):
 
     
     def play_tick(self):
-        self.do_print(self.current[0], self.colors[self.current[1]], 200)
+        self.do_print(self.current[0], self.colors[self.current[1]], 200, superimpose=False)
         self.timer += self.elapsed
         if self.timer > 1000:
             self.timer = 0

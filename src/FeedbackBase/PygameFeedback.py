@@ -75,10 +75,9 @@ class PygameFeedback(MainloopFeedback):
         font = pygame.font.Font(None, size)
         if not superimpose:
             self.screen.blit(self.background, self.backgroundRect)
-        surface = font.render(text, 1, color, self.backgroundColor)    
+        surface = font.render(text, 1, color)    
         self.screen.blit(surface, surface.get_rect(center=center))
-        if superimpose:
-            pygame.display.update(surface.get_rect(center=center))
+        pygame.display.flip()
 
         
 
