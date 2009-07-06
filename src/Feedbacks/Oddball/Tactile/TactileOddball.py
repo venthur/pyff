@@ -26,9 +26,9 @@ from Feedbacks.Oddball import Oddball
 
 class TactileOddball(Oddball.Oddball):
     
-    def init(self):
-        self.au = audiere.open_device()
-        super(TactileOddball,self).init()        
+    def init(self):        
+        super(TactileOddball,self).init()
+        self.au = audiere.open_device()        
     
     def load_stimulus(self,filename):
         """

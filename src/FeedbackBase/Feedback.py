@@ -25,6 +25,8 @@ import logging
 import threading
 import datetime
 import sys
+import pickle
+
 
 class Feedback(object):
     """
@@ -250,14 +252,17 @@ class Feedback(object):
         """Return a dictionary of variables and their values."""
         # try everything from self.__dict__:
         # must be pickable
-        import pickle
+        self.logger.debug("Preparing variables.")
         d = {}
         for key, val in self.__dict__.iteritems():
             if key.startswith("_"):
                 continue
             try:
-                s = pickle.dumps(val)
+                self.logger.debug("Trying to pickle %s %s" % (key, val))
+                s = pickle.dumps(val, pickle.HIGHEST_PROTOCOL)
             except:
+                self.logger.warning("Unable to pickle %s" % key)
                 continue
             d[key] = val
+        self.logger.debug("Returning variables.")
         return d

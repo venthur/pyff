@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 
+# Q: - several standards and/or deviants (probabilities? e.g. std_prob = [0.2 0.5 0.3])
+#    - option give several markers
+#    - constraints (min. x standards between deviants)
+
 
 # ODDBALL BASE CLASS from which all the subclasses inherit.
 #
@@ -38,6 +42,7 @@ import sys
 import math
 import os
 import warnings
+from scipy import *
 
 import pygame
 
@@ -48,25 +53,28 @@ class Oddball(MainloopFeedback):
     RUN_START, RUN_END = 252,253
     COUNTDOWN_START, COUNTDOWN_END = 40,41
     STANDARD, DEVIANT = list(),list()    
-    # standards have markers 10,11,12,... ; deviants 20,21,22,... (cf. get_stimuli())
+    # standards have markers 10,11,12,... ; deviants 30,31,32,... (cf. get_stimuli())
+    # if self.group_stim_markers==True, then there exist only two markers, one for
+    # group standard (10), and one for group deviant (20)
     RESP_STD, RESP_DEV = 1,2
     SHORTPAUSE_START, SHORTPAUSE_END = 249, 250
     
-    def init(self):
+    def init(self):        
         self.screen_pos = [100, 100, 640, 480]
         self.FPS = 40
         self.nStim = 100
-        self.pause_after = 50        
-        self.dev_prob = 0.1        
+        self.nStim_per_block = 50        
+        self.dev_perc = 0.1        
         self.countdown_from = 2
-        self.show_standards = True
+        self.show_standards = False
         self.give_feedback = True
-    
+        self.group_stim_markers = True
+        self.dd_dist = 2    # no contraint if deviant-deviant distance is 0 (cf. oddball sequence)            
+        
         self.DIR_DEV = ''
         self.DIR_STD= ''
         stimuli_opts = ['load', 'predefined']
         self.stimuli = stimuli_opts[1]
-        self.get_stimuli()
         
         # response options        
         self.rsp_key_dev = 'f'
@@ -79,6 +87,7 @@ class Oddball(MainloopFeedback):
         # Durations of the different blocks
         self.feedback_duration, self.stim_duration = 300,  400      
         self.gameover_duration = 3000
+        self.shortpauseDuration = 10000
         self.responsetime_duration = 100
         self.beforestim_ival = [200, 300]  # randomly between the two values
                 
@@ -96,18 +105,14 @@ class Oddball(MainloopFeedback):
         # Colour settings
         self.backgroundColor = (50, 50, 50)
         self.feedbackColor = (0, 150, 150)
-        self.countdownColor = (200, 80, 118)        
+        self.countdownColor = (200, 80, 118)
+        self.fontColor = self.feedbackColor        
                 
         self.responses = [0,0,0]
         self.last_response = ''
         self.stimuliShown = 0
         self.hitstr, self.missstr, self.falsestr = 'H: ', '  M: ', '  F: '
-
-        if not self.show_standards:
-            if self.response != 'dev_only':
-                self.response = 'dev_only'
-                warnings.warn('Standards not shown. Response option will be changed to ''dev_only''')
-                                                    
+                                                
                                     
     def get_stimuli(self):
         if self.stimuli == 'load':              # load stimuli from files
@@ -119,7 +124,7 @@ class Oddball(MainloopFeedback):
         
         # create parallel port markers for deviants and standards
         [self.STANDARD.append(10+s) for s in range(len(self.stds))]
-        [self.DEVIANT.append(20+d) for d in range(len(self.devs))]
+        [self.DEVIANT.append(30+d) for d in range(len(self.devs))]
             
         
     def load_stimuli(self):
@@ -133,11 +138,14 @@ class Oddball(MainloopFeedback):
         elif self.DIR_STD=='' and self.show_standards:
             raise Exception('Directory containing standard stimuli has to be defined.')
             
+        print 'Loading stimuli....'
         for filename in os.listdir(self.DIR_STD):
-            stds.append(load_stimulus(self.DIR_STD+filename))
+            stds.append(self.load_stimulus(self.DIR_STD+'/'+filename))
         for filename in os.listdir(self.DIR_DEV):
-            devs.append(load_stimulus(self.DIR_DEV+filename))               
+            devs.append(self.load_stimulus(self.DIR_DEV+'/'+filename))
+        print 'Done.'               
         return stds, devs
+
     
     def load_stimulus(self,filename):
         """
@@ -159,21 +167,42 @@ class Oddball(MainloopFeedback):
         """
         raise Exception('Method has to implemented by a subclass')
 
+
     def stop_stimulus(self, stim):
         """
         Stop the stimulus presentation.
         """
         raise Exception('Method has to implemented by a subclass')
+
+
+    def error_checking(self):
+        """
+        Check the settings for errors
+        """
+        if not self.show_standards:
+            if self.response != 'dev_only':
+                self.response = 'dev_only'
+                warnings.warn('Standards not shown. Response option will be changed to ''dev_only''')        
+
                 
     def pre_mainloop(self):
+        """
+        Sets up all the necessary components (e.g. pygame, stimuli, graphics) 
+        to run the experiment.
+        """
         self.send_parallel(self.RUN_START)
         self.init_pygame()
+        self.get_stimuli()
+        self.error_checking()
         self.init_graphics()
         #self.init_run()
         self.gameover = False
 
 
     def post_mainloop(self):
+        """
+        Sends end marker to parallel port and quits pygame.
+        """
         self.send_parallel(self.RUN_END)
         pygame.quit()        
 
@@ -190,7 +219,10 @@ class Oddball(MainloopFeedback):
 
     def play_tick(self):
         
-        if self.countdown:
+        if self.feedback:
+            #print 'in feedback'
+            self.feedback_tick()
+        elif self.countdown:
             #print 'in countdown'
             self.countdown_tick()
         elif self.gameover:
@@ -198,10 +230,7 @@ class Oddball(MainloopFeedback):
             self.gameover_tick()
         elif self.shortpause:
             #print 'in pause'
-            self.short_pause_tick()
-        elif self.feedback:
-            #print 'in feedback'
-            self.feedback_tick()
+            self.short_pause_tick()        
         elif self.responsetime:
             #print 'in response'
             self.responsetime_tick()
@@ -215,41 +244,62 @@ class Oddball(MainloopFeedback):
             
     def stim_tick(self):
         """
-        Called repeatedly during the stimulus presentation
+        Called repeatedly during the stimulus presentation.
         """
         self.stimElapsed += self.elapsed
         if self.firstStimTick:    
             self.firstStimTick = False    
             self.draw_initial()
             self.timeAfterStim = 0
-            if self.stim_sequence[self.stimuliShown]==0:
-                self.send_parallel(self.DEVIANT[0])
+            if self.stim_sequence[self.stimuliShown]==1:
+                self.stim, idx = self.get_deviant()                
+                self.send_stim_marker(self.DEVIANT,idx)
                 self.isdeviant = True
-                self.stim = self.get_deviant()
                 self.start_stimulus(self.stim)        
-            else:
-                self.send_parallel(self.STANDARD[0])
+            else:                
                 self.isdeviant = False
                 if self.show_standards:
-                    self.stim = self.get_standard()
-                    self.start_stimulus(self.stim)        
-                
+                    self.stim, idx = self.get_standard()
+                    self.send_stim_marker(self.STANDARD,idx)
+                    self.start_stimulus(self.stim)  
+                else:
+                    self.stim = None
+                    self.send_parallel(self.STANDARD)            
+        
+        # check if stimulus duration is over
         if self.stimElapsed>self.stim_duration:
             self.firstStimTick = True
             self.responsetime = True
-            self.stimElapsed = 0
-            self.stimuliShown += 1
-            self.stop_stimulus(self.stim)
+            self.stimElapsed = 0    
+            self.stimuliShown += 1        
+            if self.stim:
+                self.stop_stimulus(self.stim)
 
 
-    def get_deviant(self):
-        r = random.randint(0,len(self.devs)-1)
-        return self.devs[r]
+    def send_stim_marker(self, markerlist, idx):
+        """
+        Sends a stimulus marker (standard or deviant) to the parallel port.  
+        """
+        if not idx or self.group_stim_markers:
+            self.send_parallel(markerlist[0])
+        else:
+            self.send_parallel(markerlist[idx])
+
+
+    def get_deviant(self):        
+        if len(self.devs)>1:
+            idx = random.randint(0,len(self.devs)-1)
+        else:
+            idx = 0                        
+        return self.devs[idx], idx
         
         
     def get_standard(self):
-        r = random.randint(0,len(self.stds)-1)
-        return self.stds[r]        
+        if len(self.stds):
+            idx = random.randint(0,len(self.stds)-1)
+        else:
+            idx = 0
+        return self.stds[idx], idx        
     
     
     def responsetime_tick(self):
@@ -264,21 +314,26 @@ class Oddball(MainloopFeedback):
             self.evaluate_response()
             
             
-    def evaluate_response(self):
-        if self.last_response == 'Hit':
-            self.responses[0] += 1
-        elif self.last_response == 'False':
-            self.responses[2] += 1
-        else:                 # no response --> miss
-            self.responses[1] += 1
-            self.last_response = 'Miss'            
+    def evaluate_response(self):                    
         
         if self.give_feedback and (self.show_standards or self.isdeviant):
+            if self.last_response == 'Hit':
+                self.responses[0] += 1
+            elif self.last_response == 'False':
+                self.responses[2] += 1
+            else:                 # no response --> miss
+                self.responses[1] += 1
+                self.last_response = 'Miss'
             self.feedback = True
         else:
             self.last_response = ''
             self.beforestim = True
-
+            
+        if self.stimuliShown % self.nStim_per_block == 0:
+            self.shortpause = True
+        if self.stimuliShown >= self.nStim:
+            self.gameover = True
+            
         
     def feedback_tick(self):
         """
@@ -294,16 +349,13 @@ class Oddball(MainloopFeedback):
             self.last_response = ''
             self.feedback = False
             self.beforestim = True   
-            self.draw_initial() 
-                
-            if self.stimuliShown % self.pause_after == 0:
-                self.shortpause = True
-            if self.stimuliShown >= self.nStim:
-                self.gameover = True
-            return
+            self.draw_initial()             
 
     
     def show_feedback(self):
+        """
+        Draws the feedback on the screen.
+        """
         self.screen.blit(self.background, self.backgroundRect)
         #s = self.hitstr + str(self.responses[0]) + self.missstr + str(self.responses[1]) + self.falsestr + str(self.responses[ - 1])        
         self.do_print(self.last_response, self.feedbackColor)        
@@ -318,7 +370,7 @@ class Oddball(MainloopFeedback):
         
         self.shortpauseElapsed += self.elapsed
         
-        if self.shortpauseElapsed >= self.pauseDuration:
+        if self.shortpauseElapsed >= self.shortpauseDuration:
             self.shortpause = False
             self.shortpauseElapsed = 0
             self.countdown = True
@@ -337,10 +389,8 @@ class Oddball(MainloopFeedback):
             self.send_parallel(self.COUNTDOWN_START)
             self.draw_initial()
             # initialize stimulus sequence for the next block according to the deviant probability
-            self.stim_sequence = [1] * int(self.pause_after)
-            self.stim_sequence[0:int(self.dev_prob*self.pause_after)] = [0] * int(self.dev_prob*self.pause_after)
-            random.shuffle(self.stim_sequence)
-            print self.stim_sequence            
+            n = min(self.nStim_per_block,self.nStim)
+            self.stim_sequence = self.contrained_oddball_sequence(n,self.dev_perc,self.dd_dist)
         
         self.countdownElapsed += self.elapsed 
                
@@ -377,11 +427,15 @@ class Oddball(MainloopFeedback):
         """
         One tick of the game over loop.
         """
-        self.draw_all(False)
-        s = self.hitstr + str(self.responses[0]) + self.missstr + str(self.responses[1]) + self.falsestr + str(self.responses[ - 1])
-        self.do_print(s, self.size / 10)
+        self.draw_initial()
+        if self.give_feedback:
+            if self.show_standards:
+                s = self.hitstr + str(self.responses[0]) + self.missstr + str(self.responses[1]) + self.falsestr + str(self.responses[ - 1])
+            else:
+                s = self.hitstr + str(self.responses[0]) + self.missstr + str(self.responses[1])
+            self.do_print(s, self.fontColor, self.size / 10)
         pygame.time.wait(self.gameover_duration)
-       
+        
        
     def do_print(self, text, color, size=None, center=None, superimpose=True):
         """
@@ -396,13 +450,10 @@ class Oddball(MainloopFeedback):
 
         font = pygame.font.Font(None, size)
         if not superimpose:
-            self.screen.blit(self.background, self.backgroundRect)
-        surface = font.render(text, 1, color, self.backgroundColor)    
+            self.screen.blit(self.background, self.backgroundRect)            
+        surface = font.render(text, 1, color,self.backgroundColor)    
         self.screen.blit(surface, surface.get_rect(center=center))
         pygame.display.update()
-        #if superimpose:
-        #    pygame.display.update(surface.get_rect(center=center))
-
                 
     def init_graphics(self):
         """
@@ -419,6 +470,9 @@ class Oddball(MainloopFeedback):
         self.draw_initial()
     
     def draw_initial(self):
+        """
+        Draw the default screen layout.
+        """            
         self.screen.blit(self.background, self.backgroundRect)
         pygame.display.update()
         
@@ -454,3 +508,30 @@ class Oddball(MainloopFeedback):
         self.screen = pygame.display.set_mode((self.screen_pos[2], self.screen_pos[3]), pygame.RESIZABLE)
         self.clock = pygame.time.Clock()
 
+    def contrained_oddball_sequence(self, N, dev_perc, dd_dist=0):    
+    # N:          total number of trials
+    # perc_dev:   percentage of deviants
+    # dd_dist:    constraint variable: minimal number of standards between two deviants 
+    #             (default: no contraint (=0))
+    
+        devs_to_be_placed= round(N*dev_perc)
+        if devs_to_be_placed+(devs_to_be_placed-1)*dd_dist>N:
+            solve_prob = 'Increase the number of trials, or decrease the percentage of deviants or the minimal dev-to-dev-distance.' 
+            raise Exception('Oddball sequence constraints cannot be fullfilled. ' + solve_prob)
+    
+        devs = -1
+        while round(N*dev_perc) != devs:
+            sequence= zeros((N,1));
+            devs_to_be_placed= round(N*dev_perc)
+            ptr = 0
+            while ptr < N:        
+                togo= N-ptr
+                prob= devs_to_be_placed/floor(togo/2)        
+                if random.random() < prob:
+                    sequence[ptr] = 1
+                    devs_to_be_placed = devs_to_be_placed - 1
+                    ptr = ptr + dd_dist
+                ptr= ptr +  1
+            devs = sum(sequence)
+        #print sequence
+        return sequence

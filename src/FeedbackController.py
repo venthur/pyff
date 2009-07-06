@@ -21,6 +21,9 @@
 import logging
 from optparse import OptionParser
 
+from processing import Process
+
+import GUI
 from lib.feedbackcontroller import FeedbackController
 
 
@@ -57,6 +60,8 @@ the Free Software Foundation; either version 2 of the License, or
     parser.add_option('--port', dest='port',
                       help="Set the Parallel port address to use. Windows only. Should be in Hex (eg: 0x378)",
                       metavar="PORTNUM")
+    parser.add_option("--nogui", action="store_true", default=False, 
+                      help="Start without GUI.")
 
 
     options, args = parser.parse_args()
@@ -79,6 +84,10 @@ the Free Software Foundation; either version 2 of the License, or
     # get the rest
     plugin = options.plugin
     fbpath = options.fbpath
+    if not options.nogui:
+        guiproc = Process(target=GUI.main)
+        guiproc.start() 
+        
     port = None
     if options.port != None:
         port = int(options.port, 16)
@@ -86,8 +95,7 @@ the Free Software Foundation; either version 2 of the License, or
         fc = FeedbackController(plugin, fbpath, port)
         fc.start()
     except (KeyboardInterrupt, SystemExit):
-        print "*** KILLED ***"
-        logging.info("Caught keyboard interrupt or system exit; quitting")
+        logging.debug("Caught keyboard interrupt or system exit; quitting")
 
 
 if __name__ == '__main__':

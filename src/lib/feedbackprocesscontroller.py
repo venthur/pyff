@@ -57,6 +57,8 @@ def pipe_loop(self):
 def _process_signal(signal, feedback):
     # Where are we: 
     # Proc/Thread: FB/IO
+    feedback.logger.debug("Processing signal")
+    
     if signal.type == bcixml.CONTROL_SIGNAL:
         feedback._on_control_event(signal.data)
         return
@@ -66,6 +68,7 @@ def _process_signal(signal, feedback):
         reply = bcixml.BciSignal({"variables" : feedback._get_variables()}, None,
                                  bcixml.REPLY_SIGNAL)
         reply.peeraddr = signal.peeraddr
+        feedback.logger.debug("Sending variables")
         feedback.conn[0].send(reply)
     elif cmd == bcixml.CMD_PLAY:
         feedback.playEvent.set()
@@ -84,6 +87,7 @@ def start_feedback_proc_wrapper(feedbackClass, fbPipe):
     # Proc/Thread: FB/Main
     logger = logging.getLogger("start_fb_proc_wrapper")
     feedbackClass.pipe_loop = pipe_loop
+    # FIXME dammnit
     feedback = feedbackClass()
 
     feedback.conn = fbPipe
