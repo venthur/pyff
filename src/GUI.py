@@ -340,7 +340,7 @@ class Entry(object):
             self.value = oldValue
     
 
-if __name__ == "__main__":
+def main():
     loglevel = logging.DEBUG
     logging.basicConfig(level=loglevel, format='%(name)-12s %(levelname)-8s %(message)s')
     
@@ -349,3 +349,7 @@ if __name__ == "__main__":
     gui.show()
     
     sys.exit(app.exec_())
+
+
+if __name__ == "__main__":
+    main()
