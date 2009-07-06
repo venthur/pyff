@@ -95,8 +95,7 @@ the Free Software Foundation; either version 2 of the License, or
         fc = FeedbackController(plugin, fbpath, port)
         fc.start()
     except (KeyboardInterrupt, SystemExit):
-        print "*** KILLED ***"
-        logging.info("Caught keyboard interrupt or system exit; quitting")
+        logging.debug("Caught keyboard interrupt or system exit; quitting")
 
 
 if __name__ == '__main__':
