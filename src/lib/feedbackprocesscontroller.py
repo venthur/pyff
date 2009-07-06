@@ -87,6 +87,7 @@ def start_feedback_proc_wrapper(feedbackClass, fbPipe):
     # Proc/Thread: FB/Main
     logger = logging.getLogger("start_fb_proc_wrapper")
     feedbackClass.pipe_loop = pipe_loop
+    # FIXME dammnit
     feedback = feedbackClass()
 
     feedback.conn = fbPipe
