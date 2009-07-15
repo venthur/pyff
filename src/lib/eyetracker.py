@@ -203,7 +203,9 @@ class EyeTracker(object):
             windll.kernel32.FreeLibrary(self.api._handle)
         except:
             self.logger.debug("Listen Failed!")
-            self.stop()
+            # This is not useful, a thread cannot join itself
+            # 2009-07-15 Basti
+            #self.stop()
             
     """
     Calls calibration for the eye tracker
