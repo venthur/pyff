@@ -81,8 +81,11 @@ class IOThread(Thread):
         pass
 
 
+import time
+
 class MyIOThread(IOThread):
     def process_object(self, obj):
+        time.sleep(10.0)
         print "Received: ", obj
 
 if __name__ == "__main__":
@@ -94,7 +97,7 @@ if __name__ == "__main__":
     ioThread.start()
     print "done."
     
-    print "Sending stuff...:"
+    print "Sending stuff...:",
     myEnd.send("foo")
     myEnd.send("bar")
     print "Done."
@@ -104,12 +107,12 @@ if __name__ == "__main__":
     ioThread.send("bar2")
     print "done."
     
-    print "See if we can read...:"
+    print "See if we can read...:",
     print myEnd.recv()
     print myEnd.recv()
     print "done."
     
     print "Joining thread...",
-    ioThread.stop()
+    #ioThread.stop()
     ioThread.join()
     print "done."
