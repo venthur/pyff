@@ -17,6 +17,8 @@
 
 
 import sys
+import os
+import signal
 from threading import Thread, Event
 from pickle import UnpicklingError
 import logging
@@ -174,7 +176,6 @@ class FeedbackProcessController(object):
 
     
     def stop_feedback(self):
-
         """Stops the current Process.
         
         First it tries to join the process with the given timeout, if that fails
@@ -191,6 +192,15 @@ class FeedbackProcessController(object):
             self.logger.debug("process still alive, killing it...",)
             self.currentProc.terminate()
             # The above does not always work... maybe os.kill does?
+            # TODO: test if this also works under windows where os.kill is not
+            # available
+            if self.currentProc.isAlive():
+                self.logger.warning("terminate() did not work, killing it with kill...")
+                os.kill(self.currentProc.getPid(), signal.SIGKILL)
+                # Ok FB still lives, what now?
+                if self.currentProc.isAlive():
+                    self.logger.error("FB did not quit after stopping, terminating and killing.")
+                
         self.fbPipe[0].close()
         self.fbPipe[1].close()
         del(self.currentProc)
