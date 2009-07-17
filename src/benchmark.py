@@ -131,6 +131,7 @@ def _send_cs(packets, delay, id=0):
     
 
 if __name__ == "__main__":
+    print "Don't forget to start the FC before running the benchmark!."
     logging.basicConfig(level=logging.DEBUG, 
                         format='[%(threadName)-10s] %(name)-25s: %(levelname)-8s %(message)s')
     
