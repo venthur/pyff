@@ -77,7 +77,7 @@ the Free Software Foundation; either version 2 of the License, or
     loglevel = str2loglevel.get(options.loglevel, logging.WARNING)
     fbloglevel = str2loglevel.get(options.fbloglevel, logging.WARNING)
 
-    logging.basicConfig(level=loglevel, format='[%(threadName)-10s] %(name)-25s: %(levelname)-8s %(message)s')
+    logging.basicConfig(level=loglevel, format='[%(process)-5d:%(threadName)-10s] %(name)-25s: %(levelname)-8s %(message)s')
     logging.info('Logger initialized with level %s.' % options.loglevel)
     logging.getLogger("FB").setLevel(fbloglevel)
     
