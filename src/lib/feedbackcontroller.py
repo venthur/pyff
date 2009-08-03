@@ -124,6 +124,11 @@ class FeedbackController(object):
         self.logger.debug("Started I/O loop.")
         self.io_loop()
         self.logger.debug("Left I/O loop.")
+        
+    
+    def stop(self):
+        # TODO: send this also to fbproc controller
+        asyncore.close_all()
 
     
     def handle_signal(self, signal):
