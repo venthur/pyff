@@ -17,10 +17,10 @@
 
 
 import socket
-import threading
 import logging
 import traceback
 import sys
+import asyncore
 
 try:
     import parallel
@@ -35,6 +35,7 @@ from lib import bcinetwork
 from lib import bcixml
 from FeedbackBase.Feedback import Feedback
 from lib.feedbackprocesscontroller import FeedbackProcessController
+import ipc
 
 
 class FeedbackController(object):
@@ -44,10 +45,8 @@ class FeedbackController(object):
         self.encoder = bcixml.XmlEncoder()
         self.decoder = bcixml.XmlDecoder()
         # Set up the socket
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.socket.bind(("", bcinetwork.FC_PORT))
-        self.socket.settimeout(1.0)
-        self.port = port
+        self.ipcchannel = ipc.IPCConnectionHandler(self)
+        self.udpconnectionhandler = UDPDispatcher(self)
         # Setup the parallel port
         self.pp = None
         self.logger.debug("Platform: " + sys.platform)
@@ -61,7 +60,6 @@ class FeedbackController(object):
                 self.pp = parallel.Parallel()
             except:
                 self.logger.warning("Unable to open parallel port!")
-        self.playEvent = threading.Event()
         if plugin:
             self.logger.debug("Loading plugin %s" % str(plugin))
             try:
@@ -72,7 +70,6 @@ class FeedbackController(object):
         if fbpath:
             fbdirs.append(fbpath)
         self.fbProcCtrl = FeedbackProcessController(fbdirs, Feedback, 1)
-        
         self.fc_data = {}
         
 #
@@ -120,14 +117,15 @@ class FeedbackController(object):
 
 
     def start(self):
-        """Start the Feedback Controllers activities."""
-        self.logger.debug("Started I/O loop.")
-        self.io_loop()
-        self.logger.debug("Left I/O loop.")
+        """Start the Feedback Controller's activities."""
+        self.logger.debug("Started mainloop.")
+        ipc.ipcloop()
+        self.logger.debug("Left mainloop.")
         
     
     def stop(self):
-        # TODO: send this also to fbproc controller
+        """Stop the Feedback Controller's activities."""
+        self.fbProcCtrl.stop_feedback()
         asyncore.close_all()
 
     
@@ -177,53 +175,54 @@ class FeedbackController(object):
             self.send_to_feedback(signal)
             return
 
-        self.send_to_feedback(signal)
         if cmd == bcixml.CMD_QUIT:
             self.send_to_feedback(signal)
             self.fbProcCtrl.stop_feedback()
         elif cmd == bcixml.CMD_SEND_INIT:
             name = signal.data["_feedback"]
             self.fbProcCtrl.start_feedback(name)
-            
-    def io_loop(self):
-        timeout = 1.0
-        while True:
-            # check the socket for new data
-            self.process_socket()
-            # check the pipe for new data
-            self.process_pipe()
-            
-    def process_socket(self):
-        try:
-            (data, address) = self.socket.recvfrom(bcinetwork.BUFFER_SIZE)
-        except socket.timeout:
-            # Currently no data available on the socket, this is ok
-            return
-        try:
-            signal = self.decoder.decode_packet(data)
-            signal.peeraddr = address
-        except bcixml.DecodingError, e:
-            # ok, somehow the parsing failed, just drop the packet and print a
-            # warning
-            self.logger.warning("Parsing of signal failed, ignoring it. (%s)" % str(e))
-            return
-        self.handle_signal(signal)
+        else:
+            self.send_to_feedback(signal)
     
-    def process_pipe(self):
-        if not self.fbProcCtrl.poll():
-            # Currently no data available on the pipe, this is ok
-            return
-        data = self.fbProcCtrl.receive_signal()
-        self.handle_signal(data)
 
     def send_to_feedback(self, signal):
-        # TODO: what if feedback does not exist?
-        self.fbProcCtrl.send_signal(signal)
+        """Send data to the feedback."""
+        try:
+            self.ipcchannel.send_message(signal)
+        except:
+            self.logger.warning("Couldn't send data to Feedback.")
+            self.logger.warning(traceback.format_exc())
+
         
     def send_to_peer(self, signal):
-        ip, port = signal.peeraddr[0], bcinetwork.GUI_PORT
-        bcinetw = bcinetwork.BciNetwork(ip, port)
-        self.logger.debug("Sending %s to %s:%s." % (str(signal), str(ip), str(port)))
-        thread = threading.Thread(target=bcinetw.send_signal, args=(signal,))
-        thread.run()
+        self.udpconnectionhandler.send_signal(signal)
 
+
+class UDPDispatcher(asyncore.dispatcher):
+    
+    def __init__(self, fc):
+        asyncore.dispatcher.__init__(self)
+        self.fc = fc
+        self.decoder = bcixml.XmlDecoder()
+        self.encoder = bcixml.XmlEncoder()
+        self.create_socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.bind(("", bcinetwork.FC_PORT))
+
+    def send_signal(self, signal):
+        data = self.encoder.encode_packet(signal)
+        self.socket.sendto(data, (signal.peeraddr[0], bcinetwork.GUI_PORT))
+
+    def handle_connect(self): pass
+    
+    def writable(self):
+        return False
+        
+    def handle_read(self):
+        try:
+            data, address = self.recvfrom(bcinetwork.BUFFER_SIZE)
+            signal = self.decoder.decode_packet(data)
+            signal.peeraddr = address
+            self.fc.handle_signal(signal)
+        except:
+            self.fc.logger.warning(traceback.format_exc())
+        

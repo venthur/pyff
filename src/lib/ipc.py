@@ -27,12 +27,28 @@ import asyncore
 import asynchat
 import socket
 import cPickle as pickle
+import traceback
+
+import bcixml
 
 
 # delimiter for IPC messages.
 TERMINATOR = "\r\n\r\n"
 # Port for IPC connections
-IPC_PORT = 12346
+IPC_PORT = 12347
+
+import thread
+
+def ipcloop():
+    """Start the IPC loop."""
+    asyncore.loop()
+
+
+def get_feedbackcontroller_connection():
+    """Return a connection to the Feedback Controller."""
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.connect(("", IPC_PORT))
+    return sock
 
 
 class IPCConnectionHandler(asyncore.dispatcher):
@@ -40,17 +56,37 @@ class IPCConnectionHandler(asyncore.dispatcher):
     FeedbackControllerIPCChannel.
     """ 
     
-    def __init__(self):
+    def __init__(self, fc):
         asyncore.dispatcher.__init__(self)
+        print "Init."
+        self.conn = None
+        self.addr = None
+        self.ipcchan = None
+        self.fc = fc
         self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
         self.bind(("", IPC_PORT))
         self.listen(5)
         
     def handle_accept(self):
         """Handle incoming connection from Feedback."""
-        conn, addr = self.accept()
-        FeedbackControllerIPCChannel(conn)
+        print "Accepting."
+        self.conn, self.addr = self.accept()
+        self.ipcchan = FeedbackControllerIPCChannel(self.conn, self.fc)
 
+    def handle_close(self):
+        print "Closing."
+        self.ipcchan = None
+        
+    def handle_error(self):
+        print "Error."
+        
+    def send_message(self, message):
+        """Send the message via the currently open connection."""
+        if self.ipcchan:
+            self.ipcchan.send_message(message)
+        else:
+            raise Exception("No open IPC channel available.")
+        
 
 class IPCChannel(asynchat.async_chat):
     """IPC Channel.
@@ -85,13 +121,21 @@ class IPCChannel(asynchat.async_chat):
         dump = self.ibuf
         self.ibuf = ""
         ipcmessage = pickle.loads(dump)
-        self.handle_message(ipcmessage)
+        try:
+            self.handle_message(ipcmessage)
+        except:
+            print traceback.print_exc()
+            
         
     def send_message(self, message):
         """Send message to peer."""
         dump = pickle.dumps(message, protocol=pickle.HIGHEST_PROTOCOL)
         dump += TERMINATOR
         self.push(dump)
+
+    def handle_close(self):
+        asynchat.async_chat.handle_close(self)
+        print "Closing connection!"
 
     def handle_message(self, message):
         """Do something with the received message.
@@ -102,19 +146,49 @@ class IPCChannel(asynchat.async_chat):
 
 class FeedbackControllerIPCChannel(IPCChannel):
     """IPC Channel for Feedback Contoller's end."""
+    
+    def __init__(self, conn, fc):
+        IPCChannel.__init__(self, conn)
+        self.fc = fc
 
     def handle_message(self, message):
         """Handle message from Feedback."""
-        print message
+        self.fc.handle_signal(message)
         
 
 class FeedbackIPCChannel(IPCChannel):
     """IPC Channel for Feedback's end."""
+    
+    def __init__(self, conn, feedback):
+        IPCChannel.__init__(self, conn)
+        self.feedback = feedback
+
 
     def handle_message(self, message):
         """Handle message from Feedback Controller."""
-        print message
+        self.feedback.logger.debug("Processing signal")
         
+        if message.type == bcixml.CONTROL_SIGNAL:
+            self.feedback._on_control_event(message.data)
+            return
+        
+        cmd = message.commands[0] if len(message.commands) > 0 else None
+        if cmd == bcixml.CMD_GET_VARIABLES:
+            reply = bcixml.BciSignal({"variables" : self.feedback._get_variables()}, None,
+                                     bcixml.REPLY_SIGNAL)
+            reply.peeraddr = message.peeraddr
+            self.feedback.logger.debug("Sending variables")
+            self.send_message(reply)
+        elif cmd == bcixml.CMD_PLAY:
+            self.feedback._playEvent.set()
+        elif cmd == bcixml.CMD_PAUSE:
+            self.feedback._on_pause()
+        elif cmd == bcixml.CMD_STOP:
+            self.feedback._on_stop()
+        elif cmd == bcixml.CMD_QUIT:
+            self.feedback._on_quit()
+        elif cmd == bcixml.CMD_SEND_INIT:
+            self.feedback._on_init()        
     
 
 

@@ -26,6 +26,8 @@ import threading
 import datetime
 import sys
 import pickle
+from threading import Event
+import traceback
 
 
 class Feedback(object):
@@ -67,7 +69,8 @@ class Feedback(object):
             self._port_num = port_num # used in windows only''
         else:
             self._port_num = 0x378
-        
+        self._playEvent = Event()
+        self._shouldQuit = False
  
     #
     # Internal routines not inteded for overwriting
@@ -141,6 +144,8 @@ class Feedback(object):
         
         You should not override this method, use on_quit instead.
         """
+        self._shouldQuit = True
+        self._playEvent.set()
         self.on_quit()
 
 
@@ -247,6 +252,7 @@ class Feedback(object):
             if reset:
                 timer = threading.Timer(0.01, self.send_parallel, (0x0, False))
                 timer.start()
+
                 
     def _get_variables(self):
         """Return a dictionary of variables and their values."""
@@ -266,3 +272,29 @@ class Feedback(object):
             d[key] = val
         self.logger.debug("Returning variables.")
         return d
+
+
+    def _playloop(self):
+        """Loop which ensures that on_play always runs in main thread.
+        
+        Do not overwrite in derived classes unless you know what you're doing.
+        """
+        self._shouldQuit = False
+        while 1:
+            self._playEvent.wait()
+            if self._shouldQuit:
+                break
+            try:
+                self.logger.debug("Starting on_play.")
+                self.on_play()
+            except:
+                # The feedback's main thread crashed and we need to take care
+                # that the pipe does not run full, otherwise the feedback
+                # controller freezes on the last pipe[foo].send()
+                # So let's just terminate the feedback process.
+                self.logger.error("on_play threw an exception:")
+                self.logger.error(traceback.format_exc())
+                return
+            self._playEvent.clear()
+            self.logger.debug("on_play terminated.")
+        self.logger.debug("_playloop terminated.")
