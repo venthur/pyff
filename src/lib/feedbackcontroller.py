@@ -206,7 +206,7 @@ class UDPDispatcher(asyncore.dispatcher):
         self.decoder = bcixml.XmlDecoder()
         self.encoder = bcixml.XmlEncoder()
         self.create_socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.bind(("", bcinetwork.FC_PORT))
+        self.bind((bcinetwork.LOCALHOST, bcinetwork.FC_PORT))
 
     def send_signal(self, signal):
         data = self.encoder.encode_packet(signal)

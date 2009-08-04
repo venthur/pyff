@@ -36,6 +36,7 @@ import bcixml
 TERMINATOR = "\r\n\r\n"
 # Port for IPC connections
 IPC_PORT = 12347
+LOCALHOST = "127.0.0.1"
 
 import thread
 
@@ -47,7 +48,7 @@ def ipcloop():
 def get_feedbackcontroller_connection():
     """Return a connection to the Feedback Controller."""
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.connect(("", IPC_PORT))
+    sock.connect((LOCALHOST, IPC_PORT))
     return sock
 
 
@@ -64,7 +65,7 @@ class IPCConnectionHandler(asyncore.dispatcher):
         self.ipcchan = None
         self.fc = fc
         self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.bind(("", IPC_PORT))
+        self.bind((LOCALHOST, IPC_PORT))
         self.listen(5)
         
     def handle_accept(self):
