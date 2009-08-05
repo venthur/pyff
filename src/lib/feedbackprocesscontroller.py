@@ -108,8 +108,10 @@ class FeedbackProcessController(object):
         self.currentProc.start()
         # Wait until the network from the Process is ready, this is neccessairy
         # since spawning a new process under Windows is very slow.
+        self.logger.debug("Waiting for IPC channel to become ready...")
         ipcReady.wait()
-        self.logger.debug("done.")
+        self.logger.debug("IPC channel ready.")
+        self.logger.debug("Done starting process.")
 
     
     def stop_feedback(self):
