@@ -39,7 +39,7 @@ class FeedbackProcess(Process):
         # Start the Feedbacks IPC Channel
         asyncore.socket_map.clear()
         conn = ipc.get_feedbackcontroller_connection()
-        ipc.FeedbackIPCChannel(self.conn, feedback)
+        ipc.FeedbackIPCChannel(conn, feedback)
         feedback.logger.debug("Starting IPC loop.")
         fbipcthread = Thread(target=ipc.ipcloop)
         fbipcthread.start()
