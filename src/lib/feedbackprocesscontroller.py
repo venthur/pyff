@@ -22,16 +22,17 @@ from threading import Thread
 import logging
 import asyncore
 
-from processing import Process
+from processing import Process, Event
 
 from lib.PluginController import PluginController
 import ipc
 
 
 class FeedbackProcess(Process):
-    def __init__(self, feedbackClass):
+    def __init__(self, feedbackClass, ipcReady):
         Process.__init__(self)
         self.feedbackClass = feedbackClass
+        self.ipcReady = ipcReady
 
     def run(self):
         feedback = self.feedbackClass()
@@ -43,6 +44,7 @@ class FeedbackProcess(Process):
         feedback.logger.debug("Starting IPC loop.")
         fbipcthread = Thread(target=ipc.ipcloop)
         fbipcthread.start()
+        self.ipcReady.set()
         # Start the Feedbacks Mainloop
         try:
             feedback.on_init()
@@ -101,8 +103,12 @@ class FeedbackProcessController(object):
         except ImportError:
             # TODO: Hmm anything else we can do?
             raise
-        self.currentProc = FeedbackProcess(feedbackClass)
+        ipcReady = Event()
+        self.currentProc = FeedbackProcess(feedbackClass, ipcReady)
         self.currentProc.start()
+        # Wait until the network from the Process is ready, this is neccessairy
+        # since spawning a new process under Windows is very slow.
+        ipcReady.wait()
         self.logger.debug("done.")
 
     
