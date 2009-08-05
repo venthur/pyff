@@ -127,17 +127,11 @@ class FeedbackProcessController(object):
         
         self.currentProc.join(self.timeout)
         if self.currentProc.isAlive():
-            self.logger.debug("process still alive, killing it...",)
+            self.logger.warning("process still alive, terminating it...",)
             self.currentProc.terminate()
-            # The above does not always work... maybe os.kill does?
-            # TODO: test if this also works under windows where os.kill is not
-            # available
+            self.currentProc.join(self.timeout)
             if self.currentProc.isAlive():
-                self.logger.warning("terminate() did not work, killing it with kill...")
-                os.kill(self.currentProc.getPid(), signal.SIGKILL)
-                # Ok FB still lives, what now?
-                if self.currentProc.isAlive():
-                    self.logger.error("FB did not quit after stopping, terminating and killing.")
+                self.logger.error("Process still alive, giving up.")
         
         del(self.currentProc)
         self.currentProc = None
