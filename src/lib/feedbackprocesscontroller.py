@@ -27,10 +27,13 @@ import ipc
 
 
 class FeedbackProcess(Process):
+    """Process that wrapps the Feedback's activities."""
+
     def __init__(self, feedbackClass, ipcReady):
         Process.__init__(self)
         self.feedbackClass = feedbackClass
         self.ipcReady = ipcReady
+
 
     def run(self):
         feedback = self.feedbackClass()
@@ -68,8 +71,6 @@ class FeedbackProcessController(object):
     
     def start_feedback(self, name):
         """Starts the given Feedback in a new process."""
-        # Where are we: 
-        # Proc/Thread: FC/??
         self.logger.debug("Starting new Process...",)
         if self.currentProc:
             self.logger.warning("Trying to start feedback but another one is still running. Killing the old one now and proceed.")
@@ -77,12 +78,11 @@ class FeedbackProcessController(object):
         try:
             feedbackClass = self.pluginController.load_plugin(name)
         except ImportError:
-            # TODO: Hmm anything else we can do?
             raise
         ipcReady = Event()
         self.currentProc = FeedbackProcess(feedbackClass, ipcReady)
         self.currentProc.start()
-        # Wait until the network from the Process is ready, this is neccessairy
+        # Wait until the network from the Process is ready, this is necessary
         # since spawning a new process under Windows is very slow.
         self.logger.debug("Waiting for IPC channel to become ready...")
         ipcReady.wait()
@@ -96,8 +96,6 @@ class FeedbackProcessController(object):
         First it tries to join the process with the given timeout, if that fails
         it terminates the process the hard way.
         """
-        # Where are we: 
-        # Proc/Thread: FC/??
         self.logger.debug("Stopping process...",)
         if not self.currentProc:
             self.logger.debug("No process running, nothing to do.")
@@ -118,7 +116,5 @@ class FeedbackProcessController(object):
     
     def get_feedbacks(self):
         """Return a list of available Feedbacks."""
-        # Where are we: 
-        # Proc/Thread: FC/??
         return self.pluginController.availablePlugins.keys()
 
