@@ -177,6 +177,7 @@ class FeedbackController(object):
 
         if cmd == bcixml.CMD_QUIT:
             self.send_to_feedback(signal)
+            self.ipcchannel.close_channel()
             self.fbProcCtrl.stop_feedback()
         elif cmd == bcixml.CMD_SEND_INIT:
             name = signal.data["_feedback"]

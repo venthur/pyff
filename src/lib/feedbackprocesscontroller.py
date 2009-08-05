@@ -28,26 +28,28 @@ from lib.PluginController import PluginController
 import ipc
 
 
-def start_feedback_proc_wrapper(feedbackClass, conn):
-    # Where are we: 
-    # Proc/Thread: FB/Main
-    
-    # Start the Feedback
-    feedback = feedbackClass()
-    feedback.logger.debug("Initialized Feedback.")
-    # Start the Feedbacks IPC Channel
-    asyncore.socket_map.clear()
-    ipc.FeedbackIPCChannel(conn, feedback)
-    feedback.logger.debug("Starting IPC loop.")
-    fbipcthread = Thread(target=ipc.ipcloop)
-    fbipcthread.start()
-    # Start the Feedbacks Mainloop
-    try:
-        feedback.on_init()
-        feedback._playloop()
-    finally:
-        feedback.logger.debug("Closing IPC socket.")
-        conn.close()
+class FeedbackProcess(Process):
+    def __init__(self, feedbackClass):
+        Process.__init__(self)
+        self.feedbackClass = feedbackClass
+
+    def run(self):
+        feedback = self.feedbackClass()
+        feedback.logger.debug("Initialized Feedback.")
+        # Start the Feedbacks IPC Channel
+        asyncore.socket_map.clear()
+        conn = ipc.get_feedbackcontroller_connection()
+        ipc.FeedbackIPCChannel(self.conn, feedback)
+        feedback.logger.debug("Starting IPC loop.")
+        fbipcthread = Thread(target=ipc.ipcloop)
+        fbipcthread.start()
+        # Start the Feedbacks Mainloop
+        try:
+            feedback.on_init()
+            feedback._playloop()
+        finally:
+            feedback.logger.debug("Closing IPC socket.")
+            conn.close()
 
 
 #FeedbackProcessController:
@@ -99,8 +101,7 @@ class FeedbackProcessController(object):
         except ImportError:
             # TODO: Hmm anything else we can do?
             raise
-        self.currentConn = ipc.get_feedbackcontroller_connection()
-        self.currentProc = Process(target=start_feedback_proc_wrapper, args=(feedbackClass, self.currentConn))
+        self.currentProc = FeedbackProcess(feedbackClass)
         self.currentProc.start()
         self.logger.debug("done.")
 
@@ -118,7 +119,6 @@ class FeedbackProcessController(object):
             self.logger.debug("No process running, nothing to do.")
             return
         
-        self.currentConn.close()
         self.currentProc.join(self.timeout)
         if self.currentProc.isAlive():
             self.logger.debug("process still alive, killing it...",)

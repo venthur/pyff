@@ -87,6 +87,11 @@ class IPCConnectionHandler(asyncore.dispatcher):
             self.ipcchan.send_message(message)
         else:
             raise Exception("No open IPC channel available.")
+    
+    def close_channel(self):
+        """Close the channel to the Feedback.""" 
+        self.ipcchan.close()
+        
         
 
 class IPCChannel(asynchat.async_chat):
