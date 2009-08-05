@@ -22,15 +22,6 @@ import traceback
 import sys
 import asyncore
 
-try:
-    import parallel
-except ImportError:
-    print "Unable to import parallel module, have you pyparallel installed?"
-try:
-    from ctypes import windll
-except ImportError:
-    print "Unable to import ctypes.windll"
-
 from lib import bcinetwork
 from lib import bcixml
 from FeedbackBase.Feedback import Feedback
@@ -52,14 +43,16 @@ class FeedbackController(object):
         self.logger.debug("Platform: " + sys.platform)
         if sys.platform == 'win32':
             try:
+                from ctypes import windll
                 self.pp = windll.inpout32
             except:
                 self.logger.warning("Could not load inpout32.dll. Please make sure it is located in the system32 directory")
         else:
             try:
+                import parallel
                 self.pp = parallel.Parallel()
             except:
-                self.logger.warning("Unable to open parallel port!")
+                self.logger.warning("Unable to open parallel port! Please install pyparallel to use it.")
         if plugin:
             self.logger.debug("Loading plugin %s" % str(plugin))
             try:

@@ -28,6 +28,7 @@ import asynchat
 import socket
 import cPickle as pickle
 import traceback
+import logging
 
 import bcixml
 
@@ -59,7 +60,7 @@ class IPCConnectionHandler(asyncore.dispatcher):
     
     def __init__(self, fc):
         asyncore.dispatcher.__init__(self)
-        print "Init."
+        self.logger = logging.getLogger("IPCConnectionHandler")
         self.conn = None
         self.addr = None
         self.ipcchan = None
@@ -70,16 +71,16 @@ class IPCConnectionHandler(asyncore.dispatcher):
         
     def handle_accept(self):
         """Handle incoming connection from Feedback."""
-        print "Accepting."
+        self.logger.debug("Accepting.")
         self.conn, self.addr = self.accept()
         self.ipcchan = FeedbackControllerIPCChannel(self.conn, self.fc)
 
     def handle_close(self):
-        print "Closing."
+        self.logger.debug("Closing.")
         self.ipcchan = None
         
     def handle_error(self):
-        print "Error."
+        self.logger.error("Some error occurred, ignoring it.")
         
     def send_message(self, message):
         """Send the message via the currently open connection."""
@@ -90,6 +91,7 @@ class IPCConnectionHandler(asyncore.dispatcher):
     
     def close_channel(self):
         """Close the channel to the Feedback.""" 
+        self.logger.debug("Closing channel to Feedback.")
         self.ipcchan.close()
         
         
@@ -114,6 +116,7 @@ class IPCChannel(asynchat.async_chat):
     def __init__(self, conn):
         """Initialize the Channel, set terminator and clear input buffer."""
         asynchat.async_chat.__init__(self, conn)
+        self.logger = logging.getLogger("IPCChannel")
         self.set_terminator(TERMINATOR)
         # input buffer
         self.ibuf = ""
@@ -140,8 +143,9 @@ class IPCChannel(asynchat.async_chat):
         self.push(dump)
 
     def handle_close(self):
+        self.logger.debug("Closing Connection.")
         asynchat.async_chat.handle_close(self)
-        print "Closing connection!"
+        
 
     def handle_message(self, message):
         """Do something with the received message.

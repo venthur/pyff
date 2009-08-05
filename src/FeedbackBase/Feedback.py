@@ -25,7 +25,7 @@ import logging
 import threading
 import datetime
 import sys
-import pickle
+import cPickle as pickle
 from threading import Event
 import traceback
 
