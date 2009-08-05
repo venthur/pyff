@@ -16,8 +16,6 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 
-import os
-import signal
 from threading import Thread
 import logging
 import asyncore
@@ -54,33 +52,11 @@ class FeedbackProcess(Process):
             conn.close()
 
 
-#FeedbackProcessController:
-#
-#* Get available Feedbacks
-#* Start a Feedback in a new Process
-#* Stop Feedback
-#* Send data (Signals) to the Feedback
-#* Get Data from the Feedback
-#* Test if Feedback is alive
-#
-#How to use:
-#
-#1. instantiate FPC
-#2. get_feedbacks
-#3. start_feedback(name)
-#  - send and get various data
-#4. stop_feedback
 class FeedbackProcessController(object):
     """Takes care of starting and stopping of Feedback Processes."""
     
     def __init__(self, plugindirs, baseclass, timeout):
-        """
-        Initializes the Feedback Process Controller.
-        
-        @param plugindirs:
-        @param baseclass:
-        @param timeout:
-        """
+        """Initialize the Feedback Process Controller."""
         # Where are we: 
         # Proc/Thread: FB/??
         self.logger = logging.getLogger("FeedbackProcessController")
@@ -129,7 +105,7 @@ class FeedbackProcessController(object):
         
         self.currentProc.join(self.timeout)
         if self.currentProc.isAlive():
-            self.logger.warning("process still alive, terminating it...",)
+            self.logger.warning("Process still alive, terminating it...",)
             self.currentProc.terminate()
             self.currentProc.join(self.timeout)
             if self.currentProc.isAlive():
@@ -137,20 +113,11 @@ class FeedbackProcessController(object):
         
         del(self.currentProc)
         self.currentProc = None
-        self.logger.debug("done.")
+        self.logger.debug("Done stopping process.")
         
     
-    def is_alive(self):
-        """Return whether the current Process is alive or not."""
-        # Where are we: 
-        # Proc/Thread: FC/??
-        if not self.currentProc:
-            return False
-        return self.currentProc.isAlive() if self.currentProc else False
-
-    
     def get_feedbacks(self):
-        """Returns a list of available Feedbacks."""
+        """Return a list of available Feedbacks."""
         # Where are we: 
         # Proc/Thread: FC/??
         return self.pluginController.availablePlugins.keys()
