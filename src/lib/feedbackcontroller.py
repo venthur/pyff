@@ -38,21 +38,8 @@ class FeedbackController(object):
         # Set up the socket
         self.ipcchannel = ipc.IPCConnectionHandler(self)
         self.udpconnectionhandler = UDPDispatcher(self)
-        # Setup the parallel port
-        self.pp = None
-        self.logger.debug("Platform: " + sys.platform)
-        if sys.platform == 'win32':
-            try:
-                from ctypes import windll
-                self.pp = windll.inpout32
-            except:
-                self.logger.warning("Could not load inpout32.dll. Please make sure it is located in the system32 directory")
-        else:
-            try:
-                import parallel
-                self.pp = parallel.Parallel()
-            except:
-                self.logger.warning("Unable to open parallel port! Please install pyparallel to use it.")
+        # Windows only, set the parallel port port
+        self.ppport = port
         if plugin:
             self.logger.debug("Loading plugin %s" % str(plugin))
             try:
@@ -174,7 +161,7 @@ class FeedbackController(object):
             self.fbProcCtrl.stop_feedback()
         elif cmd == bcixml.CMD_SEND_INIT:
             name = signal.data["_feedback"]
-            self.fbProcCtrl.start_feedback(name)
+            self.fbProcCtrl.start_feedback(name, port=self.ppport)
         else:
             self.send_to_feedback(signal)
     

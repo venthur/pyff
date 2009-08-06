@@ -29,14 +29,15 @@ import ipc
 class FeedbackProcess(Process):
     """Process that wrapps the Feedback's activities."""
 
-    def __init__(self, feedbackClass, ipcReady):
+    def __init__(self, feedbackClass, ipcReady, port):
         Process.__init__(self)
         self.feedbackClass = feedbackClass
         self.ipcReady = ipcReady
+        self.port = port
 
 
     def run(self):
-        feedback = self.feedbackClass()
+        feedback = self.feedbackClass(port_num=self.port)
         feedback.logger.debug("Initialized Feedback.")
         # Start the Feedbacks IPC Channel
         asyncore.socket_map.clear()
@@ -69,7 +70,7 @@ class FeedbackProcessController(object):
         self.pluginController.find_plugins()
         
     
-    def start_feedback(self, name):
+    def start_feedback(self, name, port):
         """Starts the given Feedback in a new process."""
         self.logger.debug("Starting new Process...",)
         if self.currentProc:
@@ -80,7 +81,7 @@ class FeedbackProcessController(object):
         except ImportError:
             raise
         ipcReady = Event()
-        self.currentProc = FeedbackProcess(feedbackClass, ipcReady)
+        self.currentProc = FeedbackProcess(feedbackClass, ipcReady, port)
         self.currentProc.start()
         # Wait until the network from the Process is ready, this is necessary
         # since spawning a new process under Windows is very slow.

@@ -51,7 +51,7 @@ class Feedback(object):
     method in your feedback.
     """
 
-    def __init__(self, pport=None, port_num=None):
+    def __init__(self, port_num=None):
         """
         Initializes the feedback.
         
@@ -61,10 +61,22 @@ class Feedback(object):
         """
      
         self._data = None
-        #self.logger = logging.getLogger("Feedback")
         self.logger = logging.getLogger("FB." + self.__class__.__name__)
         self.logger.debug("Loaded my logger.")
-        self._pport = pport
+        # Setup the parallel port
+        self._pport = None
+        if sys.platform == 'win32':
+            try:
+                from ctypes import windll
+                self._pport = windll.inpout32
+            except:
+                self.logger.warning("Could not load inpout32.dll. Please make sure it is located in the system32 directory")
+        else:
+            try:
+                import parallel
+                self._pport = parallel.Parallel()
+            except:
+                self.logger.warning("Unable to open parallel port! Please install pyparallel to use it.")
         if port_num != None:
             self._port_num = port_num # used in windows only''
         else:
