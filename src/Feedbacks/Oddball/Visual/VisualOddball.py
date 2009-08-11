@@ -6,6 +6,8 @@
 # - load_stimulus:              if stimuli are files (e.g. images, audio-files)    
 # - get_predefined_stimuli:     if stimuli are created by a python module
 # - present_stimulus:           determines how the stimuli are presented
+# Additionally, the marker values have to be specified if necessary 
+# ((STANDARD= list(...), DEVIANT=list(...)) 
 #
 #
 # Copyright (C) 2008-2009  Simon Scholler
