@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 
-# Copyright (C) 2008-2009  Simon Scholler
+# Copyright (C) 2009  Simon Scholler
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -31,7 +31,7 @@ class P300_Rectangle(VisualOddball.VisualOddball):
     def init(self):
         super(P300_Rectangle,self).init()
         self.dev_perc = 0.2
-        self.nStim = 40
+        self.nStim = 20
         self.dd_dist = 2
         self.response = 'none'
         self.give_feedback = False

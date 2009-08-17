@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 
-# Copyright (C) 2008-2009  Simon Scholler
+# Copyright (C) 2009  Simon Scholler
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -31,6 +31,7 @@ class CheckerboardVEP(VisualOddball.VisualOddball):
         super(CheckerboardVEP,self).init()
         self.dev_perc = 0.5
         self.nStim = 40
+        self.nStim_per_block = 100   # number of stimuli until a pause
         self.dd_dist = 1
         self.squaresPerSide = 6
         self.response = 'none'

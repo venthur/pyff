@@ -257,7 +257,7 @@ class Oddball(MainloopFeedback):
             self.firstStimTick = False    
             self.draw_initial()
             self.timeAfterStim = 0
-            if self.stim_sequence[self.stimuliShown]==1:
+            if self.stim_sequence[self.stimuliShown%self.nStim_per_block]==1:
                 self.stim, idx = self.get_deviant()                
                 self.send_stim_marker(self.DEVIANT,idx)
                 self.isdeviant = True
@@ -281,6 +281,12 @@ class Oddball(MainloopFeedback):
             self.stimuliShown += 1        
             if self.stim:
                 self.stop_stimulus(self.stim)
+            # pause?
+            if self.stimuliShown % self.nStim_per_block == 0:
+                self.shortpause = True
+            # game over?
+            if self.stimuliShown >= self.nStim:
+                self.gameover = True
 
 
     def send_stim_marker(self, markerlist, idx):
@@ -336,11 +342,6 @@ class Oddball(MainloopFeedback):
             self.last_response = ''
             if self.beforestim_duration != 0:
                 self.beforestim = True
-            
-        if self.stimuliShown % self.nStim_per_block == 0:
-            self.shortpause = True
-        if self.stimuliShown >= self.nStim:
-            self.gameover = True
             
         
     def feedback_tick(self):
