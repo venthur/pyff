@@ -17,13 +17,16 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-"""Checkerboard-flipping used to generate a visual evoked potential (VEP)."""
-
+"""
+An oddball paradigm. The count is entered via the keyboard at the end
+of the sequence and its sent as a trigger (incremented by 100).
+"""
 import pygame
 import math
 import sys
 
 from Feedbacks.Oddball.Visual import VisualOddball
+from lib.P300VisualElement.Textrow import Textrow
 
 
 class P300_Rectangle(VisualOddball.VisualOddball):
@@ -34,6 +37,7 @@ class P300_Rectangle(VisualOddball.VisualOddball):
         self.nStim = 20
         self.dd_dist = 2
         self.response = 'none'
+        self.promptCount = False                # If yes, asks to type in a count in the end
         self.give_feedback = False
         self.feedback_duration, self.beforestim_ival = 0, [0,0]
         self.stim_duration = 1500
@@ -46,6 +50,7 @@ class P300_Rectangle(VisualOddball.VisualOddball):
         self.devlist = self.create_list(self.nDev, self.within_dev_perc)
         self.stdlist = self.create_list(self.nStd, self.within_std_perc)
         self.userresp = ''
+        self.size = (self.screen_pos[-1]*2/3,self.screen_pos[-1]/10) #moved here
         
     def load_stimulus(self,filename):
         """
@@ -58,11 +63,10 @@ class P300_Rectangle(VisualOddball.VisualOddball):
         """
         Creates standard and deviant stimuli.          
         """        
-        size = (self.screen_pos[-1]*2/3,self.screen_pos[-1]/10)
-        dev1 = pygame.Surface(size)
-        dev2 = pygame.Surface(size)
-        std1 = pygame.Surface(size)
-        std2 = pygame.Surface(size)
+        dev1 = pygame.Surface(self.size)
+        dev2 = pygame.Surface(self.size)
+        std1 = pygame.Surface(self.size)
+        std2 = pygame.Surface(self.size)
         red, orange, blue, yellow = (255,0,0), (255,100,0), (0,0,255), (255,255,0) 
         dev1.fill(red)
         dev2.fill(orange)
@@ -103,11 +107,54 @@ class P300_Rectangle(VisualOddball.VisualOddball):
             if event.type == pygame.QUIT:
                 sys.exit()
             elif event.type == pygame.KEYDOWN:
-                if event.unicode == K_RETURN:
+                if event.unicode == pygame.K_RETURN:
                     #TODO: save user answer
                     pass
                 self.userresp = self.userresp + event.unicode                      
                       
+    def post_mainloop(self):
+        """
+        Overwrite superclass function to also
+        include a text prompt
+        """
+        self.send_parallel(self.RUN_END)
+        if self.stimuliShown == self.nStim and self.promptCount: # if whole block was finished without interupt->enter count
+            self.prompt_count()
+        pygame.quit()   
+
+    def prompt_count(self):
+        self.countrow = Textrow(text="", pos=self.screen.get_rect().center,textsize=60, color=(150, 150, 255), size=(100, 60), edgecolor=(255, 255, 255), antialias=True, colorkey=(0, 0, 0))
+        pygame.event.clear()
+        text, ready = "", False
+        while not ready:
+            for event in pygame.event.get():
+                if event.type == pygame.KEYDOWN:
+                    k = event.key
+                    if k == pygame.K_BACKSPACE:
+                        if len(text) > 0: text = text[0: - 1]   # Delete last number
+                    elif len(text) < 2:
+                        if k in (pygame.K_0,pygame.K_KP0): text = text + "0"
+                        elif k in (pygame.K_1,pygame.K_KP1): text = text + "1"
+                        elif k in (pygame.K_2,pygame.K_KP2): text = text + "2"
+                        elif k in (pygame.K_3,pygame.K_KP3): text = text + "3"
+                        elif k in (pygame.K_4,pygame.K_KP4): text = text + "4"
+                        elif k in (pygame.K_5,pygame.K_KP5): text = text + "5"
+                        elif k in (pygame.K_6,pygame.K_KP6): text = text + "6"
+                        elif k in (pygame.K_7,pygame.K_KP7): text = text + "7"
+                        elif k in (pygame.K_8,pygame.K_KP8): text = text + "8"
+                        elif k in (pygame.K_9,pygame.K_KP9): text = text + "9"
+                    elif k == pygame.K_RETURN: ready = True
+            self.countrow.text = text
+            self.countrow.refresh()
+            self.countrow.update(0)
+            self.screen.blit(self.background, self.backgroundRect)
+            self.screen.blit(self.countrow.image, self.countrow.rect)
+            pygame.display.update()
+            pygame.time.wait(100)
+        # Send count as EEG marker
+        self.send_parallel(int(text)+100)
+
+
 if __name__ == '__main__':
     p300_rect = P300_Rectangle()
     p300_rect.on_init()

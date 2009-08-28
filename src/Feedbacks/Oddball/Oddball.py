@@ -234,6 +234,7 @@ class Oddball(MainloopFeedback):
         elif self.gameover:
             #print 'in gameover'
             self.gameover_tick()
+            self.on_stop()
         elif self.shortpause:
             #print 'in pause'
             self.short_pause_tick()        
