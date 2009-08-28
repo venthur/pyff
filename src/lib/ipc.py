@@ -189,7 +189,8 @@ class FeedbackIPCChannel(IPCChannel):
             reply.peeraddr = message.peeraddr
             self.feedback.logger.debug("Sending variables")
             self.send_message(reply)
-        elif cmd == bcixml.CMD_PLAY:
+        self.feedback._on_interaction_event(message.data)
+        if cmd == bcixml.CMD_PLAY:
             self.feedback._playEvent.set()
         elif cmd == bcixml.CMD_PAUSE:
             self.feedback._on_pause()
