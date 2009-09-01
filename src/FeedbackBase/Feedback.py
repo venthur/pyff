@@ -352,7 +352,7 @@ class Feedback(object):
                 break
             try:
                 self.logger.debug("Starting on_play.")
-                self.on_play()
+                self._on_play()
             except:
                 # The feedback's main thread crashed and we need to take care
                 # that the pipe does not run full, otherwise the feedback
