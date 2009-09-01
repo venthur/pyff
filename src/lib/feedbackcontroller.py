@@ -40,60 +40,12 @@ class FeedbackController(object):
         self.udpconnectionhandler = UDPDispatcher(self)
         # Windows only, set the parallel port port
         self.ppport = port
-        if plugin:
-            self.logger.debug("Loading plugin %s" % str(plugin))
-            try:
-                self.inject(plugin)
-            except:
-                self.logger.error(str(traceback.format_exc()))
+        self.fbplugin = plugin
         fbdirs = ["Feedbacks"]
         if fbpath:
             fbdirs.append(fbpath)
         self.fbProcCtrl = FeedbackProcessController(fbdirs, Feedback, 1)
         self.fc_data = {}
-        
-#
-# Feedback Controller Plugin-Methods
-#    
-    def pre_init(self): pass
-    def post_init(self): pass
-    def pre_play(self): pass
-    def post_play(self): pass
-    def pre_pause(self): pass
-    def post_pause(self): pass
-    def pre_stop(self): pass
-    def post_stop(self): pass
-    def pre_quit(self): pass
-    def post_quit(self): pass
-#
-# /Feedback Controller Plugin-Methods
-#    
-
-    SUPPORTED_PLUGIN_METHODS = ["pre_init", "post_init",
-                                "pre_play", "post_play",
-                                "pre_pause", "post_pause",
-                                "pre_stop", "post_stop",
-                                "pre_quit", "post_quit"]
-    
-    def inject(self, module):
-        """Inject methods from module to Feedback Controller."""
-        try:
-            m = __import__(module, fromlist=[None])
-        except ImportError:
-            self.logger.info("Unable to import module %s, aborting injection." % str(module))
-        else:
-            for meth in FeedbackController.SUPPORTED_PLUGIN_METHODS:
-                if hasattr(m, meth) and callable(getattr(m, meth)):
-                    setattr(FeedbackController, meth, getattr(m, meth))
-                    self.logger.info("Sucessfully injected: %s" % meth)
-                else:
-                    self.logger.debug("Unable to inject %s" % meth)
-                    has = hasattr(m, meth)
-                    call = False
-                    if has:
-                        call = callable(getattr(m, meth))
-                    self.logger.debug("hassattr/callable: %s/%s" % (str(has), str(call)))
-                    
 
 
     def start(self):
@@ -161,7 +113,7 @@ class FeedbackController(object):
             self.fbProcCtrl.stop_feedback()
         elif cmd == bcixml.CMD_SEND_INIT:
             name = signal.data["_feedback"]
-            self.fbProcCtrl.start_feedback(name, port=self.ppport)
+            self.fbProcCtrl.start_feedback(name, port=self.ppport, fbplugin=self.fbplugin)
         else:
             self.send_to_feedback(signal)
     

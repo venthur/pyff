@@ -51,6 +51,50 @@ class Feedback(object):
     method in your feedback.
     """
 
+
+#
+# Feedback Plugin-Methods
+#    
+    def pre_init(self): pass
+    def post_init(self): pass
+    def pre_play(self): pass
+    def post_play(self): pass
+    def pre_pause(self): pass
+    def post_pause(self): pass
+    def pre_stop(self): pass
+    def post_stop(self): pass
+    def pre_quit(self): pass
+    def post_quit(self): pass
+#
+# /Feedback Plugin-Methods
+#    
+
+    SUPPORTED_PLUGIN_METHODS = ["pre_init", "post_init",
+                                "pre_play", "post_play",
+                                "pre_pause", "post_pause",
+                                "pre_stop", "post_stop",
+                                "pre_quit", "post_quit"]
+    
+    def inject(self, module):
+        """Inject methods from module to Feedback Controller."""
+        try:
+            m = __import__(module, fromlist=[None])
+        except ImportError:
+            self.logger.info("Unable to import module %s, aborting injection." % str(module))
+        else:
+            for meth in Feedback.SUPPORTED_PLUGIN_METHODS:
+                if hasattr(m, meth) and callable(getattr(m, meth)):
+                    setattr(Feedback, meth, getattr(m, meth))
+                    self.logger.info("Sucessfully injected: %s" % meth)
+                else:
+                    self.logger.debug("Unable to inject %s" % meth)
+                    has = hasattr(m, meth)
+                    call = False
+                    if has:
+                        call = callable(getattr(m, meth))
+                    self.logger.debug("hassattr/callable: %s/%s" % (str(has), str(call)))
+
+
     def __init__(self, port_num=None):
         """
         Initializes the feedback.
@@ -124,7 +168,9 @@ class Feedback(object):
         
         You should not override this method, use on_init instead.
         """
+        self.pre_init()
         self.on_init()
+        self.post_init()
     
     def _on_play(self):
         """
@@ -132,7 +178,9 @@ class Feedback(object):
         
         You should not override this method, use on_play instead.
         """
+        self.pre_play()
         self.on_play()
+        self.post_play()
     
     def _on_pause(self):
         """
@@ -140,7 +188,9 @@ class Feedback(object):
         
         You should not override this method, use on_pause instead.
         """
+        self.pre_pause()
         self.on_pause()
+        self.post_pause()
         
     def _on_stop(self):
         """
@@ -148,7 +198,9 @@ class Feedback(object):
         
         You should not override this method, use on_stop instead.
         """
+        self.pre_stop()
         self.on_stop()
+        self.post_stop()
     
     def _on_quit(self):
         """
@@ -156,9 +208,11 @@ class Feedback(object):
         
         You should not override this method, use on_quit instead.
         """
+        self.pre_quit()
         self._shouldQuit = True
         self._playEvent.set()
         self.on_quit()
+        self.post_quit()
 
 
     #

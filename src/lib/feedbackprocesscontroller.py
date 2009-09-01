@@ -19,6 +19,7 @@
 from threading import Thread
 import logging
 import asyncore
+import traceback
 
 from processing import Process, Event
 
@@ -29,16 +30,25 @@ import ipc
 class FeedbackProcess(Process):
     """Process that wrapps the Feedback's activities."""
 
-    def __init__(self, feedbackClass, ipcReady, port):
+    def __init__(self, feedbackClass, ipcReady, port, fbplugin):
         Process.__init__(self)
         self.feedbackClass = feedbackClass
         self.ipcReady = ipcReady
         self.port = port
+        self.fbplugin = fbplugin
 
 
     def run(self):
         feedback = self.feedbackClass(port_num=self.port)
         feedback.logger.debug("Initialized Feedback.")
+        if self.fbplugin:
+            feedback.logger.debug("Loading plugin %s" % str(self.fbplugin))
+            try:
+                feedback.inject(self.fbplugin)
+            except:
+                feedback.logger.error(str(traceback.format_exc()))
+        
+        
         # Start the Feedbacks IPC Channel
         asyncore.socket_map.clear()
         conn = ipc.get_feedbackcontroller_connection()
@@ -70,7 +80,7 @@ class FeedbackProcessController(object):
         self.pluginController.find_plugins()
         
     
-    def start_feedback(self, name, port):
+    def start_feedback(self, name, port, fbplugin):
         """Starts the given Feedback in a new process."""
         self.logger.debug("Starting new Process...",)
         if self.currentProc:
@@ -81,7 +91,7 @@ class FeedbackProcessController(object):
         except ImportError:
             raise
         ipcReady = Event()
-        self.currentProc = FeedbackProcess(feedbackClass, ipcReady, port)
+        self.currentProc = FeedbackProcess(feedbackClass, ipcReady, port, fbplugin)
         self.currentProc.start()
         # Wait until the network from the Process is ready, this is necessary
         # since spawning a new process under Windows is very slow.
