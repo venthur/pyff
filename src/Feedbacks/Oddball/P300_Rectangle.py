@@ -34,7 +34,7 @@ class P300_Rectangle(VisualOddball.VisualOddball):
     def init(self):
         super(P300_Rectangle,self).init()
         self.dev_perc = 0.2
-        self.nStim = 20
+        self.nStim = 5
         self.dd_dist = 2
         self.response = 'none'
         self.promptCount = False                # If yes, asks to type in a count in the end
@@ -43,12 +43,8 @@ class P300_Rectangle(VisualOddball.VisualOddball):
         self.stim_duration = 1500
         self.responsetime_duration = 0     
         self.backgroundColor = (50,50,50)
-        self.nDev = self.nStim*self.dev_perc
-        self.nStd = self.nStim-self.nDev 
         self.within_dev_perc = [1,0]#[0.5, 0.5]  # sum must be 1
         self.within_std_perc = [0.5, 0.5]  # sum must be 1
-        self.devlist = self.create_list(self.nDev, self.within_dev_perc)
-        self.stdlist = self.create_list(self.nStd, self.within_std_perc)
         self.userresp = ''
         self.size = (self.screen_pos[-1]*2/3,self.screen_pos[-1]/10) #moved here
         
@@ -111,6 +107,15 @@ class P300_Rectangle(VisualOddball.VisualOddball):
                     #TODO: save user answer
                     pass
                 self.userresp = self.userresp + event.unicode                      
+    
+    
+    def pre_mainloop(self):
+        VisualOddball.VisualOddball.pre_mainloop(self)
+        self.nDev = self.nStim*self.dev_perc
+        self.nStd = self.nStim-self.nDev 
+        self.devlist = self.create_list(self.nDev, self.within_dev_perc)
+        self.stdlist = self.create_list(self.nStd, self.within_std_perc)
+    
                       
     def post_mainloop(self):
         """
