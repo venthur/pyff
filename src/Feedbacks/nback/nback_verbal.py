@@ -59,7 +59,7 @@ class nback_verbal(MainloopFeedback):
         self.stimTime = 6               # How long the stimulus is displayed (in frames)
         self.preResponseTime = 14        # How long to wait before response is accepted 
         self.responseTime = 70           # Time window for giving a response
-        self.nCountdown = 3             # N of secs to count down
+        self.nCountdown = 7             # N of secs to count down
         self.auditoryFeedback = True       # Auditory feedback provided
         # Triggers
         self.triggers = range(10,10+len(self.symbols)) # 10,11,12,...
@@ -114,9 +114,9 @@ class nback_verbal(MainloopFeedback):
         dir = os.path.dirname(sys.modules[__name__].__file__) # Get current dir
         if self.auditoryFeedback:
             self.sound = pygame.mixer.Sound(dir + "/sound18.wav")
+        
          
     def tick(self):
-        # Check event cue
         # If last state is finished, proceed to next state
         if self.state_finished:
             if self.state == self.COUNTDOWN:
@@ -135,17 +135,18 @@ class nback_verbal(MainloopFeedback):
             self.state_finished = False
 
     def play_tick(self):
-        state = self.state
-        if state == self.COUNTDOWN:
-            self.countdown()
-        elif state == self.STIM:
-            self.stim()
-        elif state == self.PRE_RESPONSE:
-            self.pre_response()
-        elif state == self.RESPONSE:
-            self.response()
-        # Keep running at the number of fps specified
-        self.clock.tick(self.fps)       
+        if self.checkWindowFocus():
+            state = self.state
+            if state == self.COUNTDOWN:
+                self.countdown()
+            elif state == self.STIM:
+                self.stim()
+            elif state == self.PRE_RESPONSE:
+                self.pre_response()
+            elif state == self.RESPONSE:
+                self.response()
+            # Keep running at the number of fps specified
+            self.clock.tick(self.fps)
 
     def pause_tick(self):
             txt = self.font.render("PAUSE",self.ANTIALIAS,self.color)
@@ -315,13 +316,22 @@ class nback_verbal(MainloopFeedback):
             if self.sequence[i] is None:
                 self.sequence[i] = remList.pop()
     
- #   def backtrack(self):
+    def checkWindowFocus(self):
         """
-        A backtracking algorithm intended to place remaining symbols
-        after the n-th symbol pairs are placed, such that no n-th 
-        matches occur by coincidence 
+        Return true if pygame window has focus. Otherwise display text
+        and return false.
         """
-  #      pass
+        pygame.event.get()
+        if not pygame.key.get_focused():
+            txt = self.font.render("Click to start",self.ANTIALIAS,self.color)
+            txt_rect = txt.get_rect(center=self.screenCenter)
+            self.screen.blit(self.background,self.background_rect)
+            self.screen.blit(txt, txt_rect)
+            pygame.display.update()
+            return False
+        return True
+        
+        
     
 if __name__ == "__main__":
     a = nback_verbal()
