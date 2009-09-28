@@ -16,6 +16,9 @@ class PygameFeedback(MainloopFeedback):
         self.elapsed = 0
 
         self.backgroundColor = [0,0,0]
+        # This is only needed if we need something more than plain colored
+        # background (and also for performance)
+        self.background = None
 
     def pre_mainloop(self):
         self.init_pygame()
@@ -90,21 +93,6 @@ class PygameFeedback(MainloopFeedback):
         self.background = self.background.convert()
         self.backgroundRect = self.background.get_rect(center=self.screen.get_rect().center)
         self.background.fill(self.backgroundColor)
-            
-                
-    def draw_all(self, draw=False):
-        # draw images on the screen
-        self.screen.blit(self.background, self.backgroundRect)
-        self.screen.blit(self.wall, self.wallRect1)
-        self.screen.blit(self.wall, self.wallRect2)
-        if self.showCounter:
-            s = self.hitstr + str(self.hitMiss[0]).rjust(2) + self.missstr + str(self.hitMiss[-1]).rjust(2)
-            center = (self.wallW+self.playWidth*self.x_transl, self.size/20)
-            self.do_print(s, self.hitmissCounterColor, self.counterSize, center)
-        self.screen.blit(self.bowl, self.bowlMoveRect)
-        self.screen.blit(self.bar, self.barMoveRect)
-        if draw:
-            pygame.display.flip()
 
 
     def process_pygame_events(self):
@@ -116,8 +104,6 @@ class PygameFeedback(MainloopFeedback):
                 e = max(event.w, int(round(event.h*0.9)))
                 self.screen = pygame.display.set_mode((e, event.h), pygame.RESIZABLE)
                 self.resized = True
-                self.oldPlayWidth = self.playWidth
-                self.oldBarSurface = self.barSurface
                 (self.screenHeight, self.screenWidth) = (self.screen.get_height(), self.screen.get_width())
                 self.init_graphics()
             elif event.type == pygame.QUIT:
