@@ -17,24 +17,16 @@
 
 
 import socket
-import threading
 import logging
 import traceback
 import sys
-
-try:
-    import parallel
-except ImportError:
-    print "Unable to import parallel module, have you pyparallel installed?"
-try:
-    from ctypes import windll
-except ImportError:
-    print "Unable to import ctypes.windll"
+import asyncore
 
 from lib import bcinetwork
 from lib import bcixml
 from FeedbackBase.Feedback import Feedback
 from lib.feedbackprocesscontroller import FeedbackProcessController
+import ipc
 
 
 class FeedbackController(object):
@@ -44,86 +36,29 @@ class FeedbackController(object):
         self.encoder = bcixml.XmlEncoder()
         self.decoder = bcixml.XmlDecoder()
         # Set up the socket
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.socket.bind(("", bcinetwork.FC_PORT))
-        self.socket.settimeout(1.0)
-        self.port = port
-        # Setup the parallel port
-        self.pp = None
-        self.logger.debug("Platform: " + sys.platform)
-        if sys.platform == 'win32':
-            try:
-                self.pp = windll.inpout32
-            except:
-                self.logger.warning("Could not load inpout32.dll. Please make sure it is located in the system32 directory")
-        else:
-            try:
-                self.pp = parallel.Parallel()
-            except:
-                self.logger.warning("Unable to open parallel port!")
-        self.playEvent = threading.Event()
-        if plugin:
-            self.logger.debug("Loading plugin %s" % str(plugin))
-            try:
-                self.inject(plugin)
-            except:
-                self.logger.error(str(traceback.format_exc()))
+        self.ipcchannel = ipc.IPCConnectionHandler(self)
+        self.udpconnectionhandler = UDPDispatcher(self)
+        # Windows only, set the parallel port port
+        self.ppport = port
+        self.fbplugin = plugin
         fbdirs = ["Feedbacks"]
         if fbpath:
             fbdirs.append(fbpath)
         self.fbProcCtrl = FeedbackProcessController(fbdirs, Feedback, 1)
-        
         self.fc_data = {}
-        
-#
-# Feedback Controller Plugin-Methods
-#    
-    def pre_init(self): pass
-    def post_init(self): pass
-    def pre_play(self): pass
-    def post_play(self): pass
-    def pre_pause(self): pass
-    def post_pause(self): pass
-    def pre_stop(self): pass
-    def post_stop(self): pass
-    def pre_quit(self): pass
-    def post_quit(self): pass
-#
-# /Feedback Controller Plugin-Methods
-#    
-
-    SUPPORTED_PLUGIN_METHODS = ["pre_init", "post_init",
-                                "pre_play", "post_play",
-                                "pre_pause", "post_pause",
-                                "pre_stop", "post_stop",
-                                "pre_quit", "post_quit"]
-    
-    def inject(self, module):
-        """Inject methods from module to Feedback Controller."""
-        try:
-            m = __import__(module, fromlist=[None])
-        except ImportError:
-            self.logger.info("Unable to import module %s, aborting injection." % str(module))
-        else:
-            for meth in FeedbackController.SUPPORTED_PLUGIN_METHODS:
-                if hasattr(m, meth) and callable(getattr(m, meth)):
-                    setattr(FeedbackController, meth, getattr(m, meth))
-                    self.logger.info("Sucessfully injected: %s" % meth)
-                else:
-                    self.logger.debug("Unable to inject %s" % meth)
-                    has = hasattr(m, meth)
-                    call = False
-                    if has:
-                        call = callable(getattr(m, meth))
-                    self.logger.debug("hassattr/callable: %s/%s" % (str(has), str(call)))
-                    
 
 
     def start(self):
-        """Start the Feedback Controllers activities."""
-        self.logger.debug("Started I/O loop.")
-        self.io_loop()
-        self.logger.debug("Left I/O loop.")
+        """Start the Feedback Controller's activities."""
+        self.logger.debug("Started mainloop.")
+        ipc.ipcloop()
+        self.logger.debug("Left mainloop.")
+        
+    
+    def stop(self):
+        """Stop the Feedback Controller's activities."""
+        self.fbProcCtrl.stop_feedback()
+        asyncore.close_all()
 
     
     def handle_signal(self, signal):
@@ -172,53 +107,55 @@ class FeedbackController(object):
             self.send_to_feedback(signal)
             return
 
-        self.send_to_feedback(signal)
         if cmd == bcixml.CMD_QUIT:
             self.send_to_feedback(signal)
+            self.ipcchannel.close_channel()
             self.fbProcCtrl.stop_feedback()
         elif cmd == bcixml.CMD_SEND_INIT:
             name = signal.data["_feedback"]
-            self.fbProcCtrl.start_feedback(name)
-            
-    def io_loop(self):
-        timeout = 1.0
-        while True:
-            # check the socket for new data
-            self.process_socket()
-            # check the pipe for new data
-            self.process_pipe()
-            
-    def process_socket(self):
-        try:
-            (data, address) = self.socket.recvfrom(bcinetwork.BUFFER_SIZE)
-        except socket.timeout:
-            # Currently no data available on the socket, this is ok
-            return
-        try:
-            signal = self.decoder.decode_packet(data)
-            signal.peeraddr = address
-        except bcixml.DecodingError, e:
-            # ok, somehow the parsing failed, just drop the packet and print a
-            # warning
-            self.logger.warning("Parsing of signal failed, ignoring it. (%s)" % str(e))
-            return
-        self.handle_signal(signal)
+            self.fbProcCtrl.start_feedback(name, port=self.ppport, fbplugin=self.fbplugin)
+        else:
+            self.send_to_feedback(signal)
     
-    def process_pipe(self):
-        if not self.fbProcCtrl.poll():
-            # Currently no data available on the pipe, this is ok
-            return
-        data = self.fbProcCtrl.receive_signal()
-        self.handle_signal(data)
 
     def send_to_feedback(self, signal):
-        # TODO: what if feedback does not exist?
-        self.fbProcCtrl.send_signal(signal)
+        """Send data to the feedback."""
+        try:
+            self.ipcchannel.send_message(signal)
+        except:
+            self.logger.warning("Couldn't send data to Feedback.")
+            self.logger.warning(traceback.format_exc())
+
         
     def send_to_peer(self, signal):
-        ip, port = signal.peeraddr[0], bcinetwork.GUI_PORT
-        bcinetw = bcinetwork.BciNetwork(ip, port)
-        self.logger.debug("Sending %s to %s:%s." % (str(signal), str(ip), str(port)))
-        thread = threading.Thread(target=bcinetw.send_signal, args=(signal,))
-        thread.run()
+        self.udpconnectionhandler.send_signal(signal)
 
+
+class UDPDispatcher(asyncore.dispatcher):
+    
+    def __init__(self, fc):
+        asyncore.dispatcher.__init__(self)
+        self.fc = fc
+        self.decoder = bcixml.XmlDecoder()
+        self.encoder = bcixml.XmlEncoder()
+        self.create_socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.bind((bcinetwork.LOCALHOST, bcinetwork.FC_PORT))
+
+    def send_signal(self, signal):
+        data = self.encoder.encode_packet(signal)
+        self.socket.sendto(data, (signal.peeraddr[0], bcinetwork.GUI_PORT))
+
+    def handle_connect(self): pass
+    
+    def writable(self):
+        return False
+        
+    def handle_read(self):
+        try:
+            data, address = self.recvfrom(bcinetwork.BUFFER_SIZE)
+            signal = self.decoder.decode_packet(data)
+            signal.peeraddr = address
+            self.fc.handle_signal(signal)
+        except:
+            self.fc.logger.warning(traceback.format_exc())
+        

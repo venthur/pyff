@@ -25,7 +25,9 @@ import logging
 import threading
 import datetime
 import sys
-import pickle
+import cPickle as pickle
+from threading import Event
+import traceback
 
 
 class Feedback(object):
@@ -49,7 +51,51 @@ class Feedback(object):
     method in your feedback.
     """
 
-    def __init__(self, pport=None, port_num=None):
+
+#
+# Feedback Plugin-Methods
+#    
+    def pre_init(self): pass
+    def post_init(self): pass
+    def pre_play(self): pass
+    def post_play(self): pass
+    def pre_pause(self): pass
+    def post_pause(self): pass
+    def pre_stop(self): pass
+    def post_stop(self): pass
+    def pre_quit(self): pass
+    def post_quit(self): pass
+#
+# /Feedback Plugin-Methods
+#    
+
+    SUPPORTED_PLUGIN_METHODS = ["pre_init", "post_init",
+                                "pre_play", "post_play",
+                                "pre_pause", "post_pause",
+                                "pre_stop", "post_stop",
+                                "pre_quit", "post_quit"]
+    
+    def inject(self, module):
+        """Inject methods from module to Feedback Controller."""
+        try:
+            m = __import__(module, fromlist=[None])
+        except ImportError:
+            self.logger.info("Unable to import module %s, aborting injection." % str(module))
+        else:
+            for meth in Feedback.SUPPORTED_PLUGIN_METHODS:
+                if hasattr(m, meth) and callable(getattr(m, meth)):
+                    setattr(Feedback, meth, getattr(m, meth))
+                    self.logger.info("Sucessfully injected: %s" % meth)
+                else:
+                    self.logger.debug("Unable to inject %s" % meth)
+                    has = hasattr(m, meth)
+                    call = False
+                    if has:
+                        call = callable(getattr(m, meth))
+                    self.logger.debug("hassattr/callable: %s/%s" % (str(has), str(call)))
+
+
+    def __init__(self, port_num=None):
         """
         Initializes the feedback.
         
@@ -59,15 +105,28 @@ class Feedback(object):
         """
      
         self._data = None
-        #self.logger = logging.getLogger("Feedback")
         self.logger = logging.getLogger("FB." + self.__class__.__name__)
         self.logger.debug("Loaded my logger.")
-        self._pport = pport
+        # Setup the parallel port
+        self._pport = None
+        if sys.platform == 'win32':
+            try:
+                from ctypes import windll
+                self._pport = windll.inpout32
+            except:
+                self.logger.warning("Could not load inpout32.dll. Please make sure it is located in the system32 directory")
+        else:
+            try:
+                import parallel
+                self._pport = parallel.Parallel()
+            except:
+                self.logger.warning("Unable to open parallel port! Please install pyparallel to use it.")
         if port_num != None:
             self._port_num = port_num # used in windows only''
         else:
             self._port_num = 0x378
-        
+        self._playEvent = Event()
+        self._shouldQuit = False
  
     #
     # Internal routines not inteded for overwriting
@@ -109,7 +168,9 @@ class Feedback(object):
         
         You should not override this method, use on_init instead.
         """
+        self.pre_init()
         self.on_init()
+        self.post_init()
     
     def _on_play(self):
         """
@@ -117,7 +178,9 @@ class Feedback(object):
         
         You should not override this method, use on_play instead.
         """
+        self.pre_play()
         self.on_play()
+        self.post_play()
     
     def _on_pause(self):
         """
@@ -125,7 +188,9 @@ class Feedback(object):
         
         You should not override this method, use on_pause instead.
         """
+        self.pre_pause()
         self.on_pause()
+        self.post_pause()
         
     def _on_stop(self):
         """
@@ -133,7 +198,9 @@ class Feedback(object):
         
         You should not override this method, use on_stop instead.
         """
+        self.pre_stop()
         self.on_stop()
+        self.post_stop()
     
     def _on_quit(self):
         """
@@ -141,7 +208,11 @@ class Feedback(object):
         
         You should not override this method, use on_quit instead.
         """
+        self.pre_quit()
+        self._shouldQuit = True
+        self._playEvent.set()
         self.on_quit()
+        self.post_quit()
 
 
     #
@@ -247,6 +318,7 @@ class Feedback(object):
             if reset:
                 timer = threading.Timer(0.01, self.send_parallel, (0x0, False))
                 timer.start()
+
                 
     def _get_variables(self):
         """Return a dictionary of variables and their values."""
@@ -266,3 +338,29 @@ class Feedback(object):
             d[key] = val
         self.logger.debug("Returning variables.")
         return d
+
+
+    def _playloop(self):
+        """Loop which ensures that on_play always runs in main thread.
+        
+        Do not overwrite in derived classes unless you know what you're doing.
+        """
+        self._shouldQuit = False
+        while 1:
+            self._playEvent.wait()
+            if self._shouldQuit:
+                break
+            try:
+                self.logger.debug("Starting on_play.")
+                self._on_play()
+            except:
+                # The feedback's main thread crashed and we need to take care
+                # that the pipe does not run full, otherwise the feedback
+                # controller freezes on the last pipe[foo].send()
+                # So let's just terminate the feedback process.
+                self.logger.error("on_play threw an exception:")
+                self.logger.error(traceback.format_exc())
+                return
+            self._playEvent.clear()
+            self.logger.debug("on_play terminated.")
+        self.logger.debug("_playloop terminated.")

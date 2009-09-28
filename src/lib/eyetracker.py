@@ -22,10 +22,8 @@
 
 import threading
 import logging
-import sys,os
+import sys, os
 import ctypes
-import struct
-import signal
 import time
 from ctypes import *
 from struct import *
@@ -33,8 +31,8 @@ import datetime
 
 
 
-#Class to contain data returned from API event
 class AleaData(ctypes.Structure):
+    """Class to contain data returned from API event."""
     _fields_ = [("rawDataTimestamp", ctypes.c_long),
                 ("intelligazeX", ctypes.c_double),
                 ("intelligazeY", ctypes.c_double),
@@ -62,9 +60,8 @@ eventArray = 'Fixation detected', 'Saccade detected', 'Blink detected', 'No Even
 calibrationStatus = 'Excellent' , 'Good' , 'Average' , 'Poor' , 'Failed'
 
 
-# main class
 class EyeTracker(object):
-    
+
     def __init__(self):
         self.logger = logging.getLogger("EyeTracker")
         self.logger.debug("Logger initialized.")
@@ -77,17 +74,12 @@ class EyeTracker(object):
         self.x = None
         self.y = None
         self.duration = None
-       
-        
-    
-    
-    ## API initialisation
+
+
     def initialise_api(self):
-        
         # Load dll
-        path = os.path.dirname(globals()["__file__"]) 
+        path = os.path.dirname(globals()["__file__"])
         self.api = WinDLL(os.path.join(path, 'CEtAPI'))
-        
         #Open API
         result = self.api.Open()
         if(result == 0):
@@ -95,62 +87,54 @@ class EyeTracker(object):
         else:
             self.logger.debug("Could not open API")
             return False
-
-        
         #API open?        
-        isOpen = c_short()        
+        isOpen = c_short()
         result = self.api.IsOpen(byref(isOpen))
         if(result == 0):
             self.logger.debug("IsOpen call succeed")
             if(isOpen):
-                self.logger.debug("API is open")                                              
+                self.logger.debug("API is open")
             else:
                 self.logger.debug("API is not open")
                 return False
         else:
             self.logger.debug("IsOpen call failed")
             return False
-        
         #Get Version of API
         major = c_long()
         minor = c_long()
         build = c_long()
         device = c_long()
-
         result = self.api.Version(byref(major), byref(minor), byref(build), byref(device))
-        if(result == 0):            
+        if(result == 0):
             self.logger.debug("Version call succeed")
             self.logger.debug('Version: ' + str(major.value) + '.' + str(minor.value) + '.' + str(build.value))
-            self.logger.debug('Device: ' + str(device.value) )
+            self.logger.debug('Device: ' + str(device.value))
         else:
             self.logger.debug("Version call failed")
-        
         return True
-       
-    
+
+
     def start(self):
         self.logger.debug('Starting Eye Tracker')
         self.thread = threading.Thread(target=self.listen)
         self.stopping = False
         self.thread.start()
-        
-    
+
+
     def stop(self):
         self.logger.debug('Stopping Eye Tracker')
         self.stopping = True
         self.thread.join(1)
         self.thread = None
-    
-    
-    def listen(self): 
+
+
+    def listen(self):
         try:
             ## initailise the api
-            
             if not self.initialise_api():
 				self.logger.debug("Can't initialise api")
 				return
-            
-                
             #Start DataStreaming
             result = self.api.DataStreaming(True)
             if(result == 0):
@@ -158,33 +142,27 @@ class EyeTracker(object):
             else:
                 self.logger.debug("DataStreaming call failed")
                 return
-                                   
-            
             # clear buffer
-            if(self.api.ClearDataBuffer()==0):
+            if(self.api.ClearDataBuffer() == 0):
                 self.logger.debug("ClearBuffer call succeed")
             else:
                 self.logger.debug("ClearBuffer call failed")
-            
             data = AleaData()
-            
             # while not stopped, handle events
             while not self.stopping:
-                result = self.api.WaitForData(byref(data),1000)
+                result = self.api.WaitForData(byref(data), 1000)
                 if(result == 0):
                     # fixation event
                     if data.eventID == 0:
-                        #TODO check date format and handle here
+                        # TODO: check date format and handle here
                         now = datetime.datetime.now()
-                         
                         self.time_h = now.hour
                         self.time_m = now.minute
                         self.time_s = now.second
-                        self.time_ms = now.microsecond/1000                        
+                        self.time_ms = now.microsecond / 1000
                         self.x = int(data.positionX)
                         self.y = int(data.positionY)
                         self.duration = int(data.duration)
-                        
                         # can be used for debug
                         #print 'x', self.x
                         #print 'y', self.y
@@ -193,8 +171,6 @@ class EyeTracker(object):
                         #print 'm', self.time_m
                         #print 's', self.time_s
                         #print 'ms', self.time_ms
-                   
-            
             #Stop DataStreaming
             result = self.api.DataStreaming(False)
             self.logger.debug("Close Api now")
@@ -203,18 +179,17 @@ class EyeTracker(object):
             windll.kernel32.FreeLibrary(self.api._handle)
         except:
             self.logger.debug("Listen Failed!")
-            self.stop()
-            
-    """
-    Calls calibration for the eye tracker
-    
-    """
+            # This is not useful, a thread cannot join itself
+            # 2009-07-15 Basti
+            #self.stop()
+
+
     def calibrate(self):
+        """Call calibration for the eye tracker."""
 
         print("Perform calibration. Press Enter to start calibration")
         sys.stdin.readline()
-
-        result = api.PerformCalibration( 5,  0, False, False, True, 0, True, True, True, hex2dec('C0C0C0'), hex2dec('0000FF') , "")
+        result = api.PerformCalibration(5, 0, False, False, True, 0, True, True, True, hex2dec('C0C0C0'), hex2dec('0000FF') , "")
         if(result == 0):
             self.logger.debug("PerformCalibration call succeed")
             status = c_int()
@@ -223,11 +198,11 @@ class EyeTracker(object):
             result = api.WaitForCalibrationResult(byref(status), byref(improve), -1)
             if(result == 0):
                 str_result = 'Calibration Result: ' + calibrationStatus[status.value]
-                str_improve =  'Improve: ' + str(improve.value)
+                str_improve = 'Improve: ' + str(improve.value)
                 print str_result
                 print str_improve
                 self.logger.debug(str_result)
-                self.logger.debug(str_improve)                
+                self.logger.debug(str_improve)
             else:
                 self.logger.debug('WaitForCalibrationResult call failed')
             print("Calibration Complete")
@@ -235,8 +210,6 @@ class EyeTracker(object):
         else:
             self.logger.debug("PerformCalibration call failed")
         return False
-    
-   
 
 
 if __name__ == "__main__":
@@ -246,3 +219,4 @@ if __name__ == "__main__":
     time.sleep(60)
     # read something
     et.stop()
+

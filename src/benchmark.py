@@ -40,6 +40,8 @@ CONTROL_SIGNAL = """
 </bci-signal>
 """
 
+DELAY = 1.0
+
 def test_clock_precision():
     """Test the minimum, non zero time difference measurable in python."""
 # TODO: under Windows it's possibly more precise to use time.clock()
@@ -88,11 +90,14 @@ def pretty_print(tseries, description, factor=None):
 
 def test_latency(packets, delay=None):
     """Measure the latency between the BCI system and the on_cs_event in the Feedback."""
+    time.sleep(DELAY)
     _load_feedback()
-    time.sleep(1)
+    time.sleep(DELAY)
     _send_cs(packets, delay)
-    time.sleep(1)
+    time.sleep(DELAY)
     d = _get_data()
+    time.sleep(DELAY)
+    _stop_feedback()
     deltas = []
     for id, t1, t2 in d:
         deltas.append(t2-t1)
@@ -102,6 +107,11 @@ def test_latency(packets, delay=None):
 def _load_feedback():
     bcinet = bcinetwork.BciNetwork(bcinetwork.LOCALHOST, bcinetwork.FC_PORT)
     bcinet.send_init("BenchmarkFeedback")
+
+def _stop_feedback():
+    bcinet = bcinetwork.BciNetwork(bcinetwork.LOCALHOST, bcinetwork.FC_PORT)
+    bcinet.stop()
+    bcinet.quit()
 
 def _get_data():
     bcinet = bcinetwork.BciNetwork(bcinetwork.LOCALHOST, bcinetwork.FC_PORT, bcinetwork.GUI_PORT)
@@ -131,6 +141,7 @@ def _send_cs(packets, delay, id=0):
     
 
 if __name__ == "__main__":
+    print "Don't forget to start the FC before running the benchmark!."
     logging.basicConfig(level=logging.DEBUG, 
                         format='[%(threadName)-10s] %(name)-25s: %(levelname)-8s %(message)s')
     

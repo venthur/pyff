@@ -53,20 +53,17 @@ class PluginController(object):
             module = module[1:]
         
         # try to import
+        self.logger.debug("Testing plugin: %s" % str(module))
         try:
             name = module.split(".")[-1]
             mod = __import__(module, fromlist=[None])
-            self.logger.debug("1/3: loaded module (%s)." % str(module))
+            self.logger.debug("... loaded module: %s." % str(module))
             plugin = getattr(mod, name)
-            self.logger.debug("2/3: loaded plugin (%s)." % str(name))
+            self.logger.debug("... loaded plugin: %s." % str(name))
             if not issubclass(plugin, self.baseclass):
                 raise ImportError("Invalid Subclass")
-            plugin = getattr(mod, name)(None)
-            self.logger.debug("2/3: loaded plugin (%s)." % str(name))
-            # TODO: do we need this check?
-            if isinstance(plugin, self.baseclass):
-                self.logger.debug("3/3: plugin is valid plugin class.")
-                return name, module
+            self.logger.debug("... is subclass: %s." % str(name))
+            return name, module
         except:
             self.logger.debug(traceback.format_exc())
             raise ImportError("Invalid Plugin")

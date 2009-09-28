@@ -19,6 +19,12 @@
 # - start_stimulus:             determines how the stimulus presentation is started
 # - stop_stimulus:              determines how the stimulus presentation is stopped
 #
+# NORMAL WORKFLOW:
+# (1) prestimulus interval
+# (2) stimulus interval (actual stimulus presentation can be shorter)
+# (3) response interval
+# (4) feedback interval
+#
 # Copyright (C) 2009  Simon Scholler
 #
 # This program is free software; you can redistribute it and/or modify
@@ -66,9 +72,9 @@ class Oddball(MainloopFeedback):
         self.nStim_per_block = 50        
         self.dev_perc = 0.1        
         self.countdown_from = 2
-        self.show_standards = False
+        self.show_standards = True
         self.give_feedback = True
-        self.group_stim_markers = True
+        self.group_stim_markers = False
         self.dd_dist = 2    # no contraint if deviant-deviant distance is 0 (cf. oddball sequence)            
         
         self.DIR_DEV = ''
@@ -81,7 +87,7 @@ class Oddball(MainloopFeedback):
         self.rsp_key_std = 'j' 
         response_opts = ['none', 'dev_only', 'both'] # none: subject should not press a key
                                                      # dev_only: subject should press only for deviants
-                                                     # both: subject reponse for both stds and devs        
+                                                     # both: subject response for both stds and devs        
         self.response = response_opts[2]            
 
         # Durations of the different blocks
@@ -228,6 +234,7 @@ class Oddball(MainloopFeedback):
         elif self.gameover:
             #print 'in gameover'
             self.gameover_tick()
+            self.on_stop()
         elif self.shortpause:
             #print 'in pause'
             self.short_pause_tick()        
@@ -251,7 +258,7 @@ class Oddball(MainloopFeedback):
             self.firstStimTick = False    
             self.draw_initial()
             self.timeAfterStim = 0
-            if self.stim_sequence[self.stimuliShown]==1:
+            if self.stim_sequence[self.stimuliShown%self.nStim_per_block]==1:
                 self.stim, idx = self.get_deviant()                
                 self.send_stim_marker(self.DEVIANT,idx)
                 self.isdeviant = True
@@ -269,11 +276,18 @@ class Oddball(MainloopFeedback):
         # check if stimulus duration is over
         if self.stimElapsed>self.stim_duration:
             self.firstStimTick = True
-            self.responsetime = True
+            if self.responsetime_duration != 0:
+                self.responsetime = True
             self.stimElapsed = 0    
             self.stimuliShown += 1        
             if self.stim:
                 self.stop_stimulus(self.stim)
+            # pause?
+            if self.stimuliShown % self.nStim_per_block == 0:
+                self.shortpause = True
+            # game over?
+            if self.stimuliShown >= self.nStim:
+                self.gameover = True
 
 
     def send_stim_marker(self, markerlist, idx):
@@ -295,7 +309,7 @@ class Oddball(MainloopFeedback):
         
         
     def get_standard(self):
-        if len(self.stds):
+        if len(self.stds)>1:
             idx = random.randint(0,len(self.stds)-1)
         else:
             idx = 0
@@ -327,12 +341,8 @@ class Oddball(MainloopFeedback):
             self.feedback = True
         else:
             self.last_response = ''
-            self.beforestim = True
-            
-        if self.stimuliShown % self.nStim_per_block == 0:
-            self.shortpause = True
-        if self.stimuliShown >= self.nStim:
-            self.gameover = True
+            if self.beforestim_duration != 0:
+                self.beforestim = True
             
         
     def feedback_tick(self):
@@ -509,10 +519,12 @@ class Oddball(MainloopFeedback):
         self.clock = pygame.time.Clock()
 
     def contrained_oddball_sequence(self, N, dev_perc, dd_dist=0):    
-    # N:          total number of trials
-    # perc_dev:   percentage of deviants
-    # dd_dist:    constraint variable: minimal number of standards between two deviants 
-    #             (default: no contraint (=0))
+        """
+        N:          total number of trials
+        perc_dev:   percentage of deviants
+        dd_dist:    constraint variable: minimal number of standards between two deviants 
+                   (default: no contraint (=0))
+        """
     
         devs_to_be_placed= round(N*dev_perc)
         if devs_to_be_placed+(devs_to_be_placed-1)*dd_dist>N:
@@ -535,3 +547,16 @@ class Oddball(MainloopFeedback):
             devs = sum(sequence)
         #print sequence
         return sequence
+    
+    def create_list(self, nStim, stim_perc):
+        """ 
+        Creates a randomly shuffled list with numbers ranging from 0-(nStim-1)
+        The percentages of the numbers occuring are given by the list stim_perc
+        """
+        list = [];
+        for n in range(len(stim_perc)):
+            list.extend([n] * int(nStim*stim_perc[n]))
+        random.shuffle(list)
+        return list
+    
+        
