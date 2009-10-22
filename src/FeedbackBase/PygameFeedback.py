@@ -11,7 +11,7 @@ class PygameFeedback(MainloopFeedback):
     def init(self):
         self.FPS = 30
         self.screenPos = [0, 0]
-        self.screenSizse = [800, 600]
+        self.screenSize = [800, 600]
         self.fullscreen = False
         self.caption = "PygameFeedback"
         self.elapsed = 0
@@ -52,12 +52,12 @@ class PygameFeedback(MainloopFeedback):
         pygame.init()
         pygame.display.set_caption(self.caption)
         if self.fullscreen:
-            self.screen = pygame.display.set_mode((self.screenPos[2],
-                                                   self.screenPos[3]),
+            self.screen = pygame.display.set_mode((self.screenSize[0],
+                                                   self.screenSize[1]),
                                                    pygame.FULLSCREEN)
         else:
-            self.screen = pygame.display.set_mode((self.screenPos[2],
-                                                   self.screenPos[3]),
+            self.screen = pygame.display.set_mode((self.screenSize[0],
+                                                   self.screenSize[1]),
                                                    pygame.RESIZABLE)
         self.clock = pygame.time.Clock()
 
@@ -89,7 +89,7 @@ class PygameFeedback(MainloopFeedback):
         Initialize the surfaces and fonts depending on the screen size.
         """
         # init background
-        self.background = pygame.Surface((self.screenPos[2], self.screenPos[3]))
+        self.background = pygame.Surface((self.screenSize[0], self.screenSize[1]))
         self.background = self.background.convert()
         self.backgroundRect = self.background.get_rect(center=self.screen.get_rect().center)
         self.background.fill(self.backgroundColor)
