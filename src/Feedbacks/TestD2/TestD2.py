@@ -17,6 +17,8 @@
 
 import random
 
+import pygame
+
 from FeedbackBase.PygameFeedback import PygameFeedback
 
 # Notation: Letter UpperLines BottomLines
@@ -28,25 +30,59 @@ class TestD2(PygameFeedback):
 
     def init(self):
         PygameFeedback.init(self)
+        self.caption = "Test D2"
         self.random_seed = 1234
         # Standard D2 configuration
         self.items_per_row = 47
         self.number_of_rows = 14
-        self.seconds_per_row = 30
+        self.seconds_per_row = 20
         self.targets_percent = 45.45
+        # TODO: use unicode instead of pygame stuff (so we cann remove pygame
+        # import in the beginning
+        self.key_target = pygame.K_1
+        self.key_nontarget = pygame.K_2
         
     def pre_mainloop(self):
         PygameFeedback.pre_mainloop(self)
         self.generate_rows()
-        for i in self.rows:
-            print i
+        
+        self.elapsed_seconds = 0
+        self.current_row = 0
+        self.current_col = 0
+        
+    def tick(self):
+        PygameFeedback.tick(self)
+        self.elapsed_seconds += self.elapsed / 1000.
+        if self.elapsed_seconds >= self.seconds_per_row:
+            self.elapsed_seconds = 0
+            self.current_row += 1
+            self.current_col = 0
+            # TODO: give short break?
+            if self.current_row > self.number_of_rows -1:
+                print "Done."
+                # TODO: insert final screen and stop feedback.
+                self.on_stop()
+            print "Next row."
+            
+        #print self.elapsed_seconds
+        if self.keypressed:
+            self.keypressed = False 
+            if self.lastkey not in (self.key_target, self.key_nontarget):
+                print "Wrong key pressed."
+                return
+            self.current_col += 1
+            if self.current_col > self.items_per_row -1:
+                print "Done with this row."
+            else:
+                print self.rows[self.current_row][self.current_col]
+        
 
 
     def generate_rows(self):
         """Generate the D2 rows."""
         random.seed(self.random_seed)
-        targets = round(self.items_per_row * self.targets_percent / 100)
-        non_targets = self.items_per_row - targets
+        targets = int(round(self.items_per_row * self.targets_percent / 100))
+        non_targets = int(self.items_per_row - targets)
         assert(targets+non_targets == self.items_per_row)
         self.rows = []
         for row in range(self.number_of_rows):
