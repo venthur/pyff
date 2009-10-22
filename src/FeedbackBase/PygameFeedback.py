@@ -19,6 +19,9 @@ class PygameFeedback(MainloopFeedback):
         # This is only needed if we need something more than plain colored
         # background (and also for performance)
         self.background = None
+        # For keys
+        self.keypressed = False
+        self.lastkey = None
 
 
     def pre_mainloop(self):
@@ -109,9 +112,5 @@ class PygameFeedback(MainloopFeedback):
             elif event.type == pygame.QUIT:
                 self.on_stop()
             elif event.type == pygame.KEYDOWN:
-                step = 0
-                if event.unicode == u"a": step = -0.1
-                elif event.unicode == u"d" : step = 0.1
-                self.f += step
-                if self.f < -1: self.f = -1
-                if self.f > 1: self.f = 1
+                self.keypressed = True
+                self.lastkey = event.key
