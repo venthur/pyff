@@ -33,70 +33,104 @@ class TestD2(PygameFeedback):
         self.caption = "Test D2"
         self.random_seed = 1234
         # Standard D2 configuration
-        self.items_per_row = 47
-        self.number_of_rows = 14
-        self.seconds_per_row = 20
+        self.number_of_symbols = 47 * 14
+        self.seconds_per_symbol = 47 / 20.
         self.targets_percent = 45.45
         # Color of the symbols
         self.color = [0,0,0]
         self.backgroundColor = [155, 155, 155]
         # TODO: use unicode instead of pygame stuff (so we cann remove pygame
         # import in the beginning
-        self.key_target = pygame.K_1
-        self.key_nontarget = pygame.K_2
+        self.key_target = "f"
+        self.key_nontarget = "j"
 
         
     def pre_mainloop(self):
         PygameFeedback.pre_mainloop(self)
-        self.generate_rows()
+        self.generate_d2list()
         self.generate_symbols()
         # Initialize the logic
         self.elapsed_seconds = 0
-        self.current_row = 0
-        self.current_col = 0
+        self.current_index = 0
+        # The errors: e1: errors of omission (missing characters that should have been crossed out, 
+        #             e2: errors of commission (crossing out charactars taht shout have not been crossed out
+        self.e1 = 0
+        self.e2 = 0
         # And here we go...
         self.present_stimulus()
+        
+        
+    def post_mainloop(self):
+        # Total number of items processed
+        tn = self.current_index + 1
+        error = self.e1 + self.e2
+        error_rate = 100. * error / tn
+        correctly_processed = tn - error
+        # concentration performance := correctly_processed - e2 
+        cp = correctly_processed - self.e2
+        # Average reaction time:
+        rt_avg = self.elapsed_seconds / tn
+        print "Results:"
+        print "========"
+        print 
+        print "Processed symbols: %i of %i" % (tn, self.number_of_symbols)
+        print "Elapsed time: %f sec" % self.elapsed_seconds
+        print "Correctly processed symbols: %i" % (correctly_processed)
+        print "Percentage of Errors: %f" % (error_rate)
+        print "Errors:  %i" % error
+        print "... errors of omission: %i" % self.e1
+        print "... errors of commission: %i" % self.e2
+        print "Concentration Performance: %i" % cp
+        print "Average reaction time: %f sec" % rt_avg
+        
 
         
     def tick(self):
         PygameFeedback.tick(self)
         self.elapsed_seconds += self.elapsed / 1000.
-        if self.elapsed_seconds >= self.seconds_per_row:
-            self.elapsed_seconds = 0
-            self.current_row += 1
-            self.current_col = 0
-            # TODO: give short break?
-            if self.current_row > self.number_of_rows -1:
-                print "Done."
-                # TODO: insert final screen and stop feedback.
-                self.on_stop()
-            print "Next row."
-            self.present_stimulus()
+        if self.elapsed_seconds >= self.seconds_per_symbol * self.number_of_symbols:
+            print "Done."
+            # TODO: insert final screen and stop feedback.
+            self.on_stop()
         #print self.elapsed_seconds
         if self.keypressed:
+            key = self.lastkey_unicode
             self.keypressed = False 
-            if self.lastkey not in (self.key_target, self.key_nontarget):
+            if key not in (self.key_target, self.key_nontarget):
                 print "Wrong key pressed."
                 return
-            self.current_col += 1
-            if self.current_col > self.items_per_row -1:
-                print "Done with this row."
+            else:
+                print key,
+                if key == self.key_nontarget \
+                and self.d2list[self.current_index] in TARGETS:
+                    print "Wrong (Not recognized D2)"
+                    self.e1 += 1 
+                elif key == self.key_target \
+                and self.d2list[self.current_index] in NON_TARGETS:
+                    print "Wrong (Confused D2)"
+                    self.e2 += 1
+                else: 
+                    print "Correct"
+            self.current_index += 1
+            if self.current_index > self.number_of_symbols -1:
+                # Finished faster than we expected!
+                print "You're awesome dude!"
+                self.on_stop()
             else:
                 self.present_stimulus()
 
 
-    def generate_rows(self):
-        """Generate the D2 rows."""
+    def generate_d2list(self):
+        """Generate the D2 list."""
         random.seed(self.random_seed)
-        targets = int(round(self.items_per_row * self.targets_percent / 100))
-        non_targets = int(self.items_per_row - targets)
-        assert(targets+non_targets == self.items_per_row)
-        self.rows = []
-        for row in range(self.number_of_rows):
-            l = [random.choice(TARGETS) for i in range(targets)] + \
-                [random.choice(NON_TARGETS) for i in range(non_targets)]
-            random.shuffle(l)
-            self.rows.append(l)
+        # number of targets and non_targets
+        targets = int(round(self.number_of_symbols * self.targets_percent / 100))
+        non_targets = int(self.number_of_symbols - targets)
+        assert(targets+non_targets == self.number_of_symbols)
+        l = [random.choice(TARGETS) for i in range(targets)] + \
+            [random.choice(NON_TARGETS) for i in range(non_targets)]
+        random.shuffle(l)
+        self.d2list = l
             
     
     def generate_symbols(self):
@@ -146,10 +180,9 @@ class TestD2(PygameFeedback):
 
     def present_stimulus(self):
         """Present the current stimulus."""
-        print self.rows[self.current_row][self.current_col]
-       
+        print self.d2list[self.current_index]
         self.screen.fill(self.backgroundColor)
-        symbol = self.rows[self.current_row][self.current_col]
+        symbol = self.d2list[self.current_index]
         self.screen.blit(self.symbol[symbol], self.symbol[symbol].get_rect(center=self.screen.get_rect().center))
         pygame.display.flip()
             
