@@ -34,13 +34,11 @@ class TestD2(PygameFeedback):
         self.random_seed = 1234
         # Standard D2 configuration
         self.number_of_symbols = 47 * 14
-        self.seconds_per_symbol = 47 / 20.
+        self.seconds_per_symbol = 20 / 47.
         self.targets_percent = 45.45
         # Color of the symbols
         self.color = [0,0,0]
         self.backgroundColor = [155, 155, 155]
-        # TODO: use unicode instead of pygame stuff (so we cann remove pygame
-        # import in the beginning
         self.key_target = "f"
         self.key_nontarget = "j"
 
