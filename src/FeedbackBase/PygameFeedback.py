@@ -114,3 +114,4 @@ class PygameFeedback(MainloopFeedback):
             elif event.type == pygame.KEYDOWN:
                 self.keypressed = True
                 self.lastkey = event.key
+                self.lastkey_unicode = event.unicode
