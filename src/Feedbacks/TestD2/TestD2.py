@@ -51,7 +51,7 @@ class TestD2(PygameFeedback):
         self.elapsed_seconds = 0
         self.current_index = 0
         # The errors: e1: errors of omission (missing characters that should have been crossed out, 
-        #             e2: errors of commission (crossing out charactars taht shout have not been crossed out
+        #             e2: errors of commission (crossing out characters that shout have not been crossed out
         self.e1 = 0
         self.e2 = 0
         # And here we go...
@@ -85,6 +85,7 @@ class TestD2(PygameFeedback):
 
         
     def tick(self):
+        # FIXME: this is a problem, we don't want a ticking mainloop
         PygameFeedback.tick(self)
         self.elapsed_seconds += self.elapsed / 1000.
         if self.elapsed_seconds >= self.seconds_per_symbol * self.number_of_symbols:
