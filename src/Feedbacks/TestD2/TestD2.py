@@ -38,7 +38,7 @@ class TestD2(PygameFeedback):
         self.targets_percent = 45.45
         # Color of the symbols
         self.color = [0,0,0]
-        self.backgroundColor = [155, 155, 155]
+        self.backgroundColor = [127, 127, 127]
         self.key_target = "f"
         self.key_nontarget = "j"
 
@@ -59,6 +59,7 @@ class TestD2(PygameFeedback):
         
         
     def post_mainloop(self):
+        PygameFeedback.post_mainloop(self)
         # Total number of items processed
         tn = self.current_index + 1
         error = self.e1 + self.e2
@@ -128,6 +129,15 @@ class TestD2(PygameFeedback):
         l = [random.choice(TARGETS) for i in range(targets)] + \
             [random.choice(NON_TARGETS) for i in range(non_targets)]
         random.shuffle(l)
+        # We don't want to have equal symbols in a row, since that can confuse
+        # the user when only one symbol is presented
+        for i in range(len(l)-1):
+            if l[i] == l[i+1]:
+                pool = TARGETS if l[i] in TARGETS else NON_TARGETS
+                new = random.choice(pool)
+                while new == l[i+1]:
+                    new = random.choice(pool)
+                l[i] = new
         self.d2list = l
             
     
@@ -183,7 +193,7 @@ class TestD2(PygameFeedback):
         symbol = self.d2list[self.current_index]
         self.screen.blit(self.symbol[symbol], self.symbol[symbol].get_rect(center=self.screen.get_rect().center))
         pygame.display.flip()
-            
+        
 
 if __name__ == "__main__":
     fb = TestD2()
