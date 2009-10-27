@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-
 # Copyright (C) 2009  Simon Scholler
 #
 # This program is free software; you can redistribute it and/or modify
@@ -115,8 +114,7 @@ class P300_Rectangle(VisualOddball.VisualOddball):
         self.nStd = self.nStim-self.nDev 
         self.devlist = self.create_list(self.nDev, self.within_dev_perc)
         self.stdlist = self.create_list(self.nStd, self.within_std_perc)
-    
-                      
+                  
     def post_mainloop(self):
         """
         Overwrite superclass function to also
