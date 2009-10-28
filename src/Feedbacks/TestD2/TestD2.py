@@ -39,6 +39,8 @@ class TestD2(PygameFeedback):
         # Color of the symbols
         self.color = [0,0,0]
         self.backgroundColor = [127, 127, 127]
+        # Fontheight in pixels
+        self.fontheight = 200
         self.key_target = "f"
         self.key_nontarget = "j"
 
@@ -138,12 +140,9 @@ class TestD2(PygameFeedback):
     
     def generate_symbols(self):
         """Generate surfaces all possible symbols."""
-        # Height of the font in pixels
-        fontheight = 200
         # thickness of the lines (should match thickness of the font
-        linewidth = fontheight / 11
-        
-        font = pygame.font.Font(None, fontheight)
+        linewidth = self.fontheight / 11
+        font = pygame.font.Font(None, self.fontheight)
         surface_d = font.render("d", True, self.color)
         surface_p = font.render("p", True, self.color)
         
