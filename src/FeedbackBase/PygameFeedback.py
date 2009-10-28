@@ -103,15 +103,26 @@ class PygameFeedback(MainloopFeedback):
         Process the the pygame event queue and react on VIDEORESIZE.
         """
         for event in pygame.event.get():
-            if event.type == pygame.VIDEORESIZE:
-                e = max(event.w, int(round(event.h * 0.9)))
-                self.screen = pygame.display.set_mode((e, event.h), pygame.RESIZABLE)
-                self.resized = True
-                (self.screenHeight, self.screenWidth) = (self.screen.get_height(), self.screen.get_width())
-                self.init_graphics()
-            elif event.type == pygame.QUIT:
-                self.on_stop()
-            elif event.type == pygame.KEYDOWN:
-                self.keypressed = True
-                self.lastkey = event.key
-                self.lastkey_unicode = event.unicode
+            self.process_pygame_event(event)
+
+            
+    def process_pygame_event(self, event):
+        """Process a signle pygame event."""
+        if event.type == pygame.VIDEORESIZE:
+            e = max(event.w, int(round(event.h * 0.9)))
+            self.screen = pygame.display.set_mode((e, event.h), pygame.RESIZABLE)
+            self.resized = True
+            (self.screenHeight, self.screenWidth) = (self.screen.get_height(), self.screen.get_width())
+            self.init_graphics()
+        elif event.type == pygame.QUIT:
+            self.on_stop()
+        elif event.type == pygame.KEYDOWN:
+            self.keypressed = True
+            self.lastkey = event.key
+            self.lastkey_unicode = event.unicode
+                
+    
+    def wait_for_pygame_event(self):
+        """Wait until a pygame event orcurs and process it."""
+        event = pygame.event.wait()
+        self.process_pygame_event(event)
