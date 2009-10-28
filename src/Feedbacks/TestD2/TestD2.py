@@ -48,17 +48,19 @@ class TestD2(PygameFeedback):
         self.generate_d2list()
         self.generate_symbols()
         # Initialize the logic
-        self.elapsed_seconds = 0
         self.current_index = 0
         # The errors: e1: errors of omission (missing characters that should have been crossed out, 
         #             e2: errors of commission (crossing out characters that shout have not been crossed out
         self.e1 = 0
         self.e2 = 0
         # And here we go...
+        pygame.time.set_timer(pygame.QUIT, self.number_of_symbols * self.seconds_per_symbol * 1000)
+        self.clock.tick()
         self.present_stimulus()
         
         
     def post_mainloop(self):
+        elapsed_seconds = self.clock.tick() / 1000.
         PygameFeedback.post_mainloop(self)
         # Total number of items processed
         tn = self.current_index + 1
@@ -68,12 +70,12 @@ class TestD2(PygameFeedback):
         # concentration performance := correctly_processed - e2 
         cp = correctly_processed - self.e2
         # Average reaction time:
-        rt_avg = self.elapsed_seconds / tn
+        rt_avg = elapsed_seconds / tn
         print "Results:"
         print "========"
         print 
         print "Processed symbols: %i of %i" % (tn, self.number_of_symbols)
-        print "Elapsed time: %f sec" % self.elapsed_seconds
+        print "Elapsed time: %f sec" % elapsed_seconds
         print "Correctly processed symbols: %i" % (correctly_processed)
         print "Percentage of Errors: %f" % (error_rate)
         print "Errors:  %i" % error
@@ -81,18 +83,10 @@ class TestD2(PygameFeedback):
         print "... errors of commission: %i" % self.e2
         print "Concentration Performance: %i" % cp
         print "Average reaction time: %f sec" % rt_avg
-        
 
         
     def tick(self):
-        # FIXME: this is a problem, we don't want a ticking mainloop
-        PygameFeedback.tick(self)
-        self.elapsed_seconds += self.elapsed / 1000.
-        if self.elapsed_seconds >= self.seconds_per_symbol * self.number_of_symbols:
-            print "Done."
-            # TODO: insert final screen and stop feedback.
-            self.on_stop()
-        #print self.elapsed_seconds
+        self.wait_for_pygame_event()
         if self.keypressed:
             key = self.lastkey_unicode
             self.keypressed = False 
