@@ -23,7 +23,7 @@ from FeedbackBase.PygameFeedback import PygameFeedback
 
 # Notation: Letter UpperLines BottomLines
 TARGETS = ['d11', 'd20', 'd02']
-NON_TARGETS = ['d10', 'd01', 'd21', 'd12', 'd22', 
+NON_TARGETS = ['d10', 'd01', 'd21', 'd12', 'd22',
                'p10', 'p01', 'p11', 'p20', 'p02', 'p21', 'p12', 'p22']
 
 class TestD2(PygameFeedback):
@@ -37,14 +37,14 @@ class TestD2(PygameFeedback):
         self.seconds_per_symbol = 20 / 47.
         self.targets_percent = 45.45
         # Color of the symbols
-        self.color = [0,0,0]
+        self.color = [0, 0, 0]
         self.backgroundColor = [127, 127, 127]
         # Fontheight in pixels
         self.fontheight = 200
         self.key_target = "f"
         self.key_nontarget = "j"
 
-        
+
     def pre_mainloop(self):
         PygameFeedback.pre_mainloop(self)
         self.generate_d2list()
@@ -59,8 +59,8 @@ class TestD2(PygameFeedback):
         pygame.time.set_timer(pygame.QUIT, self.number_of_symbols * self.seconds_per_symbol * 1000)
         self.clock.tick()
         self.present_stimulus()
-        
-        
+
+
     def post_mainloop(self):
         elapsed_seconds = self.clock.tick() / 1000.
         PygameFeedback.post_mainloop(self)
@@ -75,7 +75,7 @@ class TestD2(PygameFeedback):
         rt_avg = elapsed_seconds / tn
         print "Results:"
         print "========"
-        print 
+        print
         print "Processed symbols: %i of %i" % (tn, self.number_of_symbols)
         print "Elapsed time: %f sec" % elapsed_seconds
         print "Correctly processed symbols: %i" % (correctly_processed)
@@ -86,12 +86,12 @@ class TestD2(PygameFeedback):
         print "Concentration Performance: %i" % cp
         print "Average reaction time: %f sec" % rt_avg
 
-        
+
     def tick(self):
         self.wait_for_pygame_event()
         if self.keypressed:
             key = self.lastkey_unicode
-            self.keypressed = False 
+            self.keypressed = False
             if key not in (self.key_target, self.key_nontarget):
                 print "Wrong key pressed."
                 return
@@ -100,15 +100,15 @@ class TestD2(PygameFeedback):
                 if key == self.key_nontarget \
                 and self.d2list[self.current_index] in TARGETS:
                     print "Wrong (Not recognized D2)"
-                    self.e1 += 1 
+                    self.e1 += 1
                 elif key == self.key_target \
                 and self.d2list[self.current_index] in NON_TARGETS:
                     print "Wrong (Confused D2)"
                     self.e2 += 1
-                else: 
+                else:
                     print "Correct"
             self.current_index += 1
-            if self.current_index > self.number_of_symbols -1:
+            if self.current_index > self.number_of_symbols - 1:
                 # Finished faster than we expected!
                 print "You're awesome dude!"
                 self.on_stop()
@@ -122,22 +122,22 @@ class TestD2(PygameFeedback):
         # number of targets and non_targets
         targets = int(round(self.number_of_symbols * self.targets_percent / 100))
         non_targets = int(self.number_of_symbols - targets)
-        assert(targets+non_targets == self.number_of_symbols)
+        assert(targets + non_targets == self.number_of_symbols)
         l = [random.choice(TARGETS) for i in range(targets)] + \
             [random.choice(NON_TARGETS) for i in range(non_targets)]
         random.shuffle(l)
         # We don't want to have equal symbols in a row, since that can confuse
         # the user when only one symbol is presented
-        for i in range(len(l)-1):
-            if l[i] == l[i+1]:
+        for i in range(len(l) - 1):
+            if l[i] == l[i + 1]:
                 pool = TARGETS if l[i] in TARGETS else NON_TARGETS
                 new = random.choice(pool)
-                while new == l[i+1]:
+                while new == l[i + 1]:
                     new = random.choice(pool)
                 l[i] = new
         self.d2list = l
-            
-    
+
+
     def generate_symbols(self):
         """Generate surfaces all possible symbols."""
         # thickness of the lines (should match thickness of the font
@@ -145,38 +145,45 @@ class TestD2(PygameFeedback):
         font = pygame.font.Font(None, self.fontheight)
         surface_d = font.render("d", True, self.color)
         surface_p = font.render("p", True, self.color)
-        
+
         # width and height of letters bounding box
         width, height = surface_d.get_size()
 
         # generate the line surfaces
-        surface_l0 = pygame.Surface( (width, height), pygame.SRCALPHA )
-        surface_l1 = pygame.Surface( (width, height), pygame.SRCALPHA )
-        surface_l2 = pygame.Surface( (width, height), pygame.SRCALPHA )
-        pygame.draw.line(surface_l1, self.color, (width/2, height/10), (width/2, height-height/10), linewidth)
-        pygame.draw.line(surface_l2, self.color, (width/3, height/10), (width/3, height-height/10), linewidth)
-        pygame.draw.line(surface_l2, self.color, (2*width/3, height/10), (2*width/3, height-height/10), linewidth)
+        surface_l0 = pygame.Surface((width, height), pygame.SRCALPHA)
+        surface_l1 = pygame.Surface((width, height), pygame.SRCALPHA)
+        surface_l2 = pygame.Surface((width, height), pygame.SRCALPHA)
+        pygame.draw.line(surface_l1, self.color,
+                         (width / 2, height / 10),
+                         (width / 2, height - height / 10), linewidth)
+        pygame.draw.line(surface_l2, self.color,
+                         (width / 3, height / 10),
+                         (width / 3, height - height / 10), linewidth)
+        pygame.draw.line(surface_l2, self.color,
+                         (2 * width / 3, height / 10),
+                         (2 * width / 3, height - height / 10), linewidth)
 
         self.symbol = {}
         for symbol in TARGETS + NON_TARGETS:
-            surface = pygame.Surface( (width, height*3), pygame.SRCALPHA )
+            # Use the Letter...
+            surface = pygame.Surface((width, height * 3), pygame.SRCALPHA)
             letter = surface_d if symbol[0] == 'd' else surface_p
-            if int(symbol[1]) == 1: 
+            # ... and attach the lines to it
+            if symbol[1] == '1':
                 upper = surface_l1
-            elif int(symbol[1]) == 2:
+            elif symbol[1] == '2':
                 upper = surface_l2
             else:
                 upper = surface_l0
-            if int(symbol[2]) == 1:
+            if symbol[2] == '1':
                 lower = surface_l1
-            elif int(symbol[2]) == 2:
+            elif symbol[2] == '2':
                 lower = surface_l2
             else:
                 lower = surface_l0
-            # blit the stuff an pack it in the dict
             surface.blit(upper, (0, 0))
             surface.blit(letter, (0, height))
-            surface.blit(lower, (0, 2*height))
+            surface.blit(lower, (0, 2 * height))
             self.symbol[symbol] = surface
 
 
@@ -185,12 +192,12 @@ class TestD2(PygameFeedback):
         print self.d2list[self.current_index]
         self.screen.fill(self.backgroundColor)
         symbol = self.d2list[self.current_index]
-        self.screen.blit(self.symbol[symbol], self.symbol[symbol].get_rect(center=self.screen.get_rect().center))
+        self.screen.blit(self.symbol[symbol], 
+                         self.symbol[symbol].get_rect(center=self.screen.get_rect().center))
         pygame.display.flip()
-        
+
 
 if __name__ == "__main__":
     fb = TestD2()
     fb.on_init()
     fb.on_play()
-    
