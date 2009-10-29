@@ -27,6 +27,7 @@ NON_TARGETS = ['d10', 'd01', 'd21', 'd12', 'd22',
                'p10', 'p01', 'p11', 'p20', 'p02', 'p21', 'p12', 'p22']
 
 class TestD2(PygameFeedback):
+    """Computer version of test D2."""
 
     def init(self):
         PygameFeedback.init(self)
@@ -145,12 +146,9 @@ class TestD2(PygameFeedback):
         font = pygame.font.Font(None, self.fontheight)
         surface_d = font.render("d", True, self.color)
         surface_p = font.render("p", True, self.color)
-
         # width and height of letters bounding box
         width, height = surface_d.get_size()
-
         # generate the line surfaces
-        surface_l0 = pygame.Surface((width, height), pygame.SRCALPHA)
         surface_l1 = pygame.Surface((width, height), pygame.SRCALPHA)
         surface_l2 = pygame.Surface((width, height), pygame.SRCALPHA)
         pygame.draw.line(surface_l1, self.color,
@@ -162,28 +160,22 @@ class TestD2(PygameFeedback):
         pygame.draw.line(surface_l2, self.color,
                          (2 * width / 3, height / 10),
                          (2 * width / 3, height - height / 10), linewidth)
-
+        # Combine letters and lines to the actual symbols and store them in a dict
         self.symbol = {}
         for symbol in TARGETS + NON_TARGETS:
             # Use the Letter...
             surface = pygame.Surface((width, height * 3), pygame.SRCALPHA)
             letter = surface_d if symbol[0] == 'd' else surface_p
+            surface.blit(letter, (0, height))
             # ... and attach the lines to it
             if symbol[1] == '1':
-                upper = surface_l1
+                surface.blit(surface_l1, (0, 0))
             elif symbol[1] == '2':
-                upper = surface_l2
-            else:
-                upper = surface_l0
+                surface.blit(surface_l2, (0, 0))
             if symbol[2] == '1':
-                lower = surface_l1
+                surface.blit(surface_l1, (0, 2 * height))
             elif symbol[2] == '2':
-                lower = surface_l2
-            else:
-                lower = surface_l0
-            surface.blit(upper, (0, 0))
-            surface.blit(letter, (0, height))
-            surface.blit(lower, (0, 2 * height))
+                surface.blit(surface_l2, (0, 2 * height))
             self.symbol[symbol] = surface
 
 
