@@ -19,6 +19,9 @@ class PygameFeedback(MainloopFeedback):
         # This is only needed if we need something more than plain colored
         # background (and also for performance)
         self.background = None
+        # For keys
+        self.keypressed = False
+        self.lastkey = None
 
 
     def pre_mainloop(self):
@@ -100,18 +103,26 @@ class PygameFeedback(MainloopFeedback):
         Process the the pygame event queue and react on VIDEORESIZE.
         """
         for event in pygame.event.get():
-            if event.type == pygame.VIDEORESIZE:
-                e = max(event.w, int(round(event.h * 0.9)))
-                self.screen = pygame.display.set_mode((e, event.h), pygame.RESIZABLE)
-                self.resized = True
-                (self.screenHeight, self.screenWidth) = (self.screen.get_height(), self.screen.get_width())
-                self.init_graphics()
-            elif event.type == pygame.QUIT:
-                self.on_stop()
-            elif event.type == pygame.KEYDOWN:
-                step = 0
-                if event.unicode == u"a": step = -0.1
-                elif event.unicode == u"d" : step = 0.1
-                self.f += step
-                if self.f < -1: self.f = -1
-                if self.f > 1: self.f = 1
+            self.process_pygame_event(event)
+
+            
+    def process_pygame_event(self, event):
+        """Process a signle pygame event."""
+        if event.type == pygame.VIDEORESIZE:
+            e = max(event.w, int(round(event.h * 0.9)))
+            self.screen = pygame.display.set_mode((e, event.h), pygame.RESIZABLE)
+            self.resized = True
+            (self.screenHeight, self.screenWidth) = (self.screen.get_height(), self.screen.get_width())
+            self.init_graphics()
+        elif event.type == pygame.QUIT:
+            self.on_stop()
+        elif event.type == pygame.KEYDOWN:
+            self.keypressed = True
+            self.lastkey = event.key
+            self.lastkey_unicode = event.unicode
+                
+    
+    def wait_for_pygame_event(self):
+        """Wait until a pygame event orcurs and process it."""
+        event = pygame.event.wait()
+        self.process_pygame_event(event)
