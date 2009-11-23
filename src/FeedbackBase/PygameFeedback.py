@@ -16,9 +16,6 @@ class PygameFeedback(MainloopFeedback):
         self.caption = "PygameFeedback"
         self.elapsed = 0
         self.backgroundColor = [0, 0, 0]
-        # This is only needed if we need something more than plain colored
-        # background (and also for performance)
-        self.background = None
         # For keys
         self.keypressed = False
         self.lastkey = None
@@ -69,33 +66,11 @@ class PygameFeedback(MainloopFeedback):
         pygame.quit()
 
 
-    def do_print(self, text, color, size=None, center=None, superimpose=True):
-        """
-        Print the given text in the given color and size on the screen.
-        """
-        if not size:
-            size = self.size / 10
-        if not center:
-            center = self.screen.get_rect().center
-
-        font = pygame.font.Font(None, size)
-        if not superimpose:
-            self.screen.blit(self.background, self.backgroundRect)
-        surface = font.render(text, 1, color)
-        self.screen.blit(surface, surface.get_rect(center=center))
-        pygame.display.flip()
-
-
-
     def init_graphics(self):
         """
         Initialize the surfaces and fonts depending on the screen size.
         """
-        # init background
-        self.background = pygame.Surface((self.screenSize[0], self.screenSize[1]))
-        self.background = self.background.convert()
-        self.backgroundRect = self.background.get_rect(center=self.screen.get_rect().center)
-        self.background.fill(self.backgroundColor)
+        pass
 
 
     def process_pygame_events(self):
@@ -112,7 +87,7 @@ class PygameFeedback(MainloopFeedback):
             e = max(event.w, int(round(event.h * 0.9)))
             self.screen = pygame.display.set_mode((e, event.h), pygame.RESIZABLE)
             self.resized = True
-            (self.screenHeight, self.screenWidth) = (self.screen.get_height(), self.screen.get_width())
+            self.screenSize = [self.screen.get_height(), self.screen.get_width()]
             self.init_graphics()
         elif event.type == pygame.QUIT:
             self.on_stop()
