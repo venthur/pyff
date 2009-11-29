@@ -86,12 +86,13 @@ class Emulator(cmd.Cmd):
         while not self.stopping:
             time.sleep(0.04)
             c += 1
-            sample1 = math.sin(c)
-            sample2 = math.sin(c/90.0)
-            sample3 = math.sin(c/180.0)
-            sample4 = math.sin(c/270.0)
-            sample5 = math.sin(c/45.0)
-            sample6 = math.sin(c/135.0)
+            r = math.radians(c)
+            sample1 = math.sin(r)
+            sample2 = math.sin(r/2-90.0)
+            sample3 = math.sin(r/3-180.0)
+            sample4 = math.sin(r-270.0)
+            sample5 = math.sin(r-45.0)
+            sample6 = math.sin(r-135.0)
             
             samples = [sample1, sample2, sample3, sample4, sample5, sample6]
 
