@@ -28,6 +28,7 @@ import sys
 import cPickle as pickle
 from threading import Event
 import traceback
+import socket
 
 
 class Feedback(object):
@@ -127,6 +128,10 @@ class Feedback(object):
             self._port_num = 0x378
         self._playEvent = Event()
         self._shouldQuit = False
+        
+        self.udp_markers_enable = False
+        self.udp_markers_host = '127.0.0.1'
+        self.udp_markers_port = 1206
  
     #
     # Internal routines not inteded for overwriting
@@ -178,6 +183,9 @@ class Feedback(object):
         
         You should not override this method, use on_play instead.
         """
+        if self.udp_markers_enable:
+            self._udp_markers_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            print "Sending markers via UDP enabled"
         self.pre_play()
         self.on_play()
         self.post_play()
@@ -310,6 +318,8 @@ class Feedback(object):
         """Sends the data to the parallel port."""
         # FIXME: use logger instead
         print "TRIGGER %s: %s" % (str(datetime.datetime.now()), str(data))
+        if self.udp_markers_enable and reset:
+            self.send_udp(data)
         if self._pport:
             if sys.platform == 'win32':
                 self._pport.Out32(self._port_num, data)
@@ -318,7 +328,12 @@ class Feedback(object):
             if reset:
                 timer = threading.Timer(0.01, self.send_parallel, (0x0, False))
                 timer.start()
-
+                
+                
+    def send_udp(self, data):
+        """Sends the data to UDP"""
+        self._udp_markers_socket.sendto("S%3d" % data, 
+                                        (self.udp_markers_host, self.udp_markers_port) )
                 
     def _get_variables(self):
         """Return a dictionary of variables and their values."""
