@@ -128,6 +128,8 @@ class Feedback(object):
             self._port_num = 0x378
         self._playEvent = Event()
         self._shouldQuit = False
+
+        self._triggerResetTime = 0.01
         
         self.udp_markers_enable = False
         self.udp_markers_host = '127.0.0.1'
@@ -326,7 +328,7 @@ class Feedback(object):
             else:
                 self._pport.setData(data)
             if reset:
-                timer = threading.Timer(0.01, self.send_parallel, (0x0, False))
+                timer = threading.Timer(self._triggerResetTime, self.send_parallel, (0x0, False))
                 timer.start()
                 
                 
