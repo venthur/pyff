@@ -78,20 +78,12 @@ class FeedbackController(object):
                 self._handle_cs(signal)
             elif signal.type == bcixml.INTERACTION_SIGNAL:
                 self._handle_is(signal)
-            elif signal.type == bcixml.FC_SIGNAL:
-                self._handle_fcs(signal)
             else:
                 self.logger.warning("Unknown signal type, ignoring it. (%s)" % str(signal.type))
         except:
             self.logger.error("Handling is or cs caused an exception.")
             self.logger.error(traceback.format_exc())
 
-
-    def _handle_fcs(self, signal):
-        """Handle Feedback Controller Signal."""
-        # We assume, that the signal only contains variables which are to set
-        # in the Feedback Controller
-        self.fc_data = signal.data.copy()
 
     def _handle_cs(self, signal):
         """Handle Control Signal."""

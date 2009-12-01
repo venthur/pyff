@@ -52,7 +52,10 @@ def pre_stop(self):
 def post_stop(self): pass
 
 def pre_quit(self):
-    stop_bv_recorder(self)
+    try:
+        stop_bv_recorder(self)
+    except:
+        print "Could not stop brain vision recorder."
 
 def post_quit(self): pass
 ################################################################################
@@ -108,3 +111,4 @@ def stop_bv_recorder(self):
     except:
         self.logger.error("Unable to stop recording:")
         self.logger.error(str(e))
+

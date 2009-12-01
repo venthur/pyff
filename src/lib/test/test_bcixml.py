@@ -137,16 +137,6 @@ class BcixmlTestCase(unittest.TestCase):
         self.assertEqual(signal2.data[name], value2)
         self.assertEqual(type(signal2.data[name]), type(value2))
 
-
-    def testFC_Signal(self):
-        """Should support Feedback Controller Signal type."""
-        data = {"foo" : "bar", "baz" : 3}
-        signal = bcixml.BciSignal(data, None, bcixml.FC_SIGNAL)
-        xml = self.encoder.encode_packet(signal)
-        signal2 = self.decoder.decode_packet(xml)
-        self.assertEqual(signal2.type, signal.type)
-        self.assertEqual(signal2.data, data)
-
         
     def testInteraction_Signal(self):
         """Should support Interaction Signal type."""

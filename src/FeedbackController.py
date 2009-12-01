@@ -52,7 +52,7 @@ the Free Software Foundation; either version 2 of the License, or
         help='Which loglevel to use for the Feedbacks. Valid loglevels are: critical, error, warning, info, debug and notset. [default: warning]',
         metavar='LEVEL')
     parser.add_option('-p', '--plugin', dest='plugin',
-                      help="Optional Plugin, the Feedback Controller should load.",
+                      help="Optional Plugin, the Feedback Controller should inject into the Feedback.",
                       metavar="MODULE")
     parser.add_option('-a', '--additional-feedback-path', dest='fbpath',
                       help="Additional path to search for Feedbacks.",
