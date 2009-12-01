@@ -326,6 +326,7 @@ class BciSignal(object):
 
 
 class Error(Exception):
+    """Our own exception type."""
     
     def __init__(self, value):
         self.value = value
@@ -335,9 +336,11 @@ class Error(Exception):
     
         
 class EncodingError(Error):
+    """Something message cound not be encoded."""
     pass
 
 class DecodingError(Error):
+    """Message could not be decoded."""
     pass
 
 

@@ -52,4 +52,6 @@ class RollbackImporter(object):
         __builtin__.__import__ = self.realimport
     
     def _import(self, name, globals={}, locals={}, fromlist=[], level=-1):
+        """Our import method."""
         return apply(self.realimport, (name, globals, locals, fromlist, level))
+

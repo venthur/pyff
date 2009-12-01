@@ -30,6 +30,7 @@ TIMEOUT = 2.0        # seconds to wait for reply
 
 
 class BciNetwork(object):
+    """Wrapper for Communication between Feedback Controller and GUI."""
     
     def __init__(self, ip, port, myport=None):
         self.logger = logging.getLogger("BciNetwork-%s:%s" % (str(ip), str(port)))
@@ -53,6 +54,7 @@ class BciNetwork(object):
         
         
     def getAvailableFeedbacks(self):
+        """Get available Feedbacks from Feedback Controller."""
         signal = bcixml.BciSignal(None, [bcixml.CMD_GET_FEEDBACKS], bcixml.INTERACTION_SIGNAL)
         self.send_signal(signal)
         
@@ -65,26 +67,32 @@ class BciNetwork(object):
     
     
     def send_init(self, feedback):
+        """Send 'send_init(feedback)' to Feedback Controller."""
         signal = bcixml.BciSignal({"_feedback": str(feedback)}, [bcixml.CMD_SEND_INIT], bcixml.INTERACTION_SIGNAL)
         self.send_signal(signal)
 
     def play(self):
+        """Send 'play' to Feedback Controller."""
         signal = bcixml.BciSignal(None, [bcixml.CMD_PLAY], bcixml.INTERACTION_SIGNAL)
         self.send_signal(signal)
 
     def pause(self):
+        """Send 'pause' to Feedback Controller."""
         signal = bcixml.BciSignal(None, [bcixml.CMD_PAUSE], bcixml.INTERACTION_SIGNAL)
         self.send_signal(signal)
         
     def stop(self):
+        """Send 'stop' to Feedback Controller."""
         signal = bcixml.BciSignal(None, [bcixml.CMD_STOP], bcixml.INTERACTION_SIGNAL)
         self.send_signal(signal)
 
     def quit(self):
+        """Send 'quit' to Feedback Controller."""
         signal = bcixml.BciSignal(None, [bcixml.CMD_QUIT], bcixml.INTERACTION_SIGNAL)
         self.send_signal(signal)
 
     def get_variables(self):
+        """Get variables (name, type and value) from currently running Feedback."""
         signal = bcixml.BciSignal(None, [bcixml.CMD_GET_VARIABLES], bcixml.INTERACTION_SIGNAL)
         self.send_signal(signal)
 
@@ -96,10 +104,12 @@ class BciNetwork(object):
         return answer.data.get("variables")
 
     def send_signal(self, signal):
+        """Send a signal."""
         xml = self.xmlencoder.encode_packet(signal)
         self.socket.sendto(xml, self.addr)
     
     def receive(self, timeout):
+        """Receive a signal."""
         if self.SEND_ONLY:
             self.logger.error("Unable to receive data, am in send-only mode!")
             #FIXME: should throw an exception here!

@@ -39,6 +39,7 @@ class FeedbackProcess(Process):
 
 
     def run(self):
+        """Run the FeedbackProcess' activities in the new process."""
         feedback = self.feedbackClass(port_num=self.port)
         feedback.logger.debug("Initialized Feedback.")
         if self.fbplugin:
