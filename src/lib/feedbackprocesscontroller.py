@@ -36,10 +36,15 @@ class FeedbackProcess(Process):
         self.ipcReady = ipcReady
         self.port = port
         self.fbplugin = fbplugin
+        self.loglevel = logging.getLogger().level
+        self.fbloglevel = logging.getLogger("FB").level
+        self.logformat = logging.getLogger().handlers[0].formatter._fmt
 
 
     def run(self):
         """Run the FeedbackProcess' activities in the new process."""
+        logging.basicConfig(level=self.loglevel, format=self.logformat)
+        logging.getLogger("FB").setLevel(self.fbloglevel)
         feedback = self.feedbackClass(port_num=self.port)
         feedback.logger.debug("Initialized Feedback.")
         if self.fbplugin:
