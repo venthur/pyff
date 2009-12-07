@@ -43,6 +43,7 @@ class FeedbackProcess(Process):
 
     def run(self):
         """Run the FeedbackProcess' activities in the new process."""
+        # Re-initialize logger for this process
         logging.basicConfig(level=self.loglevel, format=self.logformat)
         logging.getLogger("FB").setLevel(self.fbloglevel)
         feedback = self.feedbackClass(port_num=self.port)
