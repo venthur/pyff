@@ -331,7 +331,7 @@ class Feedback(object):
             else:
                 self._pport.setData(data)
             if reset:
-                self._triggerResetTimer = threading.Timer(0.01, self.send_parallel, (0x0, False))
+                self._triggerResetTimer = threading.Timer(self._triggerResetTime, self.send_parallel, (0x0, False))
                 self._triggerResetTimer.start()
                 
                 
