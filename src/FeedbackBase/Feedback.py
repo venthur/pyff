@@ -128,8 +128,8 @@ class Feedback(object):
             self._port_num = 0x378
         self._playEvent = Event()
         self._shouldQuit = False
-
-        self._triggerResetTime = 0.01
+        # Initialize with dummy values so we cann call safely .cancel
+        self._triggerResetTimer = Timer(0, None)
         
         self.udp_markers_enable = False
         self.udp_markers_host = '127.0.0.1'
@@ -320,6 +320,9 @@ class Feedback(object):
         """Sends the data to the parallel port."""
         # FIXME: use logger instead
         print "TRIGGER %s: %s" % (str(datetime.datetime.now()), str(data))
+        if reset == True:
+            # A new trigger arrived before we could reset the old one
+            self._triggerResetTimer.cancel()
         if self.udp_markers_enable and reset:
             self.send_udp(data)
         if self._pport:
@@ -328,8 +331,8 @@ class Feedback(object):
             else:
                 self._pport.setData(data)
             if reset:
-                timer = threading.Timer(self._triggerResetTime, self.send_parallel, (0x0, False))
-                timer.start()
+                self._triggerResetTimer = threading.Timer(0.01, self.send_parallel, (0x0, False))
+                self._triggerResetTimer.start()
                 
                 
     def send_udp(self, data):
