@@ -128,8 +128,8 @@ class Feedback(object):
             self._port_num = 0x378
         self._playEvent = Event()
         self._shouldQuit = False
-        # Initialize with dummy values so we cann call safely .cancel
-        self._triggerResetTimer = Timer(0, None)
+
+        self._triggerResetTime = 0.01
         
         self.udp_markers_enable = False
         self.udp_markers_host = '127.0.0.1'
