@@ -1,0 +1,10 @@
+inpout32.dll
+============
+
+Use this file to use the parallel port on Windows. Copy this file to
+Windows\System, a restart is not needed.
+
+Sources and Binaries are from
+http://logix4u.net/Legacy_Ports/Parallel_Port/Inpout32.dll_for_Windows_98/2000/NT/XP.html
+
+
