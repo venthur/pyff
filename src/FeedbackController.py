@@ -20,6 +20,7 @@
 
 import logging
 from optparse import OptionParser
+import traceback
 
 from processing import Process
 
@@ -84,6 +85,7 @@ the Free Software Foundation; either version 2 of the License, or
     # get the rest
     plugin = options.plugin
     fbpath = options.fbpath
+    guiproc = None
     if not options.nogui:
         guiproc = Process(target=GUI.main)
         guiproc.start() 
@@ -95,8 +97,16 @@ the Free Software Foundation; either version 2 of the License, or
         fc = FeedbackController(plugin, fbpath, port)
         fc.start()
     except (KeyboardInterrupt, SystemExit):
-        fc.stop()
         logging.debug("Caught keyboard interrupt or system exit; quitting")
+    except:
+        logging.error("Caught an exception, quitting FeedbackController.")
+        print traceback.format_exc()
+    finally:
+        print "stopping"
+        fc.stop()
+        if guiproc:
+            guiproc.terminate()
+
 
 
 if __name__ == '__main__':
