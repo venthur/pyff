@@ -22,6 +22,17 @@ import traceback
 import logging
 
 
+def import_module_and_get_class(modname, classname):
+    """Import the module and return modname.classname."""
+    try:
+        mod = __import__(modname, fromlist=[None])
+        return getattr(mod, classname)
+    # FIXME: is this exception usefull? it is at least wrong since it does
+    # throws and import error even if import succeeded
+    except:
+        raise ImportError("Unable to load class %s from module %s" % (str(classname), str(modname)))
+
+
 class PluginController(object):
     """Finds, loads and unloads plugins."""
     
@@ -92,21 +103,17 @@ class PluginController(object):
         self.oldModules = sys.modules.copy()
         if not self.availablePlugins.has_key(name):
             raise ImportError("Plugin %s not available" % str(name))
-        try:
-            mod = __import__(self.availablePlugins[name], fromlist=[None])
-            return getattr(mod, name)
-        except:
-            raise ImportError("Unable to load Plugin %s" % str(name))
+        myclass = import_module_and_get_class(self.availablePlugins[name], name)
+        return myclass
 
     
     def unload_plugin(self):
         """Unload currently loaded plugin."""
-        if not self.oldModules:
-            return
-        for mod in sys.modules.keys():
-            if not self.oldModules.has_key(mod):
-                del sys.modules[mod]
-        self.oldModules = None
+        if self.oldModules:
+            for mod in sys.modules.keys():
+                if not self.oldModules.has_key(mod):
+                    del sys.modules[mod]
+            self.oldModules = None
 
         
 def main():
