@@ -88,6 +88,8 @@ class PluginController(object):
                                 root = root.replace(plugindir, "", 1)
                             name, module = self.test_plugin(root, filename)
                             self.availablePlugins[name] = module
+                            # Show depreciation warning
+                            self.logger.warning("Automatic subclass finding is depreciated. Please create a 'feedbacks.list' in your Feedback's directory and add the absolute import path until the class name.")
                         except ImportError:
                             pass
 
@@ -146,7 +148,7 @@ class PluginController(object):
         
 def main():
     import sys
-    sys.path.append("../")
+    #sys.path.append("../")
     import FeedbackBase.Feedback
     pc = PluginController(["../Feedbacks", "../../../pyff-tu/src/Feedbacks"], FeedbackBase.Feedback.Feedback)
     pc.find_plugins()
