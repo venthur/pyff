@@ -73,6 +73,21 @@ class PluginController(object):
         """Returns a list of available plugins."""
         for plugindir in self.plugindirs:
             for root, dirs, files in os.walk(plugindir):
+                if 'feedbacks.list' in files:
+                    self.logger.info("Found feedbacks.list in %s" % root)
+                    del dirs[:]
+                    fblist = self.load_feedback_list(root+os.path.sep+'feedbacks.list')
+                    r = root.replace(plugindir, "", 1)
+                    r = r.split(os.path.sep)
+                    for fb in fblist:
+                        module, klass = fb.split(".")[:-1], fb.split(".")[-1]
+                        r.extend(module)
+                        module = ".".join(r)
+                        if module.startswith("."):
+                            module = module[1:]
+                        print module, klass
+                        self.availablePlugins[klass] = module
+                    continue
                 for filename in files:
                     if filename.lower().endswith(".py"):
                         # ok we found a candidate, check if it's a valid feedback
@@ -83,6 +98,16 @@ class PluginController(object):
                             self.availablePlugins[name] = module
                         except ImportError:
                             pass
+
+
+    def load_feedback_list(self, filename):
+        fh = open(filename, "r")
+        fblist = []
+        for line in fh.readlines():
+            if len(line.strip()) > 0:
+                fblist.append(line)
+        fh.close()
+        return fblist
 
         
     def load_plugin(self, name):
