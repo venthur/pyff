@@ -23,22 +23,39 @@ import traceback
 from multiprocessing import Process, Event
 
 from lib.PluginController import PluginController
+import lib.PluginController
 import ipc
 
 
 class FeedbackProcess(Process):
     """Process that wrapps the Feedback's activities."""
 
-    def __init__(self, feedbackClass, ipcReady, port, fbplugin):
+    def __init__(self, modname, classname, ipcReady, port, fbplugin):
         Process.__init__(self)
-        self.feedbackClass = feedbackClass
+        self.classname = classname
+        self.modname = modname
         self.ipcReady = ipcReady
         self.port = port
         self.fbplugin = fbplugin
+        self.loglevel = logging.getLogger().level
+        self.fbloglevel = logging.getLogger("FB").level
+        self.logformat = logging.getLogger().handlers[0].formatter._fmt
 
 
     def run(self):
-        feedback = self.feedbackClass(port_num=self.port)
+        """Run the FeedbackProcess' activities in the new process."""
+        # We're in a new process
+        reload(lib.PluginController)
+        try:
+            fbClass = lib.PluginController.import_module_and_get_class(self.modname, self.classname)
+        except:
+            print str(traceback.format_exc())
+            self.ipcReady.set()
+            return
+        # Re-initialize logger for this process
+        logging.basicConfig(level=self.loglevel, format=self.logformat)
+        logging.getLogger("FB").setLevel(self.fbloglevel)
+        feedback = fbClass(port_num=self.port)
         feedback.logger.debug("Initialized Feedback.")
         if self.fbplugin:
             feedback.logger.debug("Loading plugin %s" % str(self.fbplugin))
@@ -76,7 +93,9 @@ class FeedbackProcessController(object):
         self.currentProc = None
         self.timeout = timeout
         self.pluginController = PluginController(plugindirs, baseclass)
+
         self.pluginController.find_plugins()
+        self.pluginController.unload_plugin()
         
     
     def start_feedback(self, name, port, fbplugin):
@@ -85,12 +104,8 @@ class FeedbackProcessController(object):
         if self.currentProc:
             self.logger.warning("Trying to start feedback but another one is still running. Killing the old one now and proceed.")
             self.stop_feedback()
-        try:
-            feedbackClass = self.pluginController.load_plugin(name)
-        except ImportError:
-            raise
         ipcReady = Event()
-        self.currentProc = FeedbackProcess(feedbackClass, ipcReady, port, fbplugin)
+        self.currentProc = FeedbackProcess(self.pluginController.availablePlugins[name], name, ipcReady, port, fbplugin)
         self.currentProc.start()
         # Wait until the network from the Process is ready, this is necessary
         # since spawning a new process under Windows is very slow.

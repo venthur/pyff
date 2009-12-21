@@ -30,8 +30,6 @@ SUPPORTED_VERSIONS = ("1.0")
 
 CONTROL_SIGNAL = "control-signal"
 INTERACTION_SIGNAL = "interaction-signal"
-# FIXME: temporary
-FC_SIGNAL = "fc-signal"
 REPLY_SIGNAL = "reply"
 
 NAME = "name"
@@ -99,8 +97,7 @@ class XmlDecoder(object):
         t = None  # for the type
         for node in root.childNodes:
             if node.nodeType == Node.ELEMENT_NODE:
-                #if node.nodeName == INTERACTION_SIGNAL or node.nodeName == CONTROL_SIGNAL or node.nodeName == FC_SIGNAL:
-                if node.nodeName in [INTERACTION_SIGNAL, CONTROL_SIGNAL, FC_SIGNAL, REPLY_SIGNAL]:
+                if node.nodeName in [INTERACTION_SIGNAL, CONTROL_SIGNAL, REPLY_SIGNAL]:
                     t = node.nodeName
                 else:
                     self.logger.warning("Received a signal which contains neither an interaction- nor a control-signal. (%s)" % str(node.nodeName))
@@ -224,7 +221,7 @@ class XmlEncoder(object):
         dom.appendChild(root)
         
         # Write the type
-        if signal.type not in [CONTROL_SIGNAL, INTERACTION_SIGNAL, FC_SIGNAL, REPLY_SIGNAL]:
+        if signal.type not in [CONTROL_SIGNAL, INTERACTION_SIGNAL, REPLY_SIGNAL]:
             raise EncodingError("Unknown signal type: %s" % str(signal.type))
         root2 = dom.createElement(signal.type)
         root.appendChild(root2)
@@ -326,6 +323,7 @@ class BciSignal(object):
 
 
 class Error(Exception):
+    """Our own exception type."""
     
     def __init__(self, value):
         self.value = value
@@ -335,9 +333,11 @@ class Error(Exception):
     
         
 class EncodingError(Error):
+    """Something message cound not be encoded."""
     pass
 
 class DecodingError(Error):
+    """Message could not be decoded."""
     pass
 
 

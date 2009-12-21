@@ -31,8 +31,12 @@ def pre_init(self):  pass
 def post_init(self): pass
 
 def pre_play(self):
-    self.logger.debug('Running pre_play.')
-    start_bv_recorder(self)
+    try:
+        print 'Running pre_play.'
+        start_bv_recorder(self)
+    except:
+        print "Could not start brain vision recorder."
+        print str(traceback.format_exc())
     
 def post_play(self): pass
 
@@ -40,12 +44,18 @@ def pre_pause(self):  pass
 def post_pause(self): pass
 
 def pre_stop(self):
-    stop_bv_recorder(self)
+    try:
+        stop_bv_recorder(self)
+    except:
+        print "Could not stop brain vision recorder."
     
 def post_stop(self): pass
 
 def pre_quit(self):
-    stop_bv_recorder(self)
+    try:
+        stop_bv_recorder(self)
+    except:
+        print "Could not stop brain vision recorder."
 
 def post_quit(self): pass
 ################################################################################
@@ -65,15 +75,16 @@ def start_bv_recorder(self):
     # TODAY_DIR => D:\data\bbciRaw\bla\
     # BASENAME+VP_CODE = filebase
     # actual save target: TODAY_DIR\filebase
-    todayDir = self.fc_data.get("TODAY_DIR")
-    basename = self.fc_data.get("BASENAME")
-    vbCode = self.fc_data.get("VP_CODE")
+    print "Starting BV recorder..."
+    todayDir = self.TODAY_DIR
+    basename = self.BASENAME
+    vbCode = self.VP_CODE
     if not (todayDir and basename and vbCode):
-        self.logger.error("todayDir, basename or vbCode variable does not exist in the Feedback Controller")
+        print "todayDir, basename or vbCode variable does not exist in the Feedback Controller"
         return
     # test if todayDir acutally exists
     if not os.path.exists(todayDir):
-        self.logger.error("Directory does not exist, cannot record to: %s" % str(todayDir))
+        print "Directory does not exist, cannot record to: %s" % str(todayDir)
         return
     
     filename = os.sep.join([str(todayDir), str(basename) + str(vbCode)])
@@ -85,13 +96,13 @@ def start_bv_recorder(self):
         num += 1
     filename = filename + suffix + ".eeg"
         
-    self.logger.debug("Recoding to file: %s" % filename)
+    print "Recoding to file: %s" % filename
     try:
         rcc.startImpRecording(filename)
     except Exception, e:
-        self.logger.error("Unable to start recording:")
-        self.logger.error(str(e))
-        self.logger.error(str(traceback.format_exc()))
+        print "Unable to start recording:"
+        print str(e)
+        print str(traceback.format_exc())
 
 
 def stop_bv_recorder(self):
@@ -100,3 +111,4 @@ def stop_bv_recorder(self):
     except:
         self.logger.error("Unable to stop recording:")
         self.logger.error(str(e))
+

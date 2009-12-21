@@ -30,6 +30,12 @@ import ipc
 
 
 class FeedbackController(object):
+    """Feedback Controller.
+    
+    Controlls the loading, unloading, starting, pausing and stopping of the 
+    Feedbacks. Can query the Feedback for it's variables and can as well set 
+    them.
+    """
     def __init__(self, plugin=None, fbpath=None, port=None):
         # Setup my stuff:
         self.logger = logging.getLogger("FeedbackController")
@@ -62,6 +68,7 @@ class FeedbackController(object):
 
     
     def handle_signal(self, signal):
+        """Handle incoming signal."""
         # check our signal if it contains anything useful, if not drop it and
         # print a warning
         try:
@@ -71,8 +78,6 @@ class FeedbackController(object):
                 self._handle_cs(signal)
             elif signal.type == bcixml.INTERACTION_SIGNAL:
                 self._handle_is(signal)
-            elif signal.type == bcixml.FC_SIGNAL:
-                self._handle_fcs(signal)
             else:
                 self.logger.warning("Unknown signal type, ignoring it. (%s)" % str(signal.type))
         except:
@@ -80,17 +85,14 @@ class FeedbackController(object):
             self.logger.error(traceback.format_exc())
 
 
-    def _handle_fcs(self, signal):
-        # We assume, that the signal only contains variables which are to set
-        # in the Feedback Controller
-        self.fc_data = signal.data.copy()
-
     def _handle_cs(self, signal):
+        """Handle Control Signal."""
         # We don't care about control signals, send it to the feedback
         self.send_to_feedback(signal)
 
     
     def _handle_is(self, signal):
+        """Handle Interaction Signal."""
         self.logger.info("Got interaction signal: %s" % str(signal))
         cmd = signal.commands[0] if len(signal.commands) > 0 else None
         
@@ -128,10 +130,12 @@ class FeedbackController(object):
 
         
     def send_to_peer(self, signal):
+        """Send signal to peer."""
         self.udpconnectionhandler.send_signal(signal)
 
 
 class UDPDispatcher(asyncore.dispatcher):
+    """UDP Message Hanldeer of the Feedback Controller."""
     
     def __init__(self, fc):
         asyncore.dispatcher.__init__(self)
@@ -142,6 +146,7 @@ class UDPDispatcher(asyncore.dispatcher):
         self.bind((bcinetwork.LOCALHOST, bcinetwork.FC_PORT))
 
     def send_signal(self, signal):
+        """Send signal to the GUI."""
         data = self.encoder.encode_packet(signal)
         self.socket.sendto(data, (signal.peeraddr[0], bcinetwork.GUI_PORT))
 
@@ -151,6 +156,11 @@ class UDPDispatcher(asyncore.dispatcher):
         return False
         
     def handle_read(self):
+        """Handle incoming signals.
+        
+        Takes incoming signals, decodes them and forwards them to the 
+        Feedback Controller.
+        """
         try:
             data, address = self.recvfrom(bcinetwork.BUFFER_SIZE)
             signal = self.decoder.decode_packet(data)

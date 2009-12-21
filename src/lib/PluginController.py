@@ -22,6 +22,17 @@ import traceback
 import logging
 
 
+def import_module_and_get_class(modname, classname):
+    """Import the module and return modname.classname."""
+    try:
+        mod = __import__(modname, fromlist=[None])
+        return getattr(mod, classname)
+    # FIXME: is this exception usefull? it is at least wrong since it does
+    # throws and import error even if import succeeded
+    except:
+        raise ImportError("Unable to load class %s from module %s" % (str(classname), str(modname)))
+
+
 class PluginController(object):
     """Finds, loads and unloads plugins."""
     
@@ -73,6 +84,13 @@ class PluginController(object):
         """Returns a list of available plugins."""
         for plugindir in self.plugindirs:
             for root, dirs, files in os.walk(plugindir):
+                if 'feedbacks.list' in files:
+                    self.logger.info("Found feedbacks.list in %s" % root)
+                    del dirs[:]
+                    fbdict = self.load_feedback_list(root+os.path.sep+'feedbacks.list', plugindir)
+                    for fb, module in fbdict.iteritems():
+                        self.availablePlugins[fb] = module
+                    continue
                 for filename in files:
                     if filename.lower().endswith(".py"):
                         # ok we found a candidate, check if it's a valid feedback
@@ -81,8 +99,39 @@ class PluginController(object):
                                 root = root.replace(plugindir, "", 1)
                             name, module = self.test_plugin(root, filename)
                             self.availablePlugins[name] = module
+                            # Show depreciation warning
+                            self.logger.info("Found %s via automatic subclass finding" % module+"."+name)
+                            self.logger.warning("Automatic subclass finding is depreciated. Please create a 'feedbacks.list' in your Feedback's directory and add the absolute import path until the class name.")
                         except ImportError:
                             pass
+
+
+    def load_feedback_list(self, filename, plugindir):
+        """Load classnames from file and construct modulename relative to
+        plugindir from plugindir, filename and file entries.
+        
+        Returns a dictionary: classname -> module.
+        """
+        # Read the lines from file
+        fh = open(filename, "r")
+        lines = fh.readlines()
+        fh.close()
+        # Construct absolute module name from plugindir, filename and file entry
+        base = os.path.dirname(filename)
+        base = base.replace(plugindir, "", 1)
+        base = base.split(os.path.sep)
+        fbdict = dict()
+        for line in lines:
+            line = line.strip()
+            # Ignore empty lines or comments
+            if len(line) == 0 or line.startswith("#"):
+                continue
+            line = line.split(".")
+            full_path_to_class = base + line
+            while("" in full_path_to_class):
+                full_path_to_class.remove("")
+            fbdict[full_path_to_class[-1]] = ".".join(full_path_to_class[:-1])
+        return fbdict
 
         
     def load_plugin(self, name):
@@ -92,28 +141,27 @@ class PluginController(object):
         self.oldModules = sys.modules.copy()
         if not self.availablePlugins.has_key(name):
             raise ImportError("Plugin %s not available" % str(name))
-        try:
-            mod = __import__(self.availablePlugins[name], fromlist=[None])
-            return getattr(mod, name)
-        except:
-            raise ImportError("Unable to load Plugin %s" % str(name))
+        myclass = import_module_and_get_class(self.availablePlugins[name], name)
+        return myclass
 
     
     def unload_plugin(self):
         """Unload currently loaded plugin."""
-        if not self.oldModules:
-            return
-        for mod in sys.modules.keys():
-            if not self.oldModules.has_key(mod):
-                del sys.modules[mod]
-        self.oldModules = None
+        if self.oldModules:
+            for mod in sys.modules.keys():
+                if not self.oldModules.has_key(mod):
+                    del sys.modules[mod]
+            self.oldModules = None
 
         
 def main():
+    import sys
+    #sys.path.append("../")
     import FeedbackBase.Feedback
     pc = PluginController(["../Feedbacks", "../../../pyff-tu/src/Feedbacks"], FeedbackBase.Feedback.Feedback)
     pc.find_plugins()
-    for key in pc.availablePlugins: print key, pc.availablePlugins[key]
+    for key in pc.availablePlugins: 
+        print key, pc.availablePlugins[key]
 
 if __name__ == "__main__":
     main()

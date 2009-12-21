@@ -26,8 +26,9 @@ import threading
 import datetime
 import sys
 import cPickle as pickle
-from threading import Event
+from threading import Event, Timer
 import traceback
+import socket
 
 
 class Feedback(object):
@@ -127,6 +128,14 @@ class Feedback(object):
             self._port_num = 0x378
         self._playEvent = Event()
         self._shouldQuit = False
+
+        # Initialize with dummy values so we cann call safely .cancel
+        self._triggerResetTimer = Timer(0, None)
+        self._triggerResetTime = 0.01
+        
+        self.udp_markers_enable = False
+        self.udp_markers_host = '127.0.0.1'
+        self.udp_markers_port = 1206
  
     #
     # Internal routines not inteded for overwriting
@@ -178,6 +187,9 @@ class Feedback(object):
         
         You should not override this method, use on_play instead.
         """
+        if self.udp_markers_enable:
+            self._udp_markers_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            print "Sending markers via UDP enabled"
         self.pre_play()
         self.on_play()
         self.post_play()
@@ -226,7 +238,7 @@ class Feedback(object):
         Override this method to initialize everything you need before the 
         feedback starts.
         """
-        self.logger.warn("on_init not implemented yet!")
+        self.logger.debug("on_init not implemented yet!")
         
     
     def on_play(self):
@@ -236,7 +248,7 @@ class Feedback(object):
         
         Override this method to actually start your feedback.
         """
-        self.logger.warn("on_play not implemented yet!")
+        self.logger.debug("on_play not implemented yet!")
 
     
     def on_pause(self):
@@ -246,7 +258,7 @@ class Feedback(object):
         
         Override this method to pause your feedback.
         """
-        self.logger.warn("on_pause not implemented yet!")
+        self.logger.debug("on_pause not implemented yet!")
         
     
     def on_stop(self):
@@ -257,7 +269,7 @@ class Feedback(object):
         Override this method to stop your feedback. It should be possible to
         start again when receiving the on_start event.
         """
-        self.logger.warn("on_stop not implemented yet!")
+        self.logger.debug("on_stop not implemented yet!")
 
 
     def on_quit(self):
@@ -269,7 +281,7 @@ class Feedback(object):
         Override this method to cleanup everything as needed or save information
         before the object gets destroyed.
         """
-        self.logger.warn("on_quit not implemented yet!")
+        self.logger.debug("on_quit not implemented yet!")
 
     
     def on_interaction_event(self, data):
@@ -288,7 +300,7 @@ class Feedback(object):
         
         Override this method if you want to react on interaction events.
         """
-        self.logger.warn("on_interaction_event not implemented yet!")
+        self.logger.debug("on_interaction_event not implemented yet!")
 
 
     def on_control_event(self, data):
@@ -300,7 +312,7 @@ class Feedback(object):
         
         Override this method if you want to react on control events.
         """
-        self.logger.warn("on_control_event not implemented yet!")
+        self.logger.debug("on_control_event not implemented yet!")
 
 
     #
@@ -310,15 +322,25 @@ class Feedback(object):
         """Sends the data to the parallel port."""
         # FIXME: use logger instead
         print "TRIGGER %s: %s" % (str(datetime.datetime.now()), str(data))
+        if reset == True:
+            # A new trigger arrived before we could reset the old one
+            self._triggerResetTimer.cancel()
+        if self.udp_markers_enable and reset:
+            self.send_udp(data)
         if self._pport:
             if sys.platform == 'win32':
                 self._pport.Out32(self._port_num, data)
             else:
                 self._pport.setData(data)
             if reset:
-                timer = threading.Timer(0.01, self.send_parallel, (0x0, False))
-                timer.start()
-
+                self._triggerResetTimer = threading.Timer(self._triggerResetTime, self.send_parallel, (0x0, False))
+                self._triggerResetTimer.start()
+                
+                
+    def send_udp(self, data):
+        """Sends the data to UDP"""
+        self._udp_markers_socket.sendto("S%3d" % data, 
+                                        (self.udp_markers_host, self.udp_markers_port) )
                 
     def _get_variables(self):
         """Return a dictionary of variables and their values."""
@@ -364,3 +386,4 @@ class Feedback(object):
             self._playEvent.clear()
             self.logger.debug("on_play terminated.")
         self.logger.debug("_playloop terminated.")
+

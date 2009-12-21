@@ -76,10 +76,12 @@ class IPCConnectionHandler(asyncore.dispatcher):
         self.ipcchan = FeedbackControllerIPCChannel(self.conn, self.fc)
 
     def handle_close(self):
+        """Handle closing of connection."""
         self.logger.debug("Closing.")
         self.ipcchan = None
         
     def handle_error(self):
+        """Handle error."""
         self.logger.error("Some error occurred, ignoring it.")
         
     def send_message(self, message):
@@ -143,6 +145,7 @@ class IPCChannel(asynchat.async_chat):
         self.push(dump)
 
     def handle_close(self):
+        """Handle closing of connection."""
         self.logger.debug("Closing Connection.")
         asynchat.async_chat.handle_close(self)
         

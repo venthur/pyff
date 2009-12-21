@@ -21,6 +21,7 @@
 import logging
 from optparse import OptionParser
 from multiprocessing import Process
+import traceback
 
 import GUI
 from lib.feedbackcontroller import FeedbackController
@@ -51,7 +52,7 @@ the Free Software Foundation; either version 2 of the License, or
         help='Which loglevel to use for the Feedbacks. Valid loglevels are: critical, error, warning, info, debug and notset. [default: warning]',
         metavar='LEVEL')
     parser.add_option('-p', '--plugin', dest='plugin',
-                      help="Optional Plugin, the Feedback Controller should load.",
+                      help="Optional Plugin, the Feedback Controller should inject into the Feedback.",
                       metavar="MODULE")
     parser.add_option('-a', '--additional-feedback-path', dest='fbpath',
                       help="Additional path to search for Feedbacks.",
@@ -83,6 +84,7 @@ the Free Software Foundation; either version 2 of the License, or
     # get the rest
     plugin = options.plugin
     fbpath = options.fbpath
+    guiproc = None
     if not options.nogui:
         guiproc = Process(target=GUI.main)
         guiproc.start() 
@@ -94,8 +96,17 @@ the Free Software Foundation; either version 2 of the License, or
         fc = FeedbackController(plugin, fbpath, port)
         fc.start()
     except (KeyboardInterrupt, SystemExit):
-        fc.stop()
         logging.debug("Caught keyboard interrupt or system exit; quitting")
+    except:
+        logging.error("Caught an exception, quitting FeedbackController.")
+        print traceback.format_exc()
+    finally:
+        print "Stopping FeedbackController...",
+        fc.stop()
+        if guiproc:
+            guiproc.terminate()
+        print "Done."
+
 
 
 if __name__ == '__main__':
