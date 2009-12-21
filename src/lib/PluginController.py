@@ -77,15 +77,15 @@ class PluginController(object):
                     self.logger.info("Found feedbacks.list in %s" % root)
                     del dirs[:]
                     fblist = self.load_feedback_list(root+os.path.sep+'feedbacks.list')
-                    r = root.replace(plugindir, "", 1)
-                    r = r.split(os.path.sep)
+                    prefix = root.replace(plugindir, "", 1)
+                    if prefix.startswith(os.path.sep):
+                        prefix = prefix[1:]
+                    if not prefix.endswith(os.path.sep):
+                        prefix += os.path.sep
+                    prefix = ".".join(prefix.split(os.path.sep))
                     for fb in fblist:
                         module, klass = fb.split(".")[:-1], fb.split(".")[-1]
-                        r.extend(module)
-                        module = ".".join(r)
-                        if module.startswith("."):
-                            module = module[1:]
-                        print module, klass
+                        module = prefix + ".".join(module)
                         self.availablePlugins[klass] = module
                     continue
                 for filename in files:
@@ -105,7 +105,7 @@ class PluginController(object):
         fblist = []
         for line in fh.readlines():
             if len(line.strip()) > 0:
-                fblist.append(line)
+                fblist.append(line.strip())
         fh.close()
         return fblist
 
@@ -135,10 +135,13 @@ class PluginController(object):
 
         
 def main():
+    import sys
+    sys.path.append("../")
     import FeedbackBase.Feedback
     pc = PluginController(["../Feedbacks", "../../../pyff-tu/src/Feedbacks"], FeedbackBase.Feedback.Feedback)
     pc.find_plugins()
-    for key in pc.availablePlugins: print key, pc.availablePlugins[key]
+    for key in pc.availablePlugins: 
+        print key, pc.availablePlugins[key]
 
 if __name__ == "__main__":
     main()
