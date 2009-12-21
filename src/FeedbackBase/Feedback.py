@@ -238,7 +238,7 @@ class Feedback(object):
         Override this method to initialize everything you need before the 
         feedback starts.
         """
-        self.logger.warn("on_init not implemented yet!")
+        self.logger.debug("on_init not implemented yet!")
         
     
     def on_play(self):
@@ -248,7 +248,7 @@ class Feedback(object):
         
         Override this method to actually start your feedback.
         """
-        self.logger.warn("on_play not implemented yet!")
+        self.logger.debug("on_play not implemented yet!")
 
     
     def on_pause(self):
@@ -258,7 +258,7 @@ class Feedback(object):
         
         Override this method to pause your feedback.
         """
-        self.logger.warn("on_pause not implemented yet!")
+        self.logger.debug("on_pause not implemented yet!")
         
     
     def on_stop(self):
@@ -269,7 +269,7 @@ class Feedback(object):
         Override this method to stop your feedback. It should be possible to
         start again when receiving the on_start event.
         """
-        self.logger.warn("on_stop not implemented yet!")
+        self.logger.debug("on_stop not implemented yet!")
 
 
     def on_quit(self):
@@ -281,7 +281,7 @@ class Feedback(object):
         Override this method to cleanup everything as needed or save information
         before the object gets destroyed.
         """
-        self.logger.warn("on_quit not implemented yet!")
+        self.logger.debug("on_quit not implemented yet!")
 
     
     def on_interaction_event(self, data):
@@ -300,7 +300,7 @@ class Feedback(object):
         
         Override this method if you want to react on interaction events.
         """
-        self.logger.warn("on_interaction_event not implemented yet!")
+        self.logger.debug("on_interaction_event not implemented yet!")
 
 
     def on_control_event(self, data):
@@ -312,7 +312,7 @@ class Feedback(object):
         
         Override this method if you want to react on control events.
         """
-        self.logger.warn("on_control_event not implemented yet!")
+        self.logger.debug("on_control_event not implemented yet!")
 
 
     #
@@ -386,3 +386,4 @@ class Feedback(object):
             self._playEvent.clear()
             self.logger.debug("on_play terminated.")
         self.logger.debug("_playloop terminated.")
+
