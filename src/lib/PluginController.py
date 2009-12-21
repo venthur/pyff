@@ -76,17 +76,9 @@ class PluginController(object):
                 if 'feedbacks.list' in files:
                     self.logger.info("Found feedbacks.list in %s" % root)
                     del dirs[:]
-                    fblist = self.load_feedback_list(root+os.path.sep+'feedbacks.list')
-                    prefix = root.replace(plugindir, "", 1)
-                    if prefix.startswith(os.path.sep):
-                        prefix = prefix[1:]
-                    if not prefix.endswith(os.path.sep):
-                        prefix += os.path.sep
-                    prefix = ".".join(prefix.split(os.path.sep))
-                    for fb in fblist:
-                        module, klass = fb.split(".")[:-1], fb.split(".")[-1]
-                        module = prefix + ".".join(module)
-                        self.availablePlugins[klass] = module
+                    fbdict = self.load_feedback_list(root+os.path.sep+'feedbacks.list', plugindir)
+                    for fb, module in fbdict.iteritems():
+                        self.availablePlugins[fb] = module
                     continue
                 for filename in files:
                     if filename.lower().endswith(".py"):
@@ -100,14 +92,32 @@ class PluginController(object):
                             pass
 
 
-    def load_feedback_list(self, filename):
+    def load_feedback_list(self, filename, plugindir):
+        """Load classnames from file and construct modulename relative to
+        plugindir from plugindir, filename and file entries.
+        
+        Returns a dictionary: classname -> module.
+        """
+        # Read the lines from file
         fh = open(filename, "r")
-        fblist = []
-        for line in fh.readlines():
-            if len(line.strip()) > 0:
-                fblist.append(line.strip())
+        lines = fh.readlines()
         fh.close()
-        return fblist
+        # Construct absolute module name from plugindir, filename and file entry
+        base = os.path.dirname(filename)
+        base = base.replace(plugindir, "", 1)
+        base = base.split(os.path.sep)
+        fbdict = dict()
+        for line in lines:
+            line = line.strip()
+            # Ignore empty lines or comments
+            if len(line) == 0 or line.startswith("#"):
+                continue
+            line = line.split(".")
+            full_path_to_class = base + line
+            while("" in full_path_to_class):
+                full_path_to_class.remove("")
+            fbdict[full_path_to_class[-1]] = ".".join(full_path_to_class[:-1])
+        return fbdict
 
         
     def load_plugin(self, name):
