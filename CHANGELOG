@@ -1,0 +1,31 @@
+Changes in 2009.12
+==================
+
+Features:
+
+  * Added PygameFeedback base class
+  * Added fast pluginfinder XXX
+    * Added various feedbacks.list
+  * Feedbacks are now re-imported in the new process
+  * Added D2 Test Feedback
+  * Added Stroop Feedback
+  * Parallel Port reset time is now a configurable variable
+  * Feedback can now send triggers via UDP (thanks Marton)
+
+Bugfixes:
+
+  * Fixed Logging support under Windows
+  * Improved cleanup when Feedback Controller quits
+  * Second trigger is not blanked anymore when send shortly after the first one
+
+Other:
+
+  * Merged all FCPlugins into brainvisionrecorderplugin
+  * Removed FC-Signal support
+  * Converted not-implemented-warnings into debugs in Feedback base class
+  * Reorganized Feedbacks a bit
+  * Emulater produces calmer signals now
+  * Clarified inpout32.dll installation and usage
+  * Removed benchmark files
+  * Updated README
+
