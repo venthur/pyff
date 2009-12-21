@@ -47,7 +47,12 @@ class FeedbackProcess(Process):
         """Run the FeedbackProcess' activities in the new process."""
         # We're in a new process
         reload(lib.PluginController)
-        fbClass = lib.PluginController.import_module_and_get_class(self.modname, self.classname)
+        try:
+            fbClass = lib.PluginController.import_module_and_get_class(self.modname, self.classname)
+        except:
+            print str(traceback.format_exc())
+            self.ipcReady.set()
+            return
         # Re-initialize logger for this process
         logging.basicConfig(level=self.loglevel, format=self.logformat)
         logging.getLogger("FB").setLevel(self.fbloglevel)

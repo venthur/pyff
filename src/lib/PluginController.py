@@ -100,6 +100,7 @@ class PluginController(object):
                             name, module = self.test_plugin(root, filename)
                             self.availablePlugins[name] = module
                             # Show depreciation warning
+                            self.logger.info("Found %s via automatic subclass finding" % module+"."+name)
                             self.logger.warning("Automatic subclass finding is depreciated. Please create a 'feedbacks.list' in your Feedback's directory and add the absolute import path until the class name.")
                         except ImportError:
                             pass
