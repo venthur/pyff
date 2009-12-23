@@ -33,17 +33,18 @@ class MultiVisualOddball(Oddball):
     
     def init(self):
         super(MultiVisualOddball,self).init()
-        self.dev_perc = 0.32
-        self.within_std_perc = [0.5, 0.5]  # sum must be 1
-        #self.within_dev_perc = [.25,.25,.5]
-        self.within_dev_perc = [.25,.25,.125,.125,.125,.125]
+        self.dev_perc = 0.2
+        #self.within_std_perc = [0.5, 0.5]  # sum must be 1
+        self.within_std_perc = [1]
+        self.within_dev_perc = [.4,.6]
+        #self.within_dev_perc = [.25,.25,.125,.125,.125,.125]
         self.stimuli = 'load'
         self.nStim = 450
         self.nStim_per_block = 150
-        self.dd_dist = 1
+        self.dd_dist = 3
 
         # Timing 
-        self.stim_duration = 1200
+        self.stim_duration = 1000
         self.responsetime_duration = 0     
         self.countdown_from = 3
         
@@ -61,13 +62,22 @@ class MultiVisualOddball(Oddball):
         #basedir = '/data/sonstiges/matlab/stimuli/symblobs'   # just for convenience
         #self.DIR_STD = [os.path.join(basedir,'standard_green*.jpg'),os.path.join(basedir,'standard_yellow*.jpg')]
         #self.DIR_DEV = [os.path.join(basedir,'sym_green*.jpg'),os.path.join(basedir,'sym_yellow*.jpg'),os.path.join(basedir,'target*.jpg')]
-        basedir = '/data/sonstiges/matlab/stimuli/symblobs2'   # just for convenience
-        self.DIR_STD = [os.path.join(basedir,'standard_green*.jpg'),os.path.join(basedir,'standard_yellow*.jpg')]
-        self.DIR_DEV = [os.path.join(basedir,'sym_green*.jpg'),os.path.join(basedir,'sym_yellow*.jpg')]
-        self.DIR_DEV.append(os.path.join(basedir,'t4_green*.jpg'))
-        self.DIR_DEV.append(os.path.join(basedir,'t4_yellow*.jpg'))
-        self.DIR_DEV.append(os.path.join(basedir,'t7_green*.jpg'))
-        self.DIR_DEV.append(os.path.join(basedir,'t7_yellow*.jpg'))
+        #basedir = '/data/sonstiges/matlab/stimuli/symblobs2'   # just for convenience
+        #self.DIR_STD = [os.path.join(basedir,'standard_green*.jpg'),os.path.join(basedir,'standard_yellow*.jpg')]
+        #self.DIR_DEV = [os.path.join(basedir,'sym_green*.jpg'),os.path.join(basedir,'sym_yellow*.jpg')]
+        #self.DIR_DEV.append(os.path.join(basedir,'t4_green*.jpg'))
+        #self.DIR_DEV.append(os.path.join(basedir,'t4_yellow*.jpg'))
+        #self.DIR_DEV.append(os.path.join(basedir,'t7_green*.jpg'))
+        #self.DIR_DEV.append(os.path.join(basedir,'t7_yellow*.jpg'))
+
+        basedir = '/data/sonstiges/matlab/stimuli/symblobs4'   # just for convenience
+        self.DIR_STD = [os.path.join(basedir,'standard*.jpg')]
+        self.DIR_DEV = [os.path.join(basedir,'sym*.jpg')]
+        self.DIR_DEV.append(os.path.join(basedir,'target*.jpg'))
+
+        
+        # Initialize random number generator with system time
+        random.seed()
         
     def load_stimuli(self):
         """
@@ -152,6 +162,14 @@ class MultiVisualOddball(Oddball):
         Remove the stimulus from the screen.
         """           
         self.draw_initial()
+
+    def draw_initial(self):
+        """
+        Draw the default screen layout, but (in contrast to Oddball base class)
+        do not update the screen yet (otherwise A BLANK frame will be introduced).
+        """            
+        self.screen.blit(self.background, self.backgroundRect)
+        #pygame.display.update()
         
 if __name__ == '__main__':
     odd  = MultiVisualOddball()
