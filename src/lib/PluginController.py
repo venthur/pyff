@@ -30,7 +30,9 @@ def import_module_and_get_class(modname, classname):
     # FIXME: is this exception usefull? it is at least wrong since it does
     # throws and import error even if import succeeded
     except:
+        print traceback.format_exc()
         raise ImportError("Unable to load class %s from module %s" % (str(classname), str(modname)))
+
 
 
 class PluginController(object):
