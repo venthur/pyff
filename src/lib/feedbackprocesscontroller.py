@@ -50,7 +50,7 @@ class FeedbackProcess(Process):
         try:
             fbClass = lib.PluginController.import_module_and_get_class(self.modname, self.classname)
         except:
-            print str(traceback.format_exc())
+            # Loading the class somehow failed.
             self.ipcReady.set()
             return
         # Re-initialize logger for this process
