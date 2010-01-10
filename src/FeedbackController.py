@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # FeedbackController.py -
-# Copyright (C) 2007-2009  Bastian Venthur
+# Copyright (C) 2007-2010  Bastian Venthur
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,6 +18,9 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 
+"""Main Module for Feedback Controller executable."""
+
+
 import logging
 from optparse import OptionParser
 import traceback
@@ -29,12 +32,13 @@ from lib.feedbackcontroller import FeedbackController
 
 
 def main():
+    """Start the Feedback Controller."""
     
     # Get Options
     description = """Feedback Controller"""
     usage = "%prog [Options]"
     version = """
-Copyright (C) 2007-2009 Bastian Venthur <venthur at cs tu-berlin de>
+Copyright (C) 2007-2010 Bastian Venthur <venthur at cs tu-berlin de>
 
 Homepage: http://bbci.de/pyff
 
@@ -44,14 +48,16 @@ the Free Software Foundation; either version 2 of the License, or
 (at your option) any later version.
 """
     parser = OptionParser(usage=usage, version=version, description=description)
-    parser.add_option('-l', '--loglevel', type='choice', choices=['critical',
-        'error',                                                  'warning', 'info', 'debug', 'notset'], dest='loglevel',
-        help='Which loglevel to use for everything but the Feedbacks. Valid loglevels are: critical, error, warning, info, debug and notset. [default: warning]',
-        metavar='LEVEL')
-    parser.add_option('--fb-loglevel', type='choice', choices=['critical',
-        'error', 'warning', 'info', 'debug', 'notset'], dest='fbloglevel',
-        help='Which loglevel to use for the Feedbacks. Valid loglevels are: critical, error, warning, info, debug and notset. [default: warning]',
-        metavar='LEVEL')
+    parser.add_option('-l', '--loglevel', type='choice', 
+                      choices=['critical', 'error', 'warning', 'info', 'debug', 'notset'], 
+                      dest='loglevel', 
+                      help='Which loglevel to use for everything but the Feedbacks. Valid loglevels are: critical, error, warning, info, debug and notset. [default: warning]', 
+                      metavar='LEVEL')
+    parser.add_option('--fb-loglevel', type='choice', 
+                      choices=['critical', 'error', 'warning', 'info', 'debug', 'notset'], 
+                      dest='fbloglevel', 
+                      help='Which loglevel to use for the Feedbacks. Valid loglevels are: critical, error, warning, info, debug and notset. [default: warning]', 
+                      metavar='LEVEL')
     parser.add_option('-p', '--plugin', dest='plugin',
                       help="Optional Plugin, the Feedback Controller should inject into the Feedback.",
                       metavar="MODULE")
@@ -63,7 +69,6 @@ the Free Software Foundation; either version 2 of the License, or
                       metavar="PORTNUM")
     parser.add_option("--nogui", action="store_true", default=False, 
                       help="Start without GUI.")
-
 
     options, args = parser.parse_args()
 
@@ -112,3 +117,4 @@ the Free Software Foundation; either version 2 of the License, or
 
 if __name__ == '__main__':
     main()
+
