@@ -26,15 +26,17 @@ from AlphaBurst.model.letter_sequence import LetterSequence
 class Control(MainloopFeedback):
     def init(self):
         self.__init_config()
+        self.update_parameters()
+
+    def __init_config(self):
+        self.alphabet = string.ascii_uppercase + ',.;:!?'
+        self.burst_duration = 1.
+
+    def pre_mainloop(self):
         self._screen = get_default_screen()
         self.__init_text()
         self.__init_viewports()
         self.__init_presentation()
-
-    def __init_config(self):
-        self.alphabet = string.ascii_uppercase + ',.;:!?'
-        self.burst_duration = 
-        self.update_parameters()
 
     def __init_text(self):
         sz = self._screen.size
@@ -76,3 +78,6 @@ class Control(MainloopFeedback):
         self._stimulus.set(text='?')
         self._presentation.set(go_duration=(5, 'seconds'))
         self._presentation.go()
+
+class AlphaBurst(Control):
+    pass

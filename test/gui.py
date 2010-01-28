@@ -23,4 +23,5 @@ class GUITest(TestCase):
     def test_gui(self):
         c = Control()
         c.on_init()
+        c.pre_mainloop()
         c.on_play()
