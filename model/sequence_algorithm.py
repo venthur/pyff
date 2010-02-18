@@ -1,3 +1,5 @@
+#draft of the algorithm
+
 import copy
 import random
 
