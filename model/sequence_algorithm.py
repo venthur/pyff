@@ -33,6 +33,7 @@ class RVSP:
         return lista
         
     def random_sequence(self):
+        self.matrix=[]
         for i in range(1,6):
             self.tmp=[]
             for j in range(0,2**(i-1)):
