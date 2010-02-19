@@ -37,7 +37,7 @@ class RVSP:
     def random_sequence(self,num_seq):
         self.matrix=[]
         num=num_seq/2
-        for i in range(1,num_seq):
+        for i in range(1,num):
             self.tmp=[]
             for j in range(0,2**(i-1)):
                 self.list=range(j,32,2**(i-1))
