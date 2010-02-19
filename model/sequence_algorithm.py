@@ -102,12 +102,22 @@ class RVSP(object):
                 self.rev=copy.copy(self.tmp)
                 self.rev.reverse()
             self.matrix= self.matrix+self.tmp+self.rev
-            
+        
         self.new_list=self.mono_del_elem(self.matrix,num_seq)
         self.mono_trial= self.mono_link(self.new_list)
         self.bursts=self.mono_split(self.mono_trial,num_seq)
         
         return self.bursts
+    
+    def get_trial(self,num_seq,flag): 
+        if(flag==0):
+            mono_bursts=[]
+            mono_bursts=self.mono_algorithm(num_seq)
+            return mono_bursts
+        elif(flag==1):
+            color_bursts=[]
+            color_bursts=self.color_algorithm(num_seq)
+            return color_bursts
 
   
         
@@ -118,11 +128,10 @@ class RVSP(object):
 
 
 if __name__ == "__main__":
-    color_bursts=[]
-    mono_bursts=[]
-    num_sequences=10
+    
     myobject = RVSP()
-    color_bursts=myobject.color_algorithm(num_sequences)
-    mono_bursts=myobject.mono_algorithm(num_sequences)
-    print color_bursts
-    print mono_bursts
+    num_sequences=10
+    flag=0
+    trial=myobject.get_trial(num_sequences,flag)
+    print trial
+    
