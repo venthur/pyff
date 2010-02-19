@@ -120,7 +120,7 @@ class RVSP(object):
 if __name__ == "__main__":
     color_bursts=[]
     mono_bursts=[]
-    num_sequences=12
+    num_sequences=10
     myobject = RVSP()
     color_bursts=myobject.color_algorithm(num_sequences)
     mono_bursts=myobject.mono_algorithm(num_sequences)
