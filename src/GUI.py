@@ -44,9 +44,11 @@ class BciGui(QtGui.QMainWindow, Ui_MainWindow):
         self.proxymodel = QtGui.QSortFilterProxyModel(self)
         self.proxymodel.setSourceModel(self.model)
         self.proxymodel.setFilterKeyColumn(- 1)
+        self.proxymodel.setDynamicSortFilter(True)
         self.tableView.setModel(self.proxymodel)
         self.tableView.verticalHeader().setVisible(False)
         self.tableView.horizontalHeader().setResizeMode(1, QtGui.QHeaderView.Stretch)
+        self.tableView.sortByColumn(0, QtCore.Qt.AscendingOrder) 
         self.tableView.setSortingEnabled(True)
 
         
@@ -278,8 +280,10 @@ class TableModel(QtCore.QAbstractTableModel):
 
     
     def setElements(self, entries):
+        self.beginRemoveRows(QtCore.QModelIndex(), 0, len(self.entry)-1)
         self.entry = []
-        self.beginInsertRows(QtCore.QModelIndex(), 0, len(entries))
+        self.endRemoveRows()
+        self.beginInsertRows(QtCore.QModelIndex(), 0, len(entries)-1)
         self.entryCount = len(entries)
         for i in entries:
             self.entry.append(i)
