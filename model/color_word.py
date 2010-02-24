@@ -24,10 +24,11 @@ class ColorWord(TextList):
         TextList.__init__(self, position)
         self.set(text, target)
 
-    def set(self, text, target):
-        self.text = text
+    def set(self, text=None, target=None):
+        if text is not None:
+            self.text = text
         self.clear()
-        for l in text:
+        for l in self.text:
             size = 96 if l == target else 72
             self.add(l, size)
 

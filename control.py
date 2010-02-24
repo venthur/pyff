@@ -13,6 +13,8 @@ program; if not, see <http://www.gnu.org/licenses/>.
 
 }}} """
 
+from __future__ import with_statement
+
 from time import sleep
 from os import path
 import logging
@@ -21,24 +23,27 @@ import pygame
 
 import VisionEgg
 
-from FeedbackBase.MainloopFeedback import MainloopFeedback
+from FeedbackBase.Feedback import Feedback
 
 from AlphaBurst.config import Config
 from AlphaBurst.view import View
+from AlphaBurst.burst import BurstConstraints
 from AlphaBurst.model.character_sequence import CharacterSequenceFactory
 from AlphaBurst.util.metadata import datadir
+from AlphaBurst.util.trigger import *
+from AlphaBurst.util.switcherator import *
 
 VisionEgg.config.VISIONEGG_GUI_INIT = 0
 VisionEgg.config.VISIONEGG_LOG_TO_STDERR = 0
 VisionEgg.logger.setLevel(logging.ERROR)
 
-class Control(MainloopFeedback, Config):
+class Control(Feedback, Config):
     def __init__(self, *args, **kwargs):
-        MainloopFeedback.__init__(self, *args, **kwargs)
+        Feedback.__init__(self, *args, **kwargs)
         pygame.mixer.init()
         self.__init_attributes()
 
-    def init(self):
+    def on_init(self):
         Config.init(self)
         self.update_parameters()
 
@@ -47,21 +52,17 @@ class Control(MainloopFeedback, Config):
         self._asking = False
         self._digits = ''
         self._sound = pygame.mixer.Sound(path.join(datadir, 'sound.ogg'))
-        self.logger = logging.getLogger('Control')
-        self.logger.setLevel(logging.DEBUG)
-
-    def pre_mainloop(self):
-        self._start_view()
-        self.update_parameters()
-        if self.sound:
-            self._sound.play()
+        self._logger = logging.getLogger('Control')
+        self._logger.setLevel(logging.DEBUG)
+        self._trigger = self.send_parallel
+        self.count = 0
 
     def _start_view(self):
         self._view = View(self.screen_width, self.screen_height,
                           self.fullscreen)
         self._view_started = True
-        self._view.presentation.set(handle_event_callbacks=[(pygame.KEYDOWN,
-                                                           self.keyboard_input)])
+        handlers = [(pygame.KEYDOWN, self.keyboard_input)]
+        self._view.presentation.set(handle_event_callbacks=handlers)
 
     def update_parameters(self):
         self._trial_type = getattr(self, '_trial_' + str(self.trial_type))
@@ -75,17 +76,22 @@ class Control(MainloopFeedback, Config):
     def on_interaction_event(self, data):
         self.update_parameters()
 
-    def play_tick(self):
+    def on_play(self):
+        self._flag = Flag()
+        self._iter = lambda it: Switcherator(self._flag, it)
+        self._start_view()
+        self.update_parameters()
+        if self.sound:
+            self._sound.play()
         self._block()
         self.on_stop()
 
-    @property
-    def _current_word(self):
-        return self.words[self.current_word_index]
-
     def _block(self):
-        self._view.present_word(self._current_word, 2)
-        self._trial()
+        for word in self._iter(self.words):
+            self._view.present_word(word)
+            gen = self._iter(enumerate(word))
+            for self.target_index, self._current_target in gen:
+                self._trial()
 
     def _trial(self):
         factory = CharacterSequenceFactory(self.meaningless,
@@ -97,34 +103,41 @@ class Control(MainloopFeedback, Config):
         self._trial_type()
 
     def _trial_1(self):
-        """ Count mode.
-
-        """
+        """ Count mode. """
         self._view.show_fixation_cross()
-        while self._running and not self._sequences.done:
-            self._sequence()
-            self._sequences.next()
+        for seq in self._iter(self._sequences):     
+            self._sequence(seq)
         self._ask()
+        diff = self.count - self._sequences.occurences(self._current_target) 
+        self._trigger(TRIG_COUNTED_OFFSET + diff)
 
     def _trial_2(self):
-        """ Yes/No mode.
-
-        """
-        while self._running and not self._sequences.done:
+        """ Yes/No mode. """
+        for seq in self._iter(self._sequences):     
             self.detections.append([])
-            self._sequence(True, True)
-            self._sequences.next()
+            self._sequence(seq, True, True)
 
-    def _sequence(self, fix=False, ask=False):
-        self._view.adjust_symbol_colors(self._sequences.current_sequence)
-        while self._running and not self._sequences.sequence_done:
-            if fix:
-                self._view.show_fixation_cross()
-            self._view.burst(self._sequences.next_burst)
-            if ask:
-                self._ask()
-            sleep(self.inter_burst)
+    def _sequence(self, sequence, fix=False, ask=False):
+        self._view.adjust_symbol_colors(sequence,
+                                        self._current_target)
+        self._burst_constraints = BurstConstraints(fix, ask,
+                                                   self._view,
+                                                   self._ask, self.inter_burst,
+                                                   self._trigger)
+        for burst in self._iter(sequence):
+            with self._burst_constraints:
+                self._burst(burst)
         sleep(self.inter_sequence)
+
+    def _burst(self, symbols):
+        for symbol in self._iter(symbols):
+            try:
+                self._trigger(symbol_trigger(symbol[0], self._current_target,
+                                             self.alphabet))
+            except ValueError:
+                # redundant symbol
+                pass
+            self._view.symbol(*symbol)
 
     def _ask(self):
         self._asking = True
@@ -139,9 +152,7 @@ class Control(MainloopFeedback, Config):
             self._process_input(event)
 
     def _process_input_1(self, event):
-        """ Count mode.
-
-        """
+        """ Count mode. """
         s = event.unicode
         if event.key == pygame.K_RETURN:
             self.count = int(self._digits)
@@ -153,13 +164,14 @@ class Control(MainloopFeedback, Config):
             self._digits += s
 
     def _process_input_2(self, event):
-        """ Yes/No mode.
-
-        """
+        """ Yes/No mode. """
         s = event.unicode
         if s in [self.key_yes, self.key_no]:
             self.detections[-1].append(s == self.key_yes)
             self._view.answered()
+
+    def on_stop(self):
+        self._flag.off()
 
 class AlphaBurst(Control):
     pass

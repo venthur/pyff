@@ -70,10 +70,11 @@ class View(object):
         except ValueError:
             self._logger.warn('No such pygame.Color: %s' % str(color))
 
-    def present_word(self, word, target_index):
+    def present_word(self, word):
+        self._headline.set_all(on=False)
         self._center_word(word)
-        self._present(2)
-        self._headline.set(word, word[target_index])
+        self._present(self._present_word_time)
+        self._headline.set(text=word)
 
     def _present(self, sec):
         self.presentation.set(go_duration=(sec, 'seconds'))
@@ -96,21 +97,29 @@ class View(object):
 
     def show_fixation_cross(self):
         self._center_word('+')
-        self._present(1)
+        self._present(self._fixation_cross_time)
 
-    def adjust_symbol_colors(self, sequence):
+    def adjust_symbol_colors(self, sequence, target_letter):
+        self._headline.set(target=target_letter)
         colors = [sequence.get_color(t) or self._font_color for t in
                   self._headline.text]
         self._headline.set_colors(colors)
-
-    def burst(self, symbols):
-        for symbol in symbols:
-            self.symbol(*symbol)
-        #TODO less ugly
+        self._headline.set_all(on=True)
         self._center_text.set(on=False)
-        self._present(0.0000000001)
+        self._present(self._present_target_time)
         self._center_text.set(on=True)
 
     def symbol(self, symbol, color=None):
         self._center_word(symbol, color)
         self._present(self._symbol_duration)
+
+    def clear_symbol(self):
+        #TODO less ugly
+        self._center_text.set(on=False)
+        self._present(0.0000000001)
+        self._center_text.set(on=True)
+
+    def count_down(self):
+        for i in reversed(xrange(10)):
+            self.symbol(str(i))
+        self.clear_symbol()

@@ -53,3 +53,8 @@ class TextList(list):
 
     def clear(self):
         del self[:]
+
+    def set_all(self, **kwargs):
+        for t in self:
+            t.set(**kwargs)
+

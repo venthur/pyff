@@ -23,9 +23,10 @@ from pygame import Color
 from AlphaBurst.util.list import slices
 from AlphaBurst.model.sequence_algorithm import RVSP
 
-class CharacterSequence(object):
-    def __init__(self, alphabet, redundance, burst_count=3, shuffle=True,
+class CharacterSequence(list):
+    def __init__(self, alphabet, redundance, burst_count=3, shuffle=False,
                  alt_color=False):
+        list.__init__(self, [])
         self._alphabet = list(alphabet)
         self._redundance = redundance
         self._burst_count = burst_count
@@ -55,16 +56,17 @@ class CharacterSequence(object):
         """ Insert redundant symbols into the character sequence. """
         make_burst = lambda b: self._new_redundance + b
         bursts = map(make_burst, slices(self._sequence, self._burst_signi_len))
-        self._burst_sequence = list(chain(*bursts))
+        self.burst_sequence = list(chain(*bursts))
 
     def _zip_colors(self):
         """ Create a list of alternating colors and zip them to the
         burst sequence, keep as a list of burst lists.
         """
-        nsym = len(self._burst_sequence)
+        nsym = len(self.burst_sequence)
         self._colors = map(self._positional_color, xrange(nsym))
-        zipped = zip(self._burst_sequence, self._colors)
-        self._bursts = slices(zipped, self._burst_len)
+        zipped = zip(self.burst_sequence, self._colors)
+        self[:] = slices(zipped, self._burst_len)
+        self._bursts = self
 
     def _positional_color(self, i):
         if self._alt_color:
@@ -84,7 +86,7 @@ class CharacterSequence(object):
 
     def get_color(self, symbol):
         try:
-            i = self._burst_sequence.index(symbol)
+            i = self.burst_sequence.index(symbol)
             return self._colors[i]
         except ValueError:
             return None
@@ -94,7 +96,7 @@ class CharacterSequenceFactory(object):
         self._redundance = redundance
         self._alt_color = alt_color
 
-    def sequence(self, alphabet, shuffle=True):
+    def sequence(self, alphabet, shuffle=False):
         return CharacterSequence(alphabet, self._redundance, shuffle=shuffle,
                                  alt_color=self._alt_color)
 
@@ -104,7 +106,7 @@ class CharacterSequenceFactory(object):
         main_bursts = RVSP().get_trial(count, self._alt_color) 
         main_seqs = [sum(main_bursts[i:i + 3], []) for i in
                      xrange(0, len(main_bursts) / 3, 3)]
-        sequences = [seq(a, shuffle=False) for a in pre + main_seqs + post]
+        sequences = map(seq, pre + main_seqs + post)
         return Sequences(sequences)
 
 class Sequences(list):
@@ -127,3 +129,7 @@ class Sequences(list):
             self.current_sequence = self._seq_iter.next()
         except StopIteration:
             self.done = True
+
+    def occurences(self, symbol):
+        return sum(len(filter(lambda s: s == symbol, seq.burst_sequence)) for
+                   seq in self)

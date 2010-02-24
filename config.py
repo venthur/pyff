@@ -21,7 +21,7 @@ class Config(object):
         self.tfixation = 0.
         self.fps = 0.
         self.tstimulus = 0.
-        self.symbol_duration = 0.2
+        self.symbol_duration = 0.05
         self.IBsI = 0.
         self.ISeI = 0.
         self.IWI = 0.
@@ -42,7 +42,7 @@ class Config(object):
         self.ncount = 0.
         self.fontsize = 0.
         self.fontpos = 0.
-        self.bg_color = 'darkblue'
+        self.bg_color = 'grey'
         self.screen_width = 400
         self.screen_height = 400
         self.fullscreen = False
@@ -52,14 +52,22 @@ class Config(object):
         self.words = ['WINKT', 'FJORD', 'HYBRID', 'LUXUS', 'SPHINX', 'QUARZ',
                       'VODKA', 'YACHT', 'GEBOT', 'MEMME']
         self.meaningless = '*+&%?;'
-        self.alphabet = string.ascii_uppercase + ',._<'
+        self.target_index = 0
+        self.alphabet = string.ascii_uppercase + '.,:<'
         self.burst_duration = 1.
         self.mode = 'ask'
-        self._view_parameters = ['symbol_duration', 'bg_color', 'font_color']
+        self._view_parameters = ['symbol_duration', 'bg_color', 'font_color',
+                                 'present_word_time', 'present_target_time',
+                                 'fixation_cross_time']
         self.key_yes = 'j'
         self.key_no = 'k'
-        self.inter_burst = 1.
-        self.inter_sequence = 2.
+        self.inter_burst = .1
+        self.inter_sequence = .5
+        self.inter_block = 1.
+        self.present_word_time = 2.
+        self.fixation_cross_time = 1.
+        # color or target letter change
+        self.present_target_time = 1.
         self.custom_pre_sequences = [string.ascii_uppercase]
         self.custom_post_sequences = [string.ascii_uppercase]
         self.trial_type = 1
