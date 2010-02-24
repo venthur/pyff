@@ -131,7 +131,7 @@ if __name__ == "__main__":
     
     myobject = RVSP()
     num_sequences=10
-    flag=0
+    flag=1
     trial=myobject.get_trial(num_sequences,flag)
     print trial
     

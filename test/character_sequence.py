@@ -13,5 +13,13 @@ program; if not, see <http://www.gnu.org/licenses/>.
 
 }}} """
 
-from .gui import GUITest
-#from .character_sequence import CharacterSequenceTest
+from string import ascii_uppercase
+from unittest import TestCase
+
+from Feedbacks.AlphaBurst.model.character_sequence import CharacterSequenceFactory
+
+class CharacterSequenceTest(TestCase):
+    def test_color(self):
+        factory = CharacterSequenceFactory('!@#$%^?', True)
+        s = factory.sequences(10)
+        print s[0]._burst_sequence

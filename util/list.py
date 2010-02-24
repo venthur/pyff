@@ -13,5 +13,6 @@ program; if not, see <http://www.gnu.org/licenses/>.
 
 }}} """
 
-from .gui import GUITest
-#from .character_sequence import CharacterSequenceTest
+def slices(seq, length):
+    count = len(seq) / length
+    return [seq[i * length:(i + 1) * length] for i in xrange(count)]

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-""" {{{ Copyright (c) 2008, 2009 Torsten Schmits
+""" {{{ Copyright (c) 2010 Torsten Schmits
 
 This file is part of the pyff framework. pyff is free software;
 you can redistribute it and/or modify it under the terms of the GNU General
@@ -18,8 +18,10 @@ Place, Suite 330, Boston, MA  02111-1307  USA
 }}} """
 
 from unittest import main
+import logging
 
 from Feedbacks.AlphaBurst.test import *
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.DEBUG)
     main()

@@ -15,12 +15,7 @@ Place, Suite 330, Boston, MA  02111-1307  USA
 
 }}} """
 
-from unittest import TestCase
+from os import path, pardir
 
-from Feedbacks.AlphaBurst.control import Control
-
-class GUITest(TestCase):
-    def test_gui(self):
-        c = Control()
-        c.on_init()
-        c.on_play()
+basedir = path.join(path.dirname(__file__) , pardir)
+datadir = path.join(basedir, 'data')
