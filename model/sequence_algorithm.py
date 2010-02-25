@@ -1,7 +1,5 @@
-#draft of the algorithm
-
 '''
-Created on 18/feb/2010
+Created on 19/feb/2010
 
 @author: Laura
 '''
@@ -10,26 +8,48 @@ import random
 
 class RVSP(object):
     
-    def color_link (self,n_list):
+    def color_link (self,n_list,num_seq):
         self.col_trial=[]
         self.group1=list("ABCDEFGHIJ")
         self.group2=list("KLMNOPQRST")
         self.group3=list("UVWXYZ.,:<")
         
-        self.group1rand=copy.copy(self.group1)
-        random.shuffle(self.group1rand)
-        self.group2rand=copy.copy(self.group2)
-        random.shuffle(self.group2rand)
-        self.group3rand=copy.copy(self.group3)
-        random.shuffle(self.group3rand)
+        self.group1rand1=copy.copy(self.group1)
+        random.shuffle(self.group1rand1)
+        self.group2rand1=copy.copy(self.group2)
+        random.shuffle(self.group2rand1)
+        self.group3rand1=copy.copy(self.group3)
+        random.shuffle(self.group3rand1)
         
         i=0
-        while i<len(n_list):
-            self.lett=n_list[i]-1
-            self.col_trial.append(self.group1rand[self.lett])
-            self.col_trial.append(self.group2rand[self.lett])
-            self.col_trial.append(self.group3rand[self.lett])     
-            i+=1    
+        if (num_seq<=8):
+            while (i<len(n_list)):
+                self.lett=n_list[i]-1
+                self.col_trial.append(self.group1rand1[self.lett])
+                self.col_trial.append(self.group2rand1[self.lett])
+                self.col_trial.append(self.group3rand1[self.lett])     
+                i+=1   
+        else:
+            self.group1rand2=copy.copy(self.group1rand1)
+            random.shuffle(self.group1rand2)
+            self.group2rand2=copy.copy(self.group2rand1)
+            random.shuffle(self.group2rand2)
+            self.group3rand2=copy.copy(self.group3rand1)
+            random.shuffle(self.group3rand2)
+            
+            while(i<80):
+                self.lett=n_list[i]-1
+                self.col_trial.append(self.group1rand1[self.lett])
+                self.col_trial.append(self.group2rand1[self.lett])
+                self.col_trial.append(self.group3rand1[self.lett])     
+                i+=1
+            while (i<len(n_list)):
+                self.lett=n_list[i]-1
+                self.col_trial.append(self.group1rand2[self.lett])
+                self.col_trial.append(self.group2rand2[self.lett])
+                self.col_trial.append(self.group3rand2[self.lett])     
+                i+=1
+            
         return self.col_trial
     
     
@@ -51,15 +71,22 @@ class RVSP(object):
         
         for i in range(1,num+1):
             self.tmp=[]
-            for j in range(0,2**(i-1)):
-                self.list=range(j,12,2**(i-1))
-                self.tmp=self.tmp+self.list
-                self.rev=copy.copy(self.tmp)
-                self.rev.reverse()
+            if(i<=4):
+                for j in range(0,2**(i-1)):
+                    self.list=range(j,12,2**(i-1))
+                    self.tmp=self.tmp+self.list
+                    self.rev=copy.copy(self.tmp)
+                    self.rev.reverse()
+            else:
+                for j in range(0,2**(i-5)):
+                    self.list=range(j,12,2**(i-5))         
+                    self.tmp=self.tmp+self.list
+                    self.rev=copy.copy(self.tmp)
+                    self.rev.reverse()
             self.matrix= self.matrix+self.tmp+self.rev
-        
+       
         self.new_list=self.color_del_elem(self.matrix)
-        self.col_trial=self.color_link(self.new_list) 
+        self.col_trial=self.color_link(self.new_list,num_seq) 
         self.bursts=self.color_split(self.col_trial,num_seq)
         
         return self.bursts
@@ -73,15 +100,30 @@ class RVSP(object):
         return self.burst
            
         
-    def mono_link(self,a_list):
+    def mono_link(self,a_list,num_seq):
         self.alphabet=list("ABCDEFGHIJKLMNOPQRSTUVWXYZ.,:<")
-        self.alpharandom=copy.copy(self.alphabet)
-        random.shuffle(self.alpharandom)
-        for k in range(0,30):
-            i=0
-            while i<len(a_list):
-                if (a_list[i]==k+1): a_list[i]=self.alpharandom[k]
-                i+=1
+        self.alpharandom1=copy.copy(self.alphabet)
+        random.shuffle(self.alpharandom1)
+       
+        if(num_seq<=10):
+            for k in range(0,30):
+                i=0
+                while i<len(a_list):
+                    if (a_list[i]==k+1): a_list[i]=self.alpharandom1[k]
+                    i+=1
+        else:
+            self.alpharandom2=copy.copy(self.alpharandom1)
+            random.shuffle(self.alpharandom2)
+           
+            for k in range(0,30):
+                i=0
+                while i<300:
+                    if (a_list[i]==k+1): a_list[i]=self.alpharandom1[k]
+                    i+=1
+                while i<len(a_list):
+                    if(a_list[i]==k+1): a_list[i]=self.alpharandom2[k]
+                    i+=1
+  
         return a_list
     
     def mono_del_elem(self,lista,num_seq):
@@ -96,15 +138,24 @@ class RVSP(object):
         num=num_seq/2
         for i in range(1,num+1):
             self.tmp=[]
-            for j in range(0,2**(i-1)):
-                self.list=range(j,32,2**(i-1))
-                self.tmp=self.tmp+self.list
-                self.rev=copy.copy(self.tmp)
-                self.rev.reverse()
+            if (i<=5): 
+                for j in range(0,2**(i-1)):
+                    self.list=range(j,32,2**(i-1))
+                    print self.list
+                    self.tmp=self.tmp+self.list
+                    self.rev=copy.copy(self.tmp)
+                    self.rev.reverse()
+            else: 
+                for j in range(0,2**(i-6)):
+                    self.list=range(j,32,2**(i-6))
+                    print self.list          
+                    self.tmp=self.tmp+self.list
+                    self.rev=copy.copy(self.tmp)
+                    self.rev.reverse()
             self.matrix= self.matrix+self.tmp+self.rev
-        
+            
         self.new_list=self.mono_del_elem(self.matrix,num_seq)
-        self.mono_trial= self.mono_link(self.new_list)
+        self.mono_trial= self.mono_link(self.new_list,num_seq)
         self.bursts=self.mono_split(self.mono_trial,num_seq)
         
         return self.bursts
@@ -126,11 +177,12 @@ class RVSP(object):
     classdocs
     '''
 
-
+#the number of sequences should be even,16 maximum for the color algorithm and 20 maximum for the mono_algorithm
+    
 if __name__ == "__main__":
     
     myobject = RVSP()
-    num_sequences=10
+    num_sequences=14
     flag=1
     trial=myobject.get_trial(num_sequences,flag)
     print trial
