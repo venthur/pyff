@@ -22,6 +22,7 @@ from VisionEgg.Text import Text
 from pygame import Color
 
 from AlphaBurst.model.color_word import ColorWord
+from AlphaBurst.util.color import symbol_color
 
 class View(object):
     def __init__(self, width, height, fullscreen):
@@ -39,20 +40,21 @@ class View(object):
     def __init_text(self):
         sz = self._screen.size
         self._headline = ColorWord((sz[0] / 2., -100 + sz[1]))
-        self._center_text = Text(font_size=150, anchor='center',
-                              position=(sz[0] / 2., -50 + sz[1] / 2.))
+        self._center_text = ColorWord((sz[0] / 2., -50 + sz[1] / 2.),
+                                      symbol_size=self._font_size)
 
     def __init_viewports(self):
         self._headline_viewport = Viewport(screen=self._screen,
                                            stimuli=self._headline)
         self._viewport = Viewport(screen=self._screen,
-                                  stimuli=[self._center_text])
+                                  stimuli=self._center_text)
 
     def __init_presentation(self):
         self.presentation = Presentation(viewports=[self._headline_viewport,
                                                     self._viewport])
 
     def update_parameters(self, font_color='white', bg_color='grey', **kwargs):
+        self._font_size = 150
         for k, v in kwargs.iteritems():
             setattr(self, '_' + k, v)
         self.set_bg_color(bg_color)
@@ -70,18 +72,32 @@ class View(object):
         except ValueError:
             self._logger.warn('No such pygame.Color: %s' % str(color))
 
-    def present_word(self, word):
+    def _symbol_color(self, symbol):
+        return symbol_color(symbol, self._color_groups) if self._alternating_colors else \
+               self._font_color
+
+    def word(self, word):
         self._headline.set_all(on=False)
-        self._center_word(word)
+        colors = map(self._symbol_color, word)
+        self._center_word(word, colors)
         self._present(self._present_word_time)
-        self._headline.set(text=word)
+        self._headline.set(text=word, colors=colors)
+
+    def target(self, symbol):
+        self._headline.set(target=symbol)
+        self._headline.set_all(on=True)
+        self._center_text.set_all(on=False)
+        self._present(self._present_target_time)
+        self._center_text.set_all(on=True)
 
     def _present(self, sec):
         self.presentation.set(go_duration=(sec, 'seconds'))
         self.presentation.go()
 
     def _center_word(self, text, color=None):
-        self._center_text.set(text=text, color=color or self._font_color)
+        self._center_text.set(text=text)
+        self._center_text.set(colors=color or (self._font_color for l in
+                                           self._center_text))
 
     def ask(self):
         self._center_word('?')
@@ -99,27 +115,20 @@ class View(object):
         self._center_word('+')
         self._present(self._fixation_cross_time)
 
-    def adjust_symbol_colors(self, sequence, target_letter):
-        self._headline.set(target=target_letter)
-        colors = [sequence.get_color(t) or self._font_color for t in
-                  self._headline.text]
-        self._headline.set_colors(colors)
-        self._headline.set_all(on=True)
-        self._center_text.set(on=False)
-        self._present(self._present_target_time)
-        self._center_text.set(on=True)
-
     def symbol(self, symbol, color=None):
-        self._center_word(symbol, color)
+        if color is None:
+            color = self._font_color
+        self._center_word(symbol, (color,))
         self._present(self._symbol_duration)
 
     def clear_symbol(self):
         #TODO less ugly
-        self._center_text.set(on=False)
+        self._center_text.set_all(on=False)
         self._present(0.0000000001)
-        self._center_text.set(on=True)
+        self._center_text.set_all(on=True)
 
     def count_down(self):
-        for i in reversed(xrange(10)):
-            self.symbol(str(i))
+        for i in reversed(xrange(self._count_down_start + 1)):
+            self._center_word(str(i))
+            self._present(self._count_down_symbol_duration)
         self.clear_symbol()

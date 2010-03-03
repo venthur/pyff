@@ -17,31 +17,11 @@ import string
 
 class Config(object):
     def init(self):
-        self.tcountdown = 0.
-        self.tfixation = 0.
-        self.fps = 0.
-        self.tstimulus = 0.
         self.symbol_duration = 0.05
-        self.IBsI = 0.
-        self.ISeI = 0.
-        self.IWI = 0.
-        self.IBcI = 0.
-        self.nsymb = 0.
-        self.nsymburst = 0.
-        self.nitems = 0.
-        self.nburst = 0.
-        self.sequences_per_trial = 10
-        self.nseq2 = 0.
-        self.ntrials = 0.
-        self.nblocks = 0.
-        self.nwords = 0.
-        self.ncol = 0.
+        self.sequences_per_trial = 2
         self.font_color = 'orangered'
         self.alternating_colors = True
-        self.noccur = 0.
-        self.ncount = 0.
-        self.fontsize = 0.
-        self.fontpos = 0.
+        self.font_size = 150
         self.bg_color = 'grey'
         self.screen_width = 400
         self.screen_height = 400
@@ -58,16 +38,22 @@ class Config(object):
         self.mode = 'ask'
         self._view_parameters = ['symbol_duration', 'bg_color', 'font_color',
                                  'present_word_time', 'present_target_time',
-                                 'fixation_cross_time']
+                                 'fixation_cross_time', 'count_down_start',
+                                 'count_down_symbol_duration', 'color_groups',
+                                'alternating_colors', 'font_size']
         self.key_yes = 'j'
         self.key_no = 'k'
         self.inter_burst = .1
         self.inter_sequence = .5
         self.inter_block = 1.
+        self.inter_trial = 1.
         self.present_word_time = 2.
         self.fixation_cross_time = 1.
-        # color or target letter change
         self.present_target_time = 1.
-        self.custom_pre_sequences = [string.ascii_uppercase]
-        self.custom_post_sequences = [string.ascii_uppercase]
+        self.custom_pre_sequences = [10, 5]
+        self.custom_post_sequences = [3]
         self.trial_type = 1
+        self.count_down_start = 5
+        self.count_down_symbol_duration = .5
+        self.max_diff = 10
+        self.color_groups = ["ABCDEFGHIJ", "KLMNOPQRST", "UVWXYZ.,:<"]

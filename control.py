@@ -88,18 +88,24 @@ class Control(Feedback, Config):
 
     def _block(self):
         for word in self._iter(self.words):
-            self._view.present_word(word)
+            self._trigger(TRIG_RUN_START)
+            self._view.count_down()
+            self._view.word(word)
             gen = self._iter(enumerate(word))
             for self.target_index, self._current_target in gen:
+                sleep(self.inter_trial)
                 self._trial()
+            self._trigger(TRIG_RUN_END)
 
     def _trial(self):
-        factory = CharacterSequenceFactory(self.meaningless,
-                                           self.alternating_colors)
+        factory = CharacterSequenceFactory(self.color_groups, self.meaningless,
+                                           self.alternating_colors,
+                                           self._current_target)
         self._sequences = factory.sequences(self.sequences_per_trial,
                                             self.custom_pre_sequences,
                                             self.custom_post_sequences)
         self.detections = []
+        self._view.target(self._current_target)
         self._trial_type()
 
     def _trial_1(self):
@@ -108,8 +114,12 @@ class Control(Feedback, Config):
         for seq in self._iter(self._sequences):     
             self._sequence(seq)
         self._ask()
-        diff = self.count - self._sequences.occurences(self._current_target) 
-        self._trigger(TRIG_COUNTED_OFFSET + diff)
+        if self._flag:
+            diff = self.count - self._sequences.occurences(self._current_target) 
+            constrained_diff = max(min(diff, self.max_diff), -self.max_diff)
+            if diff != constrained_diff:
+                self._logger.error('Too high count discrepancy: %d' % diff)
+            self._trigger(TRIG_COUNTED_OFFSET + diff)
 
     def _trial_2(self):
         """ Yes/No mode. """
@@ -118,14 +128,13 @@ class Control(Feedback, Config):
             self._sequence(seq, True, True)
 
     def _sequence(self, sequence, fix=False, ask=False):
-        self._view.adjust_symbol_colors(sequence,
-                                        self._current_target)
         self._burst_constraints = BurstConstraints(fix, ask,
                                                    self._view,
                                                    self._ask, self.inter_burst,
                                                    self._trigger)
         for burst in self._iter(sequence):
             with self._burst_constraints:
+                self._target_present = self._current_target in sequence
                 self._burst(burst)
         sleep(self.inter_sequence)
 
@@ -167,7 +176,11 @@ class Control(Feedback, Config):
         """ Yes/No mode. """
         s = event.unicode
         if s in [self.key_yes, self.key_no]:
-            self.detections[-1].append(s == self.key_yes)
+            yes = s == self.key_yes
+            self.detections[-1].append(yes)
+            trig = TRIG_TARGET_PRESENT_OFFSET if self._target_present else \
+                   TRIG_TARGET_ABSENT_OFFSET
+            self._trigger(trig + yes)
             self._view.answered()
 
     def on_stop(self):

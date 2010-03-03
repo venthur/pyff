@@ -1,24 +1,34 @@
-'''
-Created on 19/feb/2010
+""" {{{ Copyright (c) 2010 Laura Acqualagna
 
-@author: Laura
-'''
+This program is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation; either version 3 of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with this
+program; if not, see <http://www.gnu.org/licenses/>.
+
+}}} """
+
 import copy
 import random
 
-class RVSP(object):
+class RSVP(object):
+    def __init__(self, groups):
+        self.groups = map(list, groups)
+        self.alphabet = sum(self.groups, [])
     
     def color_link (self,n_list,num_seq):
         self.col_trial=[]
-        self.group1=list("ABCDEFGHIJ")
-        self.group2=list("KLMNOPQRST")
-        self.group3=list("UVWXYZ.,:<")
         
-        self.group1rand1=copy.copy(self.group1)
+        self.group1rand1=copy.copy(self.groups[0])
         random.shuffle(self.group1rand1)
-        self.group2rand1=copy.copy(self.group2)
+        self.group2rand1=copy.copy(self.groups[1])
         random.shuffle(self.group2rand1)
-        self.group3rand1=copy.copy(self.group3)
+        self.group3rand1=copy.copy(self.groups[2])
         random.shuffle(self.group3rand1)
         
         i=0
@@ -101,7 +111,6 @@ class RVSP(object):
            
         
     def mono_link(self,a_list,num_seq):
-        self.alphabet=list("ABCDEFGHIJKLMNOPQRSTUVWXYZ.,:<")
         self.alpharandom1=copy.copy(self.alphabet)
         random.shuffle(self.alpharandom1)
        
@@ -141,14 +150,12 @@ class RVSP(object):
             if (i<=5): 
                 for j in range(0,2**(i-1)):
                     self.list=range(j,32,2**(i-1))
-                    print self.list
                     self.tmp=self.tmp+self.list
                     self.rev=copy.copy(self.tmp)
                     self.rev.reverse()
             else: 
                 for j in range(0,2**(i-6)):
                     self.list=range(j,32,2**(i-6))
-                    print self.list          
                     self.tmp=self.tmp+self.list
                     self.rev=copy.copy(self.tmp)
                     self.rev.reverse()
@@ -160,30 +167,16 @@ class RVSP(object):
         
         return self.bursts
     
-    def get_trial(self,num_seq,flag): 
-        if(flag==0):
-            mono_bursts=[]
-            mono_bursts=self.mono_algorithm(num_seq)
-            return mono_bursts
-        elif(flag==1):
-            color_bursts=[]
-            color_bursts=self.color_algorithm(num_seq)
-            return color_bursts
+    def trial(self, num_seq, color): 
+        """ The number of sequences should be even, 16 maximum for the
+        color algorithm and 20 maximum for the mono_algorithm.
+        """
+        algo = self.color_algorithm if color else self.mono_algorithm
+        return algo(num_seq)
 
-  
-        
-    
-    '''
-    classdocs
-    '''
-
-#the number of sequences should be even,16 maximum for the color algorithm and 20 maximum for the mono_algorithm
-    
 if __name__ == "__main__":
-    
-    myobject = RVSP()
+    myobject = RSVP()
     num_sequences=14
     flag=1
-    trial=myobject.get_trial(num_sequences,flag)
+    trial=myobject.get_trial(num_sequences, flag)
     print trial
-    

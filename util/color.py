@@ -13,20 +13,16 @@ program; if not, see <http://www.gnu.org/licenses/>.
 
 }}} """
 
-TRIG_RUN_START = 252
-TRIG_RUN_END = 253
-TRIG_COUNTDOWN_START = 200
-TRIG_COUNTDOWN_END = 201
-TRIG_BURST_START = 105
-TRIG_BURST_END = 106
-TRIG_LETTER = 31
-TRIG_TARGET_ADD = 40
-TRIG_COUNTED_OFFSET = 150
-TRIG_TARGET_ABSENT_OFFSET = 11
-TRIG_TARGET_PRESENT_OFFSET = 21
+from pygame import Color
 
-def symbol_trigger(symbol, target, alphabet):
-    value = TRIG_LETTER + alphabet.index(symbol)
-    if symbol == target:
-        value += TRIG_TARGET_ADD
-    return value
+alt_color = [Color('red'), Color('yellow'), Color('blue')]
+
+def color(i):
+    """ Return a positional color, alternating over alt_color.
+
+    """
+    return alt_color[i % len(alt_color)].normalize()
+
+def symbol_color(symbol, groups):
+    index = (i for i, g in enumerate(groups) if symbol in g).next()
+    return color(index)

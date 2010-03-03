@@ -20,22 +20,31 @@ import logging
 from AlphaBurst.model.text_list import TextList
 
 class ColorWord(TextList):
-    def __init__(self, position, text='', target=None):
+    def __init__(self, position, text='', target=None, symbol_size=72,
+                 target_size=96, colors=[]):
         TextList.__init__(self, position)
-        self.set(text, target)
+        self.set_size(symbol_size, target_size)
+        self.set(text, target, colors)
 
-    def set(self, text=None, target=None):
+    def set(self, text=None, target=None, colors=None):
         if text is not None:
             self.text = text
+        if colors is not None:
+            self._colors = colors
         self.clear()
         for l in self.text:
-            size = 96 if l == target else 72
+            size = self._target_size if l == target else self._symbol_size
             self.add(l, size)
+        self._set_colors()
+
+    def set_size(self, symbol_size=72, target_size=96):
+        self._symbol_size = symbol_size
+        self._target_size = target_size
 
     def shuffle_colors(self):
         colors = ([uniform(0, 1) for i in xrange(3)] for e in self)
         self.set_colors(colors)
 
-    def set_colors(self, colors):
-        for color, symbol in izip(colors, self):
+    def _set_colors(self):
+        for color, symbol in izip(self._colors, self):
             symbol.set(color=color)
