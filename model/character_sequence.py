@@ -13,7 +13,7 @@ program; if not, see <http://www.gnu.org/licenses/>.
 
 }}} """
 
-from random import Random, choice
+from random import Random, choice, randint
 from copy import copy
 from itertools import chain
 import logging
@@ -105,12 +105,16 @@ class CharacterSequenceFactory(object):
 
     def extra_sequence(self, target_count):
         """ Create one sequence with additional targets at random
-        positions, preserving the color groups.
+        positions, preserving the color groups. If color mode is
+        off, don't preserve.
         """
         bursts = self._rsvp.trial(2, self._alt_color) 
         seq = sum(bursts[:3], [])
-        indexes = range(0, len(seq), 3)
-        random_index = lambda: self._color_offset + choice(indexes)
+        if self._alt_color:
+            indexes = range(0, len(seq), 3)
+            random_index = lambda: self._color_offset + choice(indexes)
+        else:
+            random_index = lambda: randint(0, len(seq) - 1)
         while len(filter(lambda l: l == self._target, seq)) < target_count:
             seq[random_index()] = self._target
         return self.sequence(seq)
