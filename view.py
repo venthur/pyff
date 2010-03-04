@@ -26,7 +26,8 @@ from AlphaBurst.util.color import symbol_color
 
 class View(object):
     def __init__(self, width, height, fullscreen):
-        self._screen = Screen(size=(width, height), fullscreen=fullscreen)
+        self._screen = Screen(size=(width, height), fullscreen=fullscreen,
+                              sync_swap=True)
         self.__init_attributes()
         self.__init_text()
         self.__init_viewports()
@@ -132,3 +133,7 @@ class View(object):
             self._center_word(str(i))
             self._present(self._count_down_symbol_duration)
         self.clear_symbol()
+
+    def close(self):
+        """ Shut down the screen. """
+        self._screen.close()

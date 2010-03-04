@@ -162,7 +162,7 @@ class Control(Feedback, Config):
             self._process_input(event)
 
     def _process_input_1(self, event):
-        """ Count mode. """
+        """ Count mode. Record the entered digits in count. """
         s = event.unicode
         if event.key == pygame.K_RETURN:
             self.count = int(self._digits)
@@ -174,7 +174,11 @@ class Control(Feedback, Config):
             self._digits += s
 
     def _process_input_2(self, event):
-        """ Yes/No mode. """
+        """ Yes/No mode. Save the answer in the detections list, send
+        a trigger. The trigger value is determined by the presence of
+        the target and the subject's detection: 11 for no target, no
+        detection; 22 for present target and detection; and the false
+        variants with 12/21 in the same order. """
         s = event.unicode
         if s in [self.key_yes, self.key_no]:
             yes = s == self.key_yes
@@ -186,6 +190,7 @@ class Control(Feedback, Config):
 
     def on_stop(self):
         self._flag.off()
+        self._view.close()
 
 class AlphaBurst(Control):
     pass
