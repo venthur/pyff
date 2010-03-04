@@ -72,6 +72,7 @@ class Control(Feedback, Config):
             params = dict([[p, getattr(self, p, None)] for p in
                            self._view_parameters])
             self._view.update_parameters(**params)
+        self._alphabet = ''.join(self.color_groups)
 
     def on_interaction_event(self, data):
         self.update_parameters()
@@ -142,7 +143,7 @@ class Control(Feedback, Config):
         for symbol in self._iter(symbols):
             try:
                 self._trigger(symbol_trigger(symbol[0], self._current_target,
-                                             self.alphabet))
+                                             self._alphabet))
             except ValueError:
                 # redundant symbol
                 pass

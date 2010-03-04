@@ -17,32 +17,23 @@ import string
 
 class Config(object):
     def init(self):
-        self.symbol_duration = 0.05
+        self.trial_type = 2
+        self.alternating_colors = False
         self.sequences_per_trial = 2
-        self.font_color = 'orangered'
-        self.alternating_colors = True
-        self.font_size = 150
-        self.bg_color = 'grey'
+        self.fullscreen = False
         self.screen_width = 400
         self.screen_height = 400
-        self.fullscreen = False
-        self.current_word_index = 0
-        self.current_letter_index = 0
-        self.sound = False
+        self.font_size = 150
+        self.font_color = 'orangered'
+        self.bg_color = 'grey'
         self.words = ['WINKT', 'FJORD', 'HYBRID', 'LUXUS', 'SPHINX', 'QUARZ',
                       'VODKA', 'YACHT', 'GEBOT', 'MEMME']
+        self.color_groups = ["ABCDEFGHIJ", "KLMNOPQRST", "UVWXYZ.,:<"]
         self.meaningless = '*+&%?;'
-        self.target_index = 0
-        self.alphabet = string.ascii_uppercase + '.,:<'
+        self.custom_pre_sequences = [10, 5]
+        self.custom_post_sequences = [3]
+        self.symbol_duration = 0.1
         self.burst_duration = 1.
-        self.mode = 'ask'
-        self._view_parameters = ['symbol_duration', 'bg_color', 'font_color',
-                                 'present_word_time', 'present_target_time',
-                                 'fixation_cross_time', 'count_down_start',
-                                 'count_down_symbol_duration', 'color_groups',
-                                'alternating_colors', 'font_size']
-        self.key_yes = 'j'
-        self.key_no = 'k'
         self.inter_burst = .1
         self.inter_sequence = .5
         self.inter_block = 1.
@@ -50,10 +41,17 @@ class Config(object):
         self.present_word_time = 2.
         self.fixation_cross_time = 1.
         self.present_target_time = 1.
-        self.custom_pre_sequences = [10, 5]
-        self.custom_post_sequences = [3]
-        self.trial_type = 1
         self.count_down_start = 5
         self.count_down_symbol_duration = .5
+        self.key_yes = 'j'
+        self.key_no = 'k'
         self.max_diff = 10
-        self.color_groups = ["ABCDEFGHIJ", "KLMNOPQRST", "UVWXYZ.,:<"]
+        self.sound = False
+        self.current_word_index = 0
+        self.current_letter_index = 0
+        self.target_index = 0
+        self._view_parameters = ['symbol_duration', 'bg_color', 'font_color',
+                                 'present_word_time', 'present_target_time',
+                                 'fixation_cross_time', 'count_down_start',
+                                 'count_down_symbol_duration', 'color_groups',
+                                 'alternating_colors', 'font_size']
