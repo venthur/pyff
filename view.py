@@ -23,17 +23,20 @@ from pygame import Color
 
 from AlphaBurst.model.color_word import ColorWord
 from AlphaBurst.util.color import symbol_color
+from AlphaBurst.util.switcherator import Switcherator
 
 class View(object):
-    def __init__(self, width, height, fullscreen):
+    def __init__(self, width, height, fullscreen, flag):
         self._screen = Screen(size=(width, height), fullscreen=fullscreen,
                               sync_swap=True)
+        self._flag = flag
         self.__init_attributes()
         self.__init_text()
         self.__init_viewports()
         self.__init_presentation()
 
     def __init_attributes(self):
+        self._iter = lambda it: Switcherator(self._flag, it)
         self._logger = logging.getLogger('View')
         self._symbol_duration = 0.05
         self.update_parameters()
@@ -78,6 +81,8 @@ class View(object):
                self._font_color
 
     def word(self, word):
+        """ Introduce a new word, optionally with colored symbols.
+        """
         self._headline.set_all(on=False)
         colors = map(self._symbol_color, word)
         self._center_word(word, colors)
@@ -85,6 +90,9 @@ class View(object):
         self._headline.set(text=word, colors=colors)
 
     def target(self, symbol):
+        """ Introduce a new target symbol by increasing its size and
+        presenting the word in the headline.
+        """
         self._headline.set(target=symbol)
         self._headline.set_all(on=True)
         self._center_text.set_all(on=False)
@@ -107,29 +115,33 @@ class View(object):
         self.presentation.set(quit=False)
 
     def answered(self):
+        """ Abort the current presentation (normally the question mark)
+        after subject input.
+        """
         self.presentation.set(quit=True)
-
-    def set_duration(self, secs):
-        self.presentation.set(go_duration=(secs, 'seconds'))
 
     def show_fixation_cross(self):
         self._center_word('+')
         self._present(self._fixation_cross_time)
 
     def symbol(self, symbol, color=None):
+        """ Display a single symbol, either in the standard font color
+        or using the function parameter.
+        """
         if color is None:
             color = self._font_color
         self._center_word(symbol, (color,))
         self._present(self._symbol_duration)
 
     def clear_symbol(self):
-        #TODO less ugly
+        """ Remove the stimulus from the screen. Alternatives welcome.
+        """
         self._center_text.set_all(on=False)
         self._present(0.0000000001)
         self._center_text.set_all(on=True)
 
     def count_down(self):
-        for i in reversed(xrange(self._count_down_start + 1)):
+        for i in self._iter(reversed(xrange(self._count_down_start + 1))):
             self._center_word(str(i))
             self._present(self._count_down_symbol_duration)
         self.clear_symbol()

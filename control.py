@@ -59,7 +59,7 @@ class Control(Feedback, Config):
 
     def _start_view(self):
         self._view = View(self.screen_width, self.screen_height,
-                          self.fullscreen)
+                          self.fullscreen, self._flag)
         self._view_started = True
         handlers = [(pygame.KEYDOWN, self.keyboard_input)]
         self._view.presentation.set(handle_event_callbacks=handlers)
@@ -190,6 +190,7 @@ class Control(Feedback, Config):
 
     def on_stop(self):
         self._flag.off()
+        self._view.answered()
         self._view.close()
 
 class AlphaBurst(Control):
