@@ -17,14 +17,16 @@ import string
 
 class Config(object):
     def init(self):
-        self.trial_type = 2
-        self.alternating_colors = False
+        self.trial_type = 1
+        self.alternating_colors = True
         self.sequences_per_trial = 2
-        self.fullscreen = False
+        self.fullscreen = True
         self.screen_width = 400
         self.screen_height = 400
         self.font_size = 150
-        self.font_color = 'orangered'
+        self.headline_font_size = 72
+        self.headline_target_font_size = 96
+        self.font_color_name = 'orangered'
         self.bg_color = 'grey'
         self.words = ['WINKT', 'FJORD', 'HYBRID', 'LUXUS', 'SPHINX', 'QUARZ',
                       'VODKA', 'YACHT', 'GEBOT', 'MEMME']
@@ -50,8 +52,11 @@ class Config(object):
         self.current_word_index = 0
         self.current_letter_index = 0
         self.target_index = 0
-        self._view_parameters = ['symbol_duration', 'bg_color', 'font_color',
+        self._view_parameters = ['symbol_duration', 'bg_color', 'font_color_name',
                                  'present_word_time', 'present_target_time',
                                  'fixation_cross_time', 'count_down_start',
                                  'count_down_symbol_duration', 'color_groups',
-                                 'alternating_colors', 'font_size']
+                                 'alternating_colors', 'font_size',
+                                 'headline_font_size',
+                                 'headline_target_font_size', 'width', 'height',
+                                 'fullscreen']

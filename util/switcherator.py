@@ -15,13 +15,16 @@ program; if not, see <http://www.gnu.org/licenses/>.
 
 class Flag(object):
     def __init__(self):
-        self._flag = True
+        self.reset()
 
     def __nonzero__(self):
         return self._flag
 
     def off(self):
         self._flag = False
+
+    def reset(self):
+        self._flag = True
 
 class Switcherator(object):
     def __init__(self, flag, itr):

@@ -48,7 +48,6 @@ class Control(Feedback, Config):
         self.update_parameters()
 
     def __init_attributes(self):
-        self._view_started = False
         self._asking = False
         self._digits = ''
         self._sound = pygame.mixer.Sound(path.join(datadir, 'sound.ogg'))
@@ -56,32 +55,27 @@ class Control(Feedback, Config):
         self._logger.setLevel(logging.DEBUG)
         self._trigger = self.send_parallel
         self.count = 0
-
-    def _start_view(self):
-        self._view = View(self.screen_width, self.screen_height,
-                          self.fullscreen, self._flag)
-        self._view_started = True
+        self._flag = Flag()
+        self._iter = lambda it: Switcherator(self._flag, it)
         handlers = [(pygame.KEYDOWN, self.keyboard_input)]
-        self._view.presentation.set(handle_event_callbacks=handlers)
+        self._view = View(self._flag, handlers)
 
     def update_parameters(self):
         self._trial_type = getattr(self, '_trial_' + str(self.trial_type))
         self._process_input = getattr(self, '_process_input_' +
                                       str(self.trial_type))
-        if self._view_started:
-            params = dict([[p, getattr(self, p, None)] for p in
-                           self._view_parameters])
-            self._view.update_parameters(**params)
+        params = dict([[p, getattr(self, p, None)] for p in
+                        self._view_parameters])
+        self._view.update_parameters(**params)
         self._alphabet = ''.join(self.color_groups)
 
     def on_interaction_event(self, data):
         self.update_parameters()
 
     def on_play(self):
-        self._flag = Flag()
-        self._iter = lambda it: Switcherator(self._flag, it)
-        self._start_view()
+        self._flag.reset()
         self.update_parameters()
+        self._view.reinit()
         if self.sound:
             self._sound.play()
         self._block()

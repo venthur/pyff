@@ -26,26 +26,41 @@ from AlphaBurst.util.color import symbol_color
 from AlphaBurst.util.switcherator import Switcherator
 
 class View(object):
-    def __init__(self, width, height, fullscreen, flag):
-        params = { 'fullscreen': fullscreen, 'sync_swap': True }
-        if not fullscreen:
-            params['size'] = (width, height)
-        self._screen = Screen(**params)
+    def __init__(self, flag, event_handlers):
         self._flag = flag
+        self._event_handlers = event_handlers
         self.__init_attributes()
+
+    def update_parameters(self, **kwargs):
+        for k, v in kwargs.iteritems():
+            setattr(self, '_' + k, v)
+        self.reinit()
+
+    def reinit(self):
+        self.__init_screen()
         self.__init_text()
         self.__init_viewports()
         self.__init_presentation()
+
+    def __init_screen(self):
+        params = { 'fullscreen': self._fullscreen, 'sync_swap': True }
+        if not self._fullscreen:
+            params['size'] = (self._width, self._height)
+        self._screen = Screen(**params)
+        self._set_bg_color()
+        self._set_font_color()
 
     def __init_attributes(self):
         self._iter = lambda it: Switcherator(self._flag, it)
         self._logger = logging.getLogger('View')
         self._symbol_duration = 0.05
-        self.update_parameters()
+        self._font_size = 150
 
     def __init_text(self):
         sz = self._screen.size
-        self._headline = ColorWord((sz[0] / 2., -100 + sz[1]))
+        self._headline = ColorWord((sz[0] / 2., -100 + sz[1]),
+                                   symbol_size=self._headline_font_size,
+                                   target_size=self._headline_target_font_size)
         self._center_text = ColorWord((sz[0] / 2., -50 + sz[1] / 2.),
                                       symbol_size=self._font_size)
 
@@ -57,26 +72,22 @@ class View(object):
 
     def __init_presentation(self):
         self.presentation = Presentation(viewports=[self._headline_viewport,
-                                                    self._viewport])
+                                                    self._viewport],
+                                         handle_event_callbacks=
+                                         self._event_handlers)
 
-    def update_parameters(self, font_color='white', bg_color='grey', **kwargs):
-        self._font_size = 150
-        for k, v in kwargs.iteritems():
-            setattr(self, '_' + k, v)
-        self.set_bg_color(bg_color)
-        self.set_font_color(font_color)
-
-    def set_font_color(self, color):
+    def _set_font_color(self):
         try:
-            self._font_color = Color(color).normalize()
+            self._font_color = Color(self._font_color_name).normalize()
         except ValueError:
-            self._logger.warn('No such pygame.Color: %s' % str(color))
+            self._logger.warn('No such pygame.Color: %s' %
+                              str(self._font_color_name))
 
-    def set_bg_color(self, color):
+    def _set_bg_color(self):
         try:
-            self._screen.set(bgcolor=Color(color).normalize())
+            self._screen.set(bgcolor=Color(self._bg_color).normalize())
         except ValueError:
-            self._logger.warn('No such pygame.Color: %s' % str(color))
+            self._logger.warn('No such pygame.Color: %s' % str(self._bg_color))
 
     def _symbol_color(self, symbol):
         return symbol_color(symbol, self._color_groups) if self._alternating_colors else \
