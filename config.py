@@ -30,8 +30,8 @@ class Config(object):
                       'VODKA', 'YACHT', 'GEBOT', 'MEMME']
         self.color_groups = ["ABCDEFGHIJ", "KLMNOPQRST", "UVWXYZ.,:<"]
         self.meaningless = '*+&%?;'
-        self.custom_pre_sequences = [10, 5]
-        self.custom_post_sequences = [3]
+        self.custom_pre_sequences = [[8, 10], [4, 8]]
+        self.custom_post_sequences = [[2, 5]]
         self.symbol_duration = 0.1
         self.burst_duration = 1.
         self.inter_burst = .1

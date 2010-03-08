@@ -103,11 +103,14 @@ class CharacterSequenceFactory(object):
         return CharacterSequence(alphabet, self._redundance, shuffle=shuffle,
                                  alt_color=self._alt_color)
 
-    def extra_sequence(self, target_count):
+    def extra_sequence(self, target_count_interval):
         """ Create one sequence with additional targets at random
         positions, preserving the color groups. If color mode is
-        off, don't preserve.
+        off, don't preserve. Restrict to 10 targets.
         """
+        start, stop = target_count_interval
+        target_count = choice(range(start, stop + 1))
+        target_count = max(target_count, 10)
         bursts = self._rsvp.trial(2, self._alt_color) 
         seq = sum(bursts[:3], [])
         if self._alt_color:
