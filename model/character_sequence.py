@@ -18,7 +18,7 @@ from copy import copy
 from itertools import chain
 import logging
 
-from AlphaBurst.util.list import slices
+from AlphaBurst.util.list import slices, remove_all
 from AlphaBurst.util.color import color
 from AlphaBurst.sequence_algorithm import RSVP
 
@@ -116,10 +116,16 @@ class CharacterSequenceFactory(object):
         if self._alt_color:
             indexes = range(0, len(seq), 3)
             random_index = lambda: self._color_offset + choice(indexes)
+            while len(filter(lambda l: l == self._target, seq)) < target_count:
+                seq[random_index()] = self._target
         else:
-            random_index = lambda: randint(0, len(seq) - 1)
-        while len(filter(lambda l: l == self._target, seq)) < target_count:
-            seq[random_index()] = self._target
+            indexes = range(0, len(seq))
+            random_index = lambda: choice(indexes)
+            while indexes and len(filter(lambda l: l == self._target,
+                                         seq)) < target_count:
+                index = random_index()
+                seq[index] = self._target
+                remove_all(indexes, range(index - 1, index + 2))
         return self.sequence(seq)
 
     def sequences(self, count, pre=[], post=[]):

@@ -16,3 +16,10 @@ program; if not, see <http://www.gnu.org/licenses/>.
 def slices(seq, length):
     count = len(seq) / length
     return [seq[i * length:(i + 1) * length] for i in xrange(count)]
+
+def remove_all(seq, elements):
+    for e in elements:
+        try:
+            seq.remove(e)
+        except ValueError:
+            pass
