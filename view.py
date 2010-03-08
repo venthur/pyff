@@ -27,11 +27,10 @@ from AlphaBurst.util.switcherator import Switcherator
 
 class View(object):
     def __init__(self, width, height, fullscreen, flag):
-        if fullscreen:
-            self._screen = Screen(fullscreen=fullscreen, sync_swap=True)
-        else:
-            self._screen = Screen(size=(width, height), fullscreen=fullscreen,
-                                sync_swap=True)
+        params = { 'fullscreen': fullscreen, 'sync_swap': True }
+        if not fullscreen:
+            params['size'] = (width, height)
+        self._screen = Screen(**params)
         self._flag = flag
         self.__init_attributes()
         self.__init_text()
