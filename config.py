@@ -20,9 +20,8 @@ class Config(object):
         self.trial_type = 1
         self.alternating_colors = True
         self.sequences_per_trial = 2
-        self.fullscreen = True
-        self.screen_width = 400
-        self.screen_height = 400
+        self.fullscreen = False
+        self.geometry = [0, 0, 640, 480]
         self.font_size = 150
         self.headline_font_size = 72
         self.headline_target_font_size = 96
@@ -57,6 +56,5 @@ class Config(object):
                                  'fixation_cross_time', 'count_down_start',
                                  'count_down_symbol_duration', 'color_groups',
                                  'alternating_colors', 'font_size',
-                                 'headline_font_size',
-                                 'headline_target_font_size', 'screen_width',
-                                 'screen_height', 'fullscreen']
+                                 'headline_font_size', 'fullscreen',
+                                 'headline_target_font_size', 'geometry']
