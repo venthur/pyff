@@ -74,11 +74,14 @@ class Control(Feedback, Config):
 
     def on_play(self):
         self._flag.reset()
-        self._view.acquire()
-        self.update_parameters()
-        if self.sound:
-            self._sound.play()
-        self._block()
+        try:
+            self._view.acquire()
+            self.update_parameters()
+            if self.sound:
+                self._sound.play()
+            self._block()
+        except pygame.error, e:
+            self._logger.error(e)
         self.on_stop()
 
     def _block(self):
