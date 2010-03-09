@@ -58,5 +58,5 @@ class Config(object):
                                  'count_down_symbol_duration', 'color_groups',
                                  'alternating_colors', 'font_size',
                                  'headline_font_size',
-                                 'headline_target_font_size', 'width', 'height',
-                                 'fullscreen']
+                                 'headline_target_font_size', 'screen_width',
+                                 'screen_height', 'fullscreen']
