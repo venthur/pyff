@@ -74,8 +74,8 @@ class Control(Feedback, Config):
 
     def on_play(self):
         self._flag.reset()
+        self._view.acquire()
         self.update_parameters()
-        self._view.reinit()
         if self.sound:
             self._sound.play()
         self._block()

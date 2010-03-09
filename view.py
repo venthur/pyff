@@ -31,10 +31,21 @@ class View(object):
         self._event_handlers = event_handlers
         self.__init_attributes()
 
+    def __init_attributes(self):
+        self._iter = lambda it: Switcherator(self._flag, it)
+        self._logger = logging.getLogger('View')
+        self._symbol_duration = 0.05
+        self._font_size = 150
+        self._screen_acquired = False
+
     def update_parameters(self, **kwargs):
         for k, v in kwargs.iteritems():
             setattr(self, '_' + k, v)
-        self.reinit()
+        if self._screen_acquired:
+            self.reinit()
+
+    def acquire(self):
+        self._screen_acquired = True
 
     def reinit(self):
         self.__init_screen()
@@ -49,12 +60,6 @@ class View(object):
         self._screen = Screen(**params)
         self._set_bg_color()
         self._set_font_color()
-
-    def __init_attributes(self):
-        self._iter = lambda it: Switcherator(self._flag, it)
-        self._logger = logging.getLogger('View')
-        self._symbol_duration = 0.05
-        self._font_size = 150
 
     def __init_text(self):
         sz = self._screen.size
@@ -161,4 +166,5 @@ class View(object):
 
     def close(self):
         """ Shut down the screen. """
+        self._screen_acquired = False
         self._screen.close()
