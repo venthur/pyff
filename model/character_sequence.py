@@ -19,18 +19,18 @@ from itertools import chain
 import logging
 
 from AlphaBurst.util.list import slices, remove_all
-from AlphaBurst.util.color import color
 from AlphaBurst.sequence_algorithm import RSVP
 
 class CharacterSequence(list):
     def __init__(self, alphabet, redundance, burst_count=3, shuffle=False,
-                 alt_color=False):
+                 alt_color=False, palette=None):
         list.__init__(self, [])
         self._alphabet = list(alphabet)
         self._redundance = redundance
         self._burst_count = burst_count
         self._shuffle = shuffle
         self._alt_color = alt_color
+        self._palette = palette
         self.__init_attributes()
         self.reset()
 
@@ -68,7 +68,7 @@ class CharacterSequence(list):
 
     def _positional_color(self, i):
         if self._alt_color:
-            return color(i)
+            return self._palette(i)
 
     @property
     def _new_redundance(self):
@@ -90,18 +90,20 @@ class CharacterSequence(list):
             return None
 
 class CharacterSequenceFactory(object):
-    def __init__(self, color_groups, redundance, alt_color, target):
+    def __init__(self, color_groups, redundance, alt_color, target, palette):
         self._color_groups = color_groups
         self._redundance = redundance
         self._alt_color = alt_color
         self._target = target
+        self._palette = palette
         self._color_offset = (i for i, g in enumerate(self._color_groups) if
                               self._target in g).next()
         self._rsvp = RSVP(self._color_groups)
 
     def sequence(self, alphabet, shuffle=False):
         return CharacterSequence(alphabet, self._redundance, shuffle=shuffle,
-                                 alt_color=self._alt_color)
+                                 alt_color=self._alt_color,
+                                 palette=self._palette)
 
     def extra_sequence(self, target_count_interval):
         """ Create one sequence with additional targets at random

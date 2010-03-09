@@ -26,6 +26,7 @@ class Config(object):
         self.headline_font_size = 72
         self.headline_target_font_size = 96
         self.font_color_name = 'orangered'
+        self.symbol_colors = ['red', 'yellow', 'green', 'blue', 'black']
         self.bg_color = 'grey'
         self.words = ['WINKT', 'FJORD', 'HYBRID', 'LUXUS', 'SPHINX', 'QUARZ',
                       'VODKA', 'YACHT', 'GEBOT', 'MEMME']
@@ -57,4 +58,5 @@ class Config(object):
                                  'count_down_symbol_duration', 'color_groups',
                                  'alternating_colors', 'font_size',
                                  'headline_font_size', 'fullscreen',
-                                 'headline_target_font_size', 'geometry']
+                                 'headline_target_font_size', 'geometry',
+                                 'symbol_colors']

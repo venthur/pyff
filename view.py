@@ -22,13 +22,13 @@ from VisionEgg.Text import Text
 from pygame import Color
 
 from AlphaBurst.model.color_word import ColorWord
-from AlphaBurst.util.color import symbol_color
 from AlphaBurst.util.switcherator import Switcherator
 
 class View(object):
-    def __init__(self, flag, event_handlers):
+    def __init__(self, flag, event_handlers, palette):
         self._flag = flag
         self._event_handlers = event_handlers
+        self._palette = palette
         self.__init_attributes()
 
     def __init_attributes(self):
@@ -97,7 +97,7 @@ class View(object):
             self._logger.warn('No such pygame.Color: %s' % str(self._bg_color))
 
     def _symbol_color(self, symbol):
-        return symbol_color(symbol, self._color_groups) if self._alternating_colors else \
+        return self._palette(symbol) if self._alternating_colors else \
                self._font_color
 
     def word(self, word):

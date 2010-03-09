@@ -29,6 +29,7 @@ from AlphaBurst.config import Config
 from AlphaBurst.view import View
 from AlphaBurst.burst import BurstConstraints
 from AlphaBurst.model.character_sequence import CharacterSequenceFactory
+from AlphaBurst.model.palette import Palette
 from AlphaBurst.util.metadata import datadir
 from AlphaBurst.util.trigger import *
 from AlphaBurst.util.switcherator import *
@@ -58,7 +59,8 @@ class Control(Feedback, Config):
         self._flag = Flag()
         self._iter = lambda it: Switcherator(self._flag, it)
         handlers = [(pygame.KEYDOWN, self.keyboard_input)]
-        self._view = View(self._flag, handlers)
+        self._palette = Palette()
+        self._view = View(self._flag, handlers, self._palette)
 
     def update_parameters(self):
         self._trial_type = getattr(self, '_trial_' + str(self.trial_type))
@@ -66,6 +68,7 @@ class Control(Feedback, Config):
                                       str(self.trial_type))
         params = dict([[p, getattr(self, p, None)] for p in
                         self._view_parameters])
+        self._palette.set(self.symbol_colors, self.color_groups)
         self._view.update_parameters(**params)
         self._alphabet = ''.join(self.color_groups)
 
@@ -98,7 +101,8 @@ class Control(Feedback, Config):
     def _trial(self):
         factory = CharacterSequenceFactory(self.color_groups, self.meaningless,
                                            self.alternating_colors,
-                                           self._current_target)
+                                           self._current_target,
+                                           self._palette)
         self._sequences = factory.sequences(self.sequences_per_trial,
                                             self.custom_pre_sequences,
                                             self.custom_post_sequences)
