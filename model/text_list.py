@@ -18,9 +18,6 @@ from copy import copy
 from VisionEgg.Text import Text
 
 class TextList(list):
-    """ TODO inherit Viewport
-
-    """
     def __init__(self, position):
         list.__init__([])
         self._position = position
@@ -28,13 +25,14 @@ class TextList(list):
     def add(self, text, size):
         new = Text(font_size=size, text=text, anchor='bottom')
         self.append(new)
-        self.rearrange()
+        self._rearrange()
 
-    def rearrange(self):
-        height = self._max_height # TODO check against screen size?
+    def _rearrange(self):
+        height = self._max_height
         width = self._width
         pos = list(self._position)
         pos[0] -= width / 2.
+        pos[1] -= height / 2.
         for t in self:
             s = t.parameters.size
             w = s[0] / 2.
@@ -57,4 +55,3 @@ class TextList(list):
     def set_all(self, **kwargs):
         for t in self:
             t.set(**kwargs)
-
