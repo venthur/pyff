@@ -56,8 +56,8 @@ class View(object):
     def __init_screen(self):
         params = { 'fullscreen': self._fullscreen, 'sync_swap': True }
         if not self._fullscreen:
-            os.environ['SDL_VIDEO_WINDOW_POS'] = '%d, %d' % (self._geometry[1],
-                                                            self._geometry[2])
+            os.environ['SDL_VIDEO_WINDOW_POS'] = '%d, %d' % (self._geometry[0],
+                                                            self._geometry[1])
             params['size'] = self._geometry[2:]
         self._screen = Screen(**params)
         self._set_bg_color()
