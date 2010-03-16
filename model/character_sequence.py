@@ -112,7 +112,7 @@ class CharacterSequenceFactory(object):
         """
         start, stop = target_count_interval
         target_count = choice(range(start, stop + 1))
-        target_count = max(target_count, 10)
+        target_count = min(target_count, 10)
         bursts = self._rsvp.trial(2, self._alt_color) 
         seq = sum(bursts[:3], [])
         if self._alt_color:
