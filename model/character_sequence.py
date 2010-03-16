@@ -37,7 +37,7 @@ class CharacterSequence(list):
     def __init_attributes(self):
         self._random = Random('BBCI')
         self._burst_signi_len = len(self._alphabet) / self._burst_count
-        self._redundance_len = 6
+        self._redundance_len = len(self._redundance)
         self._burst_len = self._burst_signi_len + self._redundance_len
         self.done = False
 
@@ -72,7 +72,10 @@ class CharacterSequence(list):
 
     @property
     def _new_redundance(self):
-        return self._random.sample(self._redundance, self._redundance_len)
+        if self._redundance_len > 0:
+            return self._random.sample(self._redundance, self._redundance_len)
+        else:
+            return []
 
     @property
     def next_burst(self):
