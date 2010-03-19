@@ -68,15 +68,10 @@ class View(object):
         set positions accordingly.
         """
         sz = self._screen.size
-        checker = Text(text='W', font_size=self._headline_target_font_size)
-        hheight = checker.parameters.size[1]
-        margin = self._headline_margin_factor
-        hpos = sz[1] - (0.5 + margin) * hheight
-        cpos = (sz[1] - (1. + margin) * hheight) / 2.
-        self._headline = ColorWord((sz[0] / 2., hpos),
+        self._headline = ColorWord((sz[0] / 2., sz[1] - self._headline_vpos),
                                    symbol_size=self._headline_font_size,
                                    target_size=self._headline_target_font_size)
-        self._center_text = ColorWord((sz[0] / 2., cpos),
+        self._center_text = ColorWord((sz[0] / 2., sz[1] - self._symbol_vpos),
                                       symbol_size=self._font_size)
 
     def __init_viewports(self):
