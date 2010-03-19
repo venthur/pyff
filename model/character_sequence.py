@@ -72,10 +72,7 @@ class CharacterSequence(list):
 
     @property
     def _new_redundance(self):
-        if self._redundance_len > 0:
-            return self._random.sample(self._redundance, self._redundance_len)
-        else:
-            return []
+        return self._random.sample(self._redundance, self._redundance_len)
 
     @property
     def next_burst(self):
