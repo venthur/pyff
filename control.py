@@ -89,14 +89,14 @@ class Control(Feedback, Config):
 
     def _block(self):
         for word in self._iter(self.words):
-            self._trigger(TRIG_RUN_START)
+            #self._trigger(TRIG_RUN_START)
             self._view.count_down()
             self._view.word(word)
             gen = self._iter(enumerate(word))
             for self.target_index, self._current_target in gen:
                 sleep(self.inter_trial)
                 self._trial()
-            self._trigger(TRIG_RUN_END)
+            #self._trigger(TRIG_RUN_END)
 
     def _trial(self):
         factory = CharacterSequenceFactory(self.color_groups, self.meaningless,
