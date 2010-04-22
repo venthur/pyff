@@ -1,5 +1,5 @@
 # HexoSpeller.py -
-# Copyright (C) 2007-2010  Sven Daehne
+# Copyright (C) 2009-2010  Sven Daehne
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -35,7 +35,7 @@ PARAMS = {
           "arrow_locked_duration": 0.7, # length of time period (in seconds) after hexagon selection during which the arrow is locked, i.e. cannot be moved.
                                     # This "locking period" is useful to prevent interaction during hex rotation animation
           # language model params
-          "language_model_file" : "lm1to8.mat", # must lie in the folder LanguageModels
+          "language_model_file" : "lm1to8.pckl", # one of 'lm1to8.pckl' or 'german.pckl', must lie in the folder LanguageModels
           "lm_head_factors" : [1.0, 0.9, 0.8, 0.7, 0.6, 0.5],
           "lm_letter_factor" : 0.01,
           "lm_n_pred" : 2,
