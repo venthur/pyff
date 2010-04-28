@@ -1,5 +1,22 @@
-#from .. import Utils
-from .Utils import degrees_to_radians, rotate_phi_degrees_clockwise
+# Hexagon.py -
+# Copyright (C) 2009-2010  Sven Daehne
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+
+from Feedbacks.HexoSpeller.Utils import degrees_to_radians, rotate_phi_degrees_clockwise
 from GraphicComponentUtils import center_node, center_node_on_xyz, get_center_point, create_hexagon, create_side
 from math import cos
 

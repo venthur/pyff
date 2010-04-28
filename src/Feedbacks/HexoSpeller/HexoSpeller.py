@@ -1,3 +1,20 @@
+# HexoSpeller.py -
+# Copyright (C) 2009-2010  Sven Daehne
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
 
 import time, os
 from FeedbackBase.MainloopFeedback import MainloopFeedback
@@ -18,7 +35,7 @@ PARAMS = {
           "arrow_locked_duration": 0.7, # length of time period (in seconds) after hexagon selection during which the arrow is locked, i.e. cannot be moved.
                                     # This "locking period" is useful to prevent interaction during hex rotation animation
           # language model params
-          "language_model_file" : "lm1to8.mat", # must lie in the folder LanguageModels
+          "language_model_file" : None,# "lm1to8.pckl", # one of 'lm1to8.pckl' or 'german.pckl', must lie in the folder LanguageModels
           "lm_head_factors" : [1.0, 0.9, 0.8, 0.7, 0.6, 0.5],
           "lm_letter_factor" : 0.01,
           "lm_n_pred" : 2,
@@ -87,7 +104,7 @@ class HexoSpeller(MainloopFeedback):
         self._last_tick_time = time.clock()
         self._state = self.states["level_one"]
         language_model_folder_path = self._create_language_model_folder_path()
-        self.load_language_model(language_model_folder_path+PARAMS["language_model_file"])
+        self.load_language_model(os.path.join(language_model_folder_path, PARAMS["language_model_file"]))
         self.spelled_text = []
         self._sub_list_probs = [] # probability values for each symbol sublist
         self._selected_symbol_idx = 0
@@ -272,7 +289,7 @@ class HexoSpeller(MainloopFeedback):
         (_file_name, _sep, hexospeller_dir) = reversed_file_path.partition(os.path.sep)
         hexospeller_dir = hexospeller_dir[::-1] # reverse it, now in correct order
         # now complete the path to point to the language model directory
-        lm_path = hexospeller_dir + os.path.sep + "LanguageModels" + os.path.sep
+        lm_path = os.path.join(hexospeller_dir,"LanguageModels")
         return lm_path
        
     def load_language_model(self, file_name):

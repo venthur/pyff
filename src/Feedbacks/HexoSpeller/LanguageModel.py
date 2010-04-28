@@ -1,8 +1,26 @@
+# LanguageModel.py -
+# Copyright (C) 2009-2010  Sven Daehne
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-from scipy.io import mio
-import numpy as n
+import os
+import cPickle as pickle
+from numpy import ones, outer, sum, isscalar, squeeze, array
 import pylab as p
 import Utils
+
 
 class LanguageModel():
     
@@ -21,12 +39,13 @@ class LanguageModel():
         
         
     def load_mat_file(self):
-        self.file_content = mio.loadmat(self.file_name)
+        f = open(self.file_name,'r')
+        self.file_content = pickle.load(f)
     
     def create_symbol_list(self):
         """ Get all the individual characters and store them in self.symbol_list, which is a list of lists. Each
         sublist contains five characters and there will be six sublists in symbol_list. """
-        all_chars = self.file_content['charset']
+        all_chars = self.file_content['charset'][0]
         self.nr_chars = len(all_chars)
         self.char_set = all_chars
         self.char_set_list = []
@@ -52,11 +71,12 @@ class LanguageModel():
         
     def _create_word_table(self, ascii_table):
         word_table = []
+        ascii_table = squeeze(ascii_table)
         for matrix in ascii_table:
             table = []
             if matrix.size > 0:
                 for row in matrix:
-                    if n.isscalar(row):
+                    if isscalar(row):
                         table.append(chr(row))
                     else:
                         s = ''
@@ -68,10 +88,12 @@ class LanguageModel():
 
     def _normalize_probability_tables(self, tables):
         n_tables = []
-        n_tables.append(tables[0] / float(sum(tables[0])))
+        tables = squeeze(tables)
+        vec = squeeze(array(tables[0]))
+        n_tables.append(vec / float(vec.sum()))
         for i in range(1,len(tables)):
             M = tables[i]
-            M = M / n.outer(n.ones(self.nr_chars), n.sum(M,0))
+            M = M / outer(ones(self.nr_chars), sum(M,0))
             n_tables.append(M)
         return n_tables
         
@@ -118,9 +140,12 @@ class LanguageModel():
         return prob
     
     def update_symbol_list_sorting(self, spelled_text):
-        """ Update the sorting of symbols in the symbol list according to the current probability distribution which depends 
-        the on currently spelled text. """
+        """ 
+        Update the sorting of symbols in the symbol list according to the current probability distribution which depends 
+        the on currently spelled text. 
+        """
         probs = self.get_probabilities(spelled_text)
+#        probs = ones(29)/29.0
         self.probs_list = []
         symbol_list = Utils.copy_list(self.symbol_list)
         start = 0
@@ -171,9 +196,12 @@ class LanguageModel():
 
 
 if __name__ == "__main__":
-    file_name = "C:\Work\BBCI\german.mat"
-    file_name = "C:\Work\BBCI\lm1to8.mat"
-    lm = LanguageModel(file_name)
+    base_dir = 'D:\Work\BBCI\python\pyff\src\Feedbacks\HexoSpeller\LanguageModels'
+    file_name = 'german.pckl'
+#    file_name = 'german.mat'
+#    file_name = 'lm1to8.pckl'
+    file_path = os.path.join(base_dir, file_name)
+    lm = LanguageModel(file_path)
 #    print lm.symbol_list
 #    print sum(lm.head_prob[0])
 #    print n.sum(lm.head_prob[1],0)

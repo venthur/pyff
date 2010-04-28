@@ -1,3 +1,21 @@
+# Arrow.py -
+# Copyright (C) 2009-2010  Sven Daehne
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+
 #import Feedbacks.HexoSpeller.Utils as Utils
 from math import sqrt, acos
 from GraphicComponentUtils import create_side, create_triangle
@@ -166,7 +184,8 @@ def scale(arrow, time_to_full_length, start_length, max_length, task):
     return Task.cont
 
 if __name__ == "__main__":
-    from directbase import DirectStart
+    from direct.directbase import DirectStart
+    global base, render
     print "Arrow::main"
     arrow = Arrow()
     arrow.set_angle_x_z_plane(45)
