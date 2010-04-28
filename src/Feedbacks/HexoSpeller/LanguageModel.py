@@ -41,7 +41,6 @@ class LanguageModel():
     def load_mat_file(self):
         f = open(self.file_name,'r')
         self.file_content = pickle.load(f)
-
     
     def create_symbol_list(self):
         """ Get all the individual characters and store them in self.symbol_list, which is a list of lists. Each
