@@ -56,10 +56,10 @@ class nback_verbal(MainloopFeedback):
         self.n = 1                      # Current symbol is matched with the nth symbol back
         # Timing 
         self.fps = 30                   # Frames-per-second
-        self.stimTime = 6               # How long the stimulus is displayed (in frames)
+        self.stimTime = 2               # How long the stimulus is displayed (in frames)
         self.preResponseTime = 14        # How long to wait before response is accepted 
-        self.responseTime = 70           # Time window for giving a response
-        self.nCountdown = 7             # N of secs to count down
+        self.responseTime = 10           # Time window for giving a response
+        self.nCountdown = 1             # N of secs to count down
         self.auditoryFeedback = True       # Auditory feedback provided
         # Triggers
         self.triggers = range(10,10+len(self.symbols)) # 10,11,12,...

@@ -51,8 +51,6 @@ class Circle(VisualElement):
     DEFAULT_TEXTSIZE = 20
     DEFAULT_COLOR = 255, 255, 0
     DEFAULT_RADIUS = 30
-    #DEFAULT_EDGECOLOR = None
-   # DEFAULT_EDGEWIDTH = None
     DEFAULT_ANTIALIAS = True
     DEFAULT_COLORKEY = None
     """ If true, text will be split into single letters that are placed equi-spaced 

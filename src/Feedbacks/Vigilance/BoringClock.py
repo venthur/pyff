@@ -50,7 +50,7 @@ class BoringClock(MainloopFeedback):
     def init(self):
         random.seed()
         self.nEl = 24                   # Nr of elements on the circle
-        self.showClock = True          # show dot positions
+        self.showClock = True           # show dot positions
         self.nClockTicks = 100          # Total number of clock ticks
         self.nJumps = 5                 # Total number of jumps among the clock ticks (number should be a divisor of nClockTicks) 
         self.button = pygame.K_KP0      # Which button has to be pressed
@@ -74,7 +74,7 @@ class BoringClock(MainloopFeedback):
         self.radiusDisplay = 200        # Radius of circular arrangement
         self.dotRadius = 10              # Radius of each element
         self.size = 100                 # Size of letters (eg countdown) 
-
+        
     def _init_pygame(self):
 
         # Initialize pygame, open screen and fill screen with background color 
@@ -316,7 +316,7 @@ class BoringClock(MainloopFeedback):
             pygame.display.update()
             return False
         return True
-        
+       
         
     
 if __name__ == "__main__":

@@ -61,9 +61,9 @@ def wait_for_key():
             if event.type is (pygame.KEYDOWN):
                 return event.key
 
-""" ****************************
-Graphical and auditory countdown
-**************************** """
+# ****************************
+# Graphical and auditory countdown
+# ****************************
 
 def countdown(self, centerxy, screen, start_time=3):
     """
@@ -95,10 +95,10 @@ def OLD_auditory_countdown(sound, nr_beeps=3):
         pygame.time.wait(1000)
 
 
-""" **************************
-Displaying messages
-& some graphics FX
-************************** """
+# **************************
+# Displaying messages
+# & some graphics FX
+# **************************
 
 def show_message(self, text, box=False):
     """
@@ -219,13 +219,9 @@ def fade_image(self, surface, rect, fade_time=1000, fade_in=True, transparent=(1
         #bef = pygame.time.get_ticks()
         self.screen.blit(back, rect)
         #aft = pygame.time.get_ticks()
-        #print "Time :",str(aft-bef)
         pygame.display.flip()
-        #pygame.time.delay(50)
         self.clock.tick(self.fps)
         current_time = pygame.time.get_ticks()
-        #cnt += 1
-    #print cnt
          
 def fade_and_zoom(self, surface, start_rect, end_rect, anim_time=1000, fade_in=True, transparent=(1, 2, 3)):
     """
@@ -264,10 +260,7 @@ def fade_and_zoom(self, surface, start_rect, end_rect, anim_time=1000, fade_in=T
         new_back = pygame.transform.smoothscale(back, (width, height)) 
         # Paint everything
         self.screen.blit(self.background, [0, 0])
-        #bef = pygame.time.get_ticks()
         self.screen.blit(new_back, new_rect)
-        #aft = pygame.time.get_ticks()
-        #print "Time :",str(aft-bef)
         pygame.display.flip()
         self.clock.tick(self.fps)
         current_time = pygame.time.get_ticks()
@@ -279,9 +272,9 @@ def clear_screen(self):
     self.screen.blit(self.background, [0, 0])
     pygame.display.flip()
 
-""" *************
-Manipulate states
-************* """
+# *************
+# Manipulate states
+# *************
 
 def reset_states(self):
     """ Resets all elements to their default state (state 0) """
@@ -291,9 +284,9 @@ def randomize_states(self):
     """ Sets each elements into a random state """
     for element in self.elements: element.update(random.randint(0, element.nr_states - 1))
 
-"""  ***************
-Make flash sequences 
-**************** """
+#  ***************
+# Make flash sequences 
+# ****************
 
 def random_flash_sequence(self, set=None, min_dist=0, seq_len=None, repetition=False):
     """
@@ -316,17 +309,17 @@ def random_flash_sequence(self, set=None, min_dist=0, seq_len=None, repetition=F
 
     for i in range(seq_len):
         subset = set[:]         # Give a copy of set (otherwise they both reference the same list)
-        """ Find the no go's (indices which were used in the 
-        previous sequence and can't be used now) and remove them """
+        # Find the no go's (indices which were used in the 
+        # previous sequence and can't be used now) and remove them
         for j in range(min_dist):
             if len(self.flash_sequence) > j:           
                 try:        # if element is not in the subset, an exception is cast 
                     subset.remove(self.flash_sequence[ - 1 - j])
                 except:
                     pass
-        " From the remaining subset, randomly chose element and append to sequence "
+        # From the remaining subset, randomly chose element and append to sequence
         e = self.random.sample(subset, 1)
         e = e[0]                # Element is a list, use [0] to unpack it
         self.flash_sequence.append(e)
-        " If no repetitions, remove this element from set "
+        # If no repetitions, remove this element from sets
         if not repetition: set.remove(e)
