@@ -128,11 +128,11 @@ class FeedbackProcessController(object):
             return
         
         self.currentProc.join(self.timeout)
-        if self.currentProc.isAlive():
+        if self.currentProc.is_alive():
             self.logger.warning("Process still alive, terminating it...",)
             self.currentProc.terminate()
             self.currentProc.join(self.timeout)
-            if self.currentProc.isAlive():
+            if self.currentProc.is_alive():
                 self.logger.error("Process still alive, giving up.")
         
         del(self.currentProc)
