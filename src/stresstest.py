@@ -27,7 +27,7 @@ def main():
         
         failstop = []
         try:
-            if fc.fbProcCtrl.currentProc.isAlive():
+            if fc.fbProcCtrl.currentProc.is_alive():
                 failstop.append(fb)
         except:
             pass

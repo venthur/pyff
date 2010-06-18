@@ -20,8 +20,7 @@ from threading import Thread
 import logging
 import asyncore
 import traceback
-
-from processing import Process, Event
+from multiprocessing import Process, Event
 
 from lib.PluginController import PluginController
 import lib.PluginController
@@ -128,11 +127,11 @@ class FeedbackProcessController(object):
             return
         
         self.currentProc.join(self.timeout)
-        if self.currentProc.isAlive():
+        if self.currentProc.is_alive():
             self.logger.warning("Process still alive, terminating it...",)
             self.currentProc.terminate()
             self.currentProc.join(self.timeout)
-            if self.currentProc.isAlive():
+            if self.currentProc.is_alive():
                 self.logger.error("Process still alive, giving up.")
         
         del(self.currentProc)

@@ -23,9 +23,8 @@
 
 import logging
 from optparse import OptionParser
+from multiprocessing import Process
 import traceback
-
-from processing import Process
 
 import GUI
 from lib.feedbackcontroller import FeedbackController
