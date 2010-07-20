@@ -1,4 +1,4 @@
-Changes in xxxxxxx
+Changes in 2010.07
 ==================
 
 Features:
@@ -16,6 +16,7 @@ Bugfixes:
 Other:
 
   * Updated to Python 2.6 which is now the required Python version
+  * Pyprocessing is no longer required
 
 
 Changes in 2009.12
