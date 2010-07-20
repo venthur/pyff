@@ -1,0 +1,46 @@
+Pyff has moved from SVN to GIT!
+===============================
+
+The old googlecode repository is no longer in use. The new repository is
+
+  http://github.com/venthur/pyff
+
+You can still use SVN in read-only mode with the git repositoryh if you must,
+but I encourage you to use git instead!
+
+  http://bbci.de/pyff
+
+
+How to use SVN with the git repository:
+=======================================
+
+Do the initial checkout:
+
+  svn checkout https://svn.github.com/venthur/pyff
+
+Basic work cycle:
+
+  # update your repository
+  svn update
+
+  # your actual work..
+  <edit files>
+  svn add
+  svn delete
+  svn copy
+  svn move
+
+  # examine your changes
+  svn status
+  svn diff
+  svn revert
+
+  # create a patch and send it to me
+  svn diff > my-changes.patch
+
+The last step is necessary since you cannot commit changes with SVN into the
+git repository. So you collect all the changes in one file and send it to me.
+
+
+-- 2010-07-20 Bastian Venthur <bastian.venthur@tu-berlin.de>
+

@@ -1,3 +1,23 @@
+Changes in xxxxxxx
+==================
+
+Features:
+
+  * FeedbackController shows a stack trace instead of an error when import or
+    load of a Feedback fails
+  * Added new Hex-o-Speller Feedback
+  * Added module for the g-STIMbox by g.tec
+  * New EventDrivenFeedback Baseclass
+
+Bugfixes:
+
+  * Fixed automatic sorting of the table in the GUI
+
+Other:
+
+  * Updated to Python 2.6 which is now the required Python version
+
+
 Changes in 2009.12
 ==================
 
