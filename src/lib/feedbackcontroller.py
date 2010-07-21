@@ -39,8 +39,6 @@ class FeedbackController(object):
     def __init__(self, plugin=None, fbpath=None, port=None):
         # Setup my stuff:
         self.logger = logging.getLogger("FeedbackController")
-        self.encoder = bcixml.XmlEncoder()
-        self.decoder = bcixml.XmlDecoder()
         # Set up the socket
         self.ipcchannel = ipc.IPCConnectionHandler(self)
         self.udpconnectionhandler = UDPDispatcher(self)
