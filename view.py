@@ -16,7 +16,6 @@ program; if not, see <http://www.gnu.org/licenses/>.
 import logging
 
 from VisionEgg.Core import *
-from VisionEgg.Text import Text
 
 from pygame import Color
 
@@ -29,18 +28,12 @@ class View(VisionEggView):
     def __init__(self, palette):
         self._palette = palette
         self.__init_attributes()
-        super(View, self).__init__()
+        VisionEggView.__init__(self)
 
     def __init_attributes(self):
         self._logger = logging.getLogger('View')
         self._symbol_duration = 0.05
         self._font_size = 150
-
-    def update_parameters(self, **kwargs):
-        for k, v in kwargs.iteritems():
-            setattr(self, '_' + k, v)
-        if self._screen_acquired:
-            self.reinit()
 
     def acquire(self):
         self._screen_acquired = True
@@ -53,7 +46,7 @@ class View(VisionEggView):
         """ Calculate the height of the headline from the font size and
         set positions accordingly.
         """
-        sz = self._screen.size
+        sz = self.screen.size
         self._headline = ColorWord((sz[0] / 2., sz[1] - self._headline_vpos),
                                    symbol_size=self._headline_font_size,
                                    target_size=self._headline_target_font_size)
@@ -61,25 +54,12 @@ class View(VisionEggView):
                                       symbol_size=self._font_size)
 
     def __init_viewports(self):
-        self._headline_viewport = Viewport(screen=self._screen,
+        self._headline_viewport = Viewport(screen=self.screen,
                                            stimuli=self._headline)
-        self._viewport = Viewport(screen=self._screen,
+        self._viewport = Viewport(screen=self.screen,
                                   stimuli=self._center_text)
         self.add_viewport(self._headline_viewport)
         self.add_viewport(self._viewport)
-
-    def _set_font_color(self):
-        try:
-            self._font_color = Color(self._font_color_name).normalize()
-        except ValueError:
-            self._logger.warn('No such pygame.Color: %s' %
-                              str(self._font_color_name))
-
-    def _set_bg_color(self):
-        try:
-            self._screen.set(bgcolor=Color(self._bg_color).normalize())
-        except ValueError:
-            self._logger.warn('No such pygame.Color: %s' % str(self._bg_color))
 
     def _symbol_color(self, symbol):
         return self._palette(symbol) if self._alternating_colors else \
@@ -106,10 +86,6 @@ class View(VisionEggView):
 
     def _present(self, sec):
         self.presentation.set(go_duration=(sec, 'seconds'))
-        self.presentation.go()
-
-    def present_frames(self, num_frames):
-        self.presentation.set(go_duration=(num_frames, 'frames'))
         self.presentation.go()
 
     def _center_word(self, text, color=None):
@@ -140,7 +116,6 @@ class View(VisionEggView):
         if color is None:
             color = self._font_color
         self._center_word(symbol, (color,))
-        #self._present(self._symbol_duration)
 
     def clear_symbol(self):
         """ Remove the stimulus from the screen. Alternatives welcome.
@@ -154,8 +129,3 @@ class View(VisionEggView):
             self._center_word(str(i))
             self._present(self._count_down_symbol_duration)
         self.clear_symbol()
-
-    def close(self):
-        """ Shut down the screen. """
-        self._screen_acquired = False
-        self._screen.close()

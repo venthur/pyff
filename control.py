@@ -17,7 +17,6 @@ from __future__ import with_statement
 
 from time import sleep
 from os import path
-import logging
 
 import pygame
 
@@ -36,9 +35,9 @@ class Control(VisionEggFeedback, Config):
     def __init__(self, *args, **kwargs):
         pygame.mixer.init()
         self.__init_attributes()
-        VisionEggFeedback.__init__(self, view_type=View, *args, **kwargs)
+        VisionEggFeedback.__init__(self, *args, **kwargs)
 
-    def on_init(self):
+    def init(self):
         Config.init(self)
         self.update_parameters()
 
@@ -46,8 +45,6 @@ class Control(VisionEggFeedback, Config):
         self._asking = False
         self._digits = ''
         self._sound = pygame.mixer.Sound(path.join(datadir, 'sound.ogg'))
-        self._logger = logging.getLogger('Control')
-        self._logger.setLevel(logging.DEBUG)
         self._trigger = self.send_parallel
         self.count = 0
         self._palette = Palette()
@@ -56,29 +53,23 @@ class Control(VisionEggFeedback, Config):
         return View(self._palette)
 
     def update_parameters(self):
+        VisionEggFeedback.update_parameters(self)
         self._trial_type = getattr(self, '_trial_' + str(self.trial_type))
         self._process_input = getattr(self, '_process_input_' +
                                       str(self.trial_type))
         params = dict([[p, getattr(self, p, None)] for p in
                         self._view_parameters])
         self._palette.set(self.symbol_colors, self.color_groups)
-        self._view.update_parameters(**params)
         self._alphabet = ''.join(self.color_groups)
 
-    def on_interaction_event(self, data):
-        self.update_parameters()
-
-    def on_play(self):
-        self._flag.reset()
+    def play_tick(self):
         try:
-            self._view.acquire()
-            self.update_parameters()
             if self.sound:
                 self._sound.play()
             self._block()
         except pygame.error, e:
-            self._logger.error(e)
-        self.on_stop()
+            self.logger.error(e)
+        self.quit()
 
     def _block(self):
         for word in self._iter(self.words):
@@ -147,15 +138,6 @@ class Control(VisionEggFeedback, Config):
 
         seq = self.stimulus_sequence(gen(), self.inter_burst)
         seq.run()
-        return
-        for symbol in self._iter(symbols):
-            try:
-                self._trigger(symbol_trigger(symbol[0], self._current_target,
-                                             self._alphabet))
-            except ValueError:
-                # redundant symbol
-                pass
-            self._view.symbol(*symbol)
 
     def _ask(self):
         self._asking = True
@@ -163,11 +145,9 @@ class Control(VisionEggFeedback, Config):
         self._asking = False
 
     def keyboard_input(self, event):
-        if event.key == pygame.K_q or event.type == pygame.QUIT:
-            self.on_stop()
-            self._view.answered()
-        elif self._asking:
+        if self._asking:
             self._process_input(event)
+        VisionEggFeedback.keyboard_input(self, event)
 
     def _process_input_1(self, event):
         """ Count mode. Record the entered digits in count. """
@@ -196,10 +176,9 @@ class Control(VisionEggFeedback, Config):
             self._trigger(trig + yes)
             self._view.answered()
 
-    def on_stop(self):
-        self._flag.off()
+    def quit(self):
         self._view.answered()
-        self._view.close()
+        VisionEggFeedback.quit(self)
 
 class AlphaBurst(Control):
     pass

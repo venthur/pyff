@@ -17,7 +17,7 @@ from itertools import izip
 from random import uniform
 import logging
 
-from AlphaBurst.model.text_list import TextList
+from .text_list import TextList
 
 class ColorWord(TextList):
     def __init__(self, position, text='', target=None, symbol_size=72,
