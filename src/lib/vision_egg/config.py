@@ -16,6 +16,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 }}} """
 
 class Config(object):
+    """ This class holds the pyff parameters. The list _view_parameters
+    defines what to pass along to the view object.
+    """
     def __init__(self):
         self.wait_style_fixed = False
         self.fullscreen = False
@@ -23,5 +26,11 @@ class Config(object):
         self.bg_color = 'grey'
         self.font_color_name = 'green'
         self.font_size = 150
+        self.fixation_cross_time = 1.
+        self.count_down_symbol_duration = 0.5
+        self.count_down_start = 5
         self._view_parameters = ['fullscreen', 'geometry', 'bg_color',
-                                 'font_color_name', 'font_size']
+                                 'font_color_name', 'font_size',
+                                 'fixation_cross_time',
+                                 'count_down_symbol_duration',
+                                 'count_down_start']
