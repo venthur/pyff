@@ -22,16 +22,16 @@ import pygame
 
 from FeedbackBase.MainloopFeedback import MainloopFeedback
 
-from .view import VisionEggView
-from .config import Config
-from .model.stimulus import StimulusSequenceFactory
-from .util.switcherator import *
+from view import VisionEggView
+from config import Config
+from model.stimulus import StimulusSequenceFactory
+from util.switcherator import Flag, Switcherator
 
 VisionEgg.config.VISIONEGG_GUI_INIT = 0
 VisionEgg.config.VISIONEGG_LOG_TO_STDERR = 0
 VisionEgg.logger.setLevel(logging.ERROR)
 
-class VisionEggFeedback(MainloopFeedback, Config):
+class VisionEggControl(MainloopFeedback, Config):
     def __init__(self, view_type=VisionEggView, *args, **kwargs):
         MainloopFeedback.__init__(self, *args, **kwargs)
         Config.__init__(self)

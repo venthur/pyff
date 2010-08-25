@@ -15,4 +15,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 }}} """
 
-from lib.vision_egg import *
+from lib.vision_egg import VisionEggControl
+
+class VisionEggFeedback(VisionEggControl):
+    pass

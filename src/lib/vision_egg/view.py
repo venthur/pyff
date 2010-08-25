@@ -15,15 +15,15 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 }}} """
 
-import logging
+import logging, os
 
-from VisionEgg.Core import *
+from VisionEgg.Core import Screen, Viewport
 from VisionEgg.FlowControl import Presentation
 
 from pygame import Color
 
-from .model.color_word import ColorWord
-from .util.switcherator import *
+from model.color_word import ColorWord
+from util.switcherator import Flag, Switcherator
 
 class VisionEggView(object):
     def __init__(self):
