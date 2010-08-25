@@ -21,9 +21,7 @@ import logging
 
 import pygame
 
-import VisionEgg
-
-from FeedbackBase.Feedback import Feedback
+from lib.vision_egg import VisionEggFeedback
 
 from AlphaBurst.config import Config
 from AlphaBurst.view import View
@@ -34,15 +32,11 @@ from AlphaBurst.util.metadata import datadir
 from AlphaBurst.util.trigger import *
 from AlphaBurst.util.switcherator import *
 
-VisionEgg.config.VISIONEGG_GUI_INIT = 0
-VisionEgg.config.VISIONEGG_LOG_TO_STDERR = 0
-VisionEgg.logger.setLevel(logging.ERROR)
-
-class Control(Feedback, Config):
+class Control(VisionEggFeedback, Config):
     def __init__(self, *args, **kwargs):
-        Feedback.__init__(self, *args, **kwargs)
         pygame.mixer.init()
         self.__init_attributes()
+        VisionEggFeedback.__init__(self, view_type=View, *args, **kwargs)
 
     def on_init(self):
         Config.init(self)
@@ -56,11 +50,10 @@ class Control(Feedback, Config):
         self._logger.setLevel(logging.DEBUG)
         self._trigger = self.send_parallel
         self.count = 0
-        self._flag = Flag()
-        self._iter = lambda it: Switcherator(self._flag, it)
-        handlers = [(pygame.KEYDOWN, self.keyboard_input)]
         self._palette = Palette()
-        self._view = View(self._flag, handlers, self._palette)
+
+    def _create_view(self):
+        return View(self._palette)
 
     def update_parameters(self):
         self._trial_type = getattr(self, '_trial_' + str(self.trial_type))
@@ -117,7 +110,7 @@ class Control(Feedback, Config):
             self._sequence(seq)
         self._ask()
         if self._flag:
-            diff = self.count - self._sequences.occurences(self._current_target) 
+            diff = self.count - self._sequences.occurences(self._current_target)
             constrained_diff = max(min(diff, self.max_diff), -self.max_diff)
             if diff != constrained_diff:
                 self._logger.error('Too high count discrepancy: %d' % diff)
@@ -141,6 +134,20 @@ class Control(Feedback, Config):
         sleep(self.inter_sequence)
 
     def _burst(self, symbols):
+        def gen():
+            for symbol in self._iter(symbols):
+                try:
+                    self._trigger(symbol_trigger(symbol[0], self._current_target,
+                                                self._alphabet))
+                except ValueError:
+                    # redundant symbol
+                    pass
+                self._view.symbol(*symbol)
+                yield
+
+        seq = self.stimulus_sequence(gen(), self.inter_burst)
+        seq.run()
+        return
         for symbol in self._iter(symbols):
             try:
                 self._trigger(symbol_trigger(symbol[0], self._current_target,
