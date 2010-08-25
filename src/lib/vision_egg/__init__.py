@@ -15,5 +15,4 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 }}} """
 
-from control import VisionEggControl
 from view import VisionEggView

@@ -22,16 +22,16 @@ import pygame
 
 from FeedbackBase.MainloopFeedback import MainloopFeedback
 
-from view import VisionEggView
-from config import Config
-from model.stimulus import StimulusSequenceFactory
-from util.switcherator import Flag, Switcherator
+from lib.vision_egg.view import VisionEggView
+from lib.vision_egg.config import Config
+from lib.vision_egg.model.stimulus import StimulusSequenceFactory
+from lib.vision_egg.util.switcherator import Flag, Switcherator
 
 VisionEgg.config.VISIONEGG_GUI_INIT = 0
 VisionEgg.config.VISIONEGG_LOG_TO_STDERR = 0
 VisionEgg.logger.setLevel(logging.ERROR)
 
-class VisionEggControl(MainloopFeedback, Config):
+class VisionEggFeedback(MainloopFeedback, Config):
     """ Main controlling class for VisionEgg feedbacks. It holds and
     creates the view object, handles keyboard input and provides an
     interface for creating stimulus sequence objects, that ensure
