@@ -1,4 +1,4 @@
-""" {{{ Copyright (c) 2010 Torsten Schmits
+__copyright__ = """ Copyright (c) 2010 Torsten Schmits
 
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -11,7 +11,7 @@ A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 You should have received a copy of the GNU General Public License along with this
 program; if not, see <http://www.gnu.org/licenses/>.
 
-}}} """
+"""
 
 from random import Random, choice, randint
 from copy import copy
