@@ -20,8 +20,7 @@ from threading import Thread
 import logging
 import asyncore
 import traceback
-
-from processing import Process, Event
+from multiprocessing import Process, Event
 
 from lib.PluginController import PluginController
 import lib.PluginController
