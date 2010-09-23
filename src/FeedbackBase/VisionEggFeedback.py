@@ -92,7 +92,9 @@ class VisionEggFeedback(MainloopFeedback, Config):
         presentation sequence). The function should prepare the
         succeeding stimulus.
         @param presentation_time: The duration of presentation of a
-        single stimulus, in seconds
+        single stimulus, in seconds. Can also be a sequence of values.
+        If the prepare function doesn't terminate when the sequence is
+        exhausted, it is restarted.
         """
         return self._stimseq_fact.create(prepare, presentation_time,
                                          self.wait_style_fixed)

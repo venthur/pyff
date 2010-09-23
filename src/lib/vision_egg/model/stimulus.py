@@ -16,7 +16,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 """
 
 from time import sleep
-import datetime
+import datetime, collections
 
 def time():
     """ Return microsecond-accurate time since last midnight. 
@@ -29,12 +29,23 @@ class StimulusPainter(object):
     """ Painter for a series of stimuli. """
     def __init__(self, prepare, wait, view, flag, wait_style_fixed=False):
         self._prepare_func = prepare
-        self._wait_time = wait
+        self._wait_time_value = wait
         self._view = view
         self._flag = flag
         self._wait_style_fixed = wait_style_fixed
+        self._wait_time = 0.1
+
+    def _setup_wait_time(self):
+        self._individual_wait_times = (isinstance(self._wait_time_value,
+                                                 collections.Sequence) and
+                                       self._wait_time_value)
+        if self._individual_wait_times:
+            self._wait_time = iter(self._wait_time_value)
+        else:
+            self._wait_time = self._wait_time_value
         
     def run(self):
+        self._setup_wait_time()
         if self._prepare():
             self._last_start = time()
             self._present()
@@ -44,10 +55,11 @@ class StimulusPainter(object):
             self._wait()
 
     def _wait(self):
-        wait_time = self._last_start - time() + self._wait_time
+        next_wait_time = self._next_wait_time
+        wait_time = self._last_start - time() + next_wait_time
         sleep(wait_time)
         if self._wait_style_fixed:
-            self._last_start += self._wait_time
+            self._last_start += next_wait_time
         else:
             self._last_start = time()
 
@@ -58,6 +70,17 @@ class StimulusPainter(object):
     def _present(self):
         print self._last_start
         self._view.present_frames(1)
+
+    @property
+    def _next_wait_time(self):
+        if self._individual_wait_times:
+            try:
+                return self._wait_time.next()
+            except StopIteration:
+                self._setup_wait_time()
+                return self._wait_time.next()
+        else:
+            return self._wait_time
 
 class StimulusSequence(StimulusPainter):
     def _do_prepare(self):
