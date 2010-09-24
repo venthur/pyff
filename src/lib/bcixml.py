@@ -22,6 +22,7 @@ import logging
 import sys
 from xml.dom import minidom, Node
 
+from lib import pylibtobiic
 
 XML_ROOT = "bci-signal"
 VERSION = "version"
@@ -80,7 +81,7 @@ class XmlDecoder(object):
     def __init__(self):
         self.logger = logging.getLogger("XmlDecoder")
 
-    
+
     def decode_packet(self, packet):
         """Parse the XML string and return a BciSignal.
         
@@ -194,6 +195,54 @@ class XmlDecoder(object):
 
         return None
         
+class TobiXmlDecoder(XmlDecoder):
+    def __init__(self):
+        XmlDecoder.__init__(self)
+
+    def decode_packet(self, packet):
+        """Parse the XML string and return a BciSignal.
+        
+        A DecodingError is raised when the parsing of the packet failed.
+        """
+        dom = None
+        try:
+            dom = minidom.parseString(packet)
+        except:
+            raise DecodingError("Not XML at all! (%s)" % str(packet))
+        
+        # the root element name will be "messagec" for TOBI interface C packets,
+        # if it is anything else, pass it on to the normal pyff decoder
+        if dom.documentElement.nodeName == "messagec":
+            return self.__decode_tobiic_packet(packet)
+        return XmlDecoder.decode_packet(self, packet)
+
+    def __decode_tobiic_packet(self, data):
+        l = []    # for the variables
+        c = []    # for the commands
+        t = None  # for the type
+
+        # deserialize the packet
+        icmessage = pylibtobiic.ICMessage()
+        icsr = pylibtobiic.ICSerializer(icmessage, True)
+        icsr.Deserialize(data)
+
+        # now extract the data from icmessage
+        # go through all the classifiers...
+        for classifier_name in icmessage.classifiers.map.keys():
+            classifier_data = icmessage.classifiers.map[classifier_name]
+            print "[TOBI-IC] %s" % classifier_name
+            # and all the classes inside the classifier...
+            values = []
+            for class_name in classifier_data.classes.map.keys():
+                class_data = classifier_data.classes.map[class_name]
+                print "[TOBI-IC] %s/%s: %.3f" % (classifier_name, class_name, class_data.GetValue())
+                # is this the correct way to pass the data value on to pyff??
+                values.append(class_data.GetValue())
+            l.append((u'cl_output', values))
+            break 
+
+        t = CONTROL_SIGNAL
+        return BciSignal(dict(l), c, t)
 
 class XmlEncoder(object):
     """Generates an XML string from a BciSignal object.

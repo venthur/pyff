@@ -68,6 +68,8 @@ the Free Software Foundation; either version 2 of the License, or
                       metavar="PORTNUM")
     parser.add_option("--nogui", action="store_true", default=False, 
                       help="Start without GUI.")
+    parser.add_option("--protocol", dest='protocol', type='choice',
+                        choices=['bcixml', 'tobixml'], default='bcixml')
 
     options, args = parser.parse_args()
 
@@ -98,7 +100,7 @@ the Free Software Foundation; either version 2 of the License, or
     if options.port != None:
         port = int(options.port, 16)
     try:
-        fc = FeedbackController(plugin, fbpath, port)
+        fc = FeedbackController(plugin, fbpath, port, options.protocol)
         fc.start()
     except (KeyboardInterrupt, SystemExit):
         logging.debug("Caught keyboard interrupt or system exit; quitting")

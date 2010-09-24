@@ -36,12 +36,12 @@ class FeedbackController(object):
     Feedbacks. Can query the Feedback for it's variables and can as well set 
     them.
     """
-    def __init__(self, plugin=None, fbpath=None, port=None):
+    def __init__(self, plugin=None, fbpath=None, port=None, protocol='bcixml'):
         # Setup my stuff:
         self.logger = logging.getLogger("FeedbackController")
         # Set up the socket
         self.ipcchannel = ipc.IPCConnectionHandler(self)
-        self.udpconnectionhandler = UDPDispatcher(self)
+        self.udpconnectionhandler = UDPDispatcher(self, protocol)
         # Windows only, set the parallel port port
         self.ppport = port
         self.fbplugin = plugin
@@ -135,10 +135,13 @@ class FeedbackController(object):
 class UDPDispatcher(asyncore.dispatcher):
     """UDP Message Hanldeer of the Feedback Controller."""
     
-    def __init__(self, fc):
+    def __init__(self, fc, protocol):
         asyncore.dispatcher.__init__(self)
         self.fc = fc
-        self.decoder = bcixml.XmlDecoder()
+        if protocol == 'tobixml':
+            self.decoder = bcixml.TobiXmlDecoder()
+        else:
+            self.decoder = bcixml.XmlDecoder()
         self.encoder = bcixml.XmlEncoder()
         self.create_socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.bind((bcinetwork.LOCALHOST, bcinetwork.FC_PORT))
