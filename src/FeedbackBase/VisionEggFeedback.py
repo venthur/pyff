@@ -99,7 +99,8 @@ class VisionEggFeedback(MainloopFeedback, Config):
 
     def keyboard_input(self, event):
         """ Handle pygame events like keyboard input. """
-        if event.key == pygame.K_q or event.type == pygame.QUIT:
+        quit_keys = [pygame.K_q, pygame.K_ESCAPE]
+        if event.key in quit_keys or event.type == pygame.QUIT:
             self.quit()
 
     def pre_mainloop(self):
