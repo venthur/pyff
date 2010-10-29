@@ -1,3 +1,5 @@
+from __future__ import with_statement
+
 __copyright__ = """ Copyright (c) 2010 Torsten Schmits
 
 This program is free software; you can redistribute it and/or modify it under
@@ -13,14 +15,12 @@ program; if not, see <http://www.gnu.org/licenses/>.
 
 """
 
-from __future__ import with_statement
-
 from time import sleep
 from os import path
 
 import pygame
 
-from lib.vision_egg import VisionEggFeedback
+from FeedbackBase.VisionEggFeedback import VisionEggFeedback
 
 from AlphaBurst.config import Config
 from AlphaBurst.view import View
