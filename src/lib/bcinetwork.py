@@ -103,11 +103,22 @@ class BciNetwork(object):
         answer = self.xmldecoder.decode_packet(data)
         return answer.data.get("variables")
 
+    def save_configuration(self, filename):
+        """Tell the Feedback to store it's variables to the given file."""
+        signal = bcixml.BciSignal(None, [(bcixml.CMD_SAVE_VARIABLES, {'filename' : filename})], bcixml.INTERACTION_SIGNAL)
+        self.send_signal(signal)
+
+    def load_configuration(self, filename):
+        """Tell the Feedback to load variable values from given file."""
+        signal = bcixml.BciSignal(None, [(bcixml.CMD_LOAD_VARIABLES,
+            {'filename' : filename})], bcixml.INTERACTION_SIGNAL)
+        self.send_signal(signal)
+
     def send_signal(self, signal):
         """Send a signal."""
         xml = self.xmlencoder.encode_packet(signal)
         self.socket.sendto(xml, self.addr)
-    
+
     def receive(self, timeout):
         """Receive a signal."""
         if self.SEND_ONLY:
@@ -123,4 +134,4 @@ class BciNetwork(object):
             # do something!
             self.logger.warning("Receiving from FC failed (timeout).")
         return data, addr
-        
+

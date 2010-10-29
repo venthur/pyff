@@ -65,6 +65,9 @@ CMD_STOP = 'stop'
 CMD_QUIT = 'quit'
 CMD_SEND_INIT = 'sendinit'
 CMD_GET_VARIABLES = 'getvariables'
+CMD_SAVE_VARIABLES = 'savevariables'
+CMD_LOAD_VARIABLES = 'loadvariables'
+
 
 class XmlDecoder(object):
     """Parses XML strings and returns BciSignal containing the data of the
@@ -436,14 +439,15 @@ def main():
          "dict" : {"foo" : 1, "bar" : 2, "baz" : 3},
          "ddict" : {"key" : "value", "d-in-" : {"foo" : 1, "bar" : 2, "baz" : 3}}
          }
+    d = dict()
     t = "interaction-signal"
-    c = ["start", "stop", "init"]
+    c = [("start", {"foo" : 1}), ("stop", {1 : 2, "l" : [1,2,3]}), ("init", dict())]
 
     signal = BciSignal(d, c, t)
 
     encoder = XmlEncoder()
     xml = encoder.encode_packet(signal)
-#    print xml
+    print xml
     
     decoder = XmlDecoder()
     signal2 = decoder.decode_packet(xml)
@@ -458,7 +462,9 @@ def main():
         print i
         
     print d == d2
-    
+    print signal
+    print signal2
+
 if __name__ == "__main__":
     #from timeit import Timer
     #t = Timer("main()")
