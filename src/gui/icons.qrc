@@ -1,19 +1,19 @@
-<!DOCTYPE RCC>
-<RCC version="1.0">
-<qresource>
-<file>icons/clear.png</file>
-<file>icons/connect.png</file>
-<file>icons/exit.png</file>
-<file>icons/get.png</file>
-<file>icons/open.png</file>
-<file>icons/pause.png</file>
-<file>icons/play.png</file>
-<file>icons/quit.png</file>
-<file>icons/saveas.png</file>
-<file>icons/save.png</file>
-<file>icons/sendinit.png</file>
-<file>icons/sendall.png</file>
-<file>icons/sendmodified.png</file>
-<file>icons/stop.png</file>
-</qresource>
+<RCC>
+  <qresource>
+    <file>icons/PyffLogoNeu.png</file>
+    <file>icons/clear.png</file>
+    <file>icons/connect.png</file>
+    <file>icons/exit.png</file>
+    <file>icons/get.png</file>
+    <file>icons/open.png</file>
+    <file>icons/pause.png</file>
+    <file>icons/play.png</file>
+    <file>icons/quit.png</file>
+    <file>icons/saveas.png</file>
+    <file>icons/save.png</file>
+    <file>icons/sendinit.png</file>
+    <file>icons/sendall.png</file>
+    <file>icons/sendmodified.png</file>
+    <file>icons/stop.png</file>
+  </qresource>
 </RCC>

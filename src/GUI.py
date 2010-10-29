@@ -53,22 +53,11 @@ class BciGui(QtGui.QMainWindow, Ui_MainWindow):
 
         
         # connect toolbuttons to actions
-        self.toolButton_changeFeedbackController.setDefaultAction(self.actionChangeFeedbackController)
         self.toolButton_clearFilter.setDefaultAction(self.actionClearFilter)
-        self.toolButton_pause.setDefaultAction(self.actionPause)
-        self.toolButton_play.setDefaultAction(self.actionPlay)
-        self.toolButton_stop.setDefaultAction(self.actionStop)
-        self.toolButton_quit.setDefaultAction(self.actionQuit)
-        self.toolButton_sendinit.setDefaultAction(self.actionSendInit)
-        self.toolButton_get.setDefaultAction(self.actionGet)
-        
-        self.sendMenu = QtGui.QMenu()
-        self.sendMenu.addAction(self.actionSendAll)
-        self.sendMenu.addAction(self.actionSendModified)
-        self.toolButton_send.setMenu(self.sendMenu)
-        self.toolButton_send.setDefaultAction(self.actionSendModified)
-        
-        
+        # put the combobox into the toolbar before the sendinit action
+        self.comboBox_feedback = QtGui.QComboBox(self.toolBar)
+        self.toolBar.insertWidget(self.actionSendInit, self.comboBox_feedback)
+
         # connect actions to methods
         #QtCore.QObject.connect(self.actionOpen, QtCore.SIGNAL("triggered()"), self.clicked)
         QtCore.QObject.connect(self.actionChangeFeedbackController, QtCore.SIGNAL("triggered()"), self.changeFeedbackController)
@@ -86,10 +75,12 @@ class BciGui(QtGui.QMainWindow, Ui_MainWindow):
         QtCore.QObject.connect(self.actionGet, QtCore.SIGNAL("triggered()"), self.get)
         
         QtCore.QObject.connect(self.lineEdit, QtCore.SIGNAL("textChanged(const QString&)"), self.filter)
-        
+        QtCore.QObject.connect(self.model, QtCore.SIGNAL("dataChanged(const QModelIndex&, const QModelIndex&)"), self.dataChanged)
         self.feedbacks = []
         self.setFeedbackController(bcinetwork.LOCALHOST, bcinetwork.FC_PORT)
         
+    def dataChanged(self):
+        self.sendModified()
 
     def play(self):
         self.fc.play()
@@ -128,13 +119,11 @@ class BciGui(QtGui.QMainWindow, Ui_MainWindow):
     
         
     def sendModified(self):
-        print "modified"
         signal = self.makeSignal(True)
         self.fc.send_signal(signal)
         
     
     def sendAll(self):
-        print "all"
         signal = self.makeSignal()
         self.fc.send_signal(signal)
     
@@ -147,16 +136,20 @@ class BciGui(QtGui.QMainWindow, Ui_MainWindow):
                 data[elem.name] = elem.value
                 # FIXME: should 
                 elem.modified = False
-        print data
         signal = bcixml.BciSignal(data, None, bcixml.INTERACTION_SIGNAL)
         return signal
 
     
     def open(self):
-        pass
+        filename = QtGui.QFileDialog.getOpenFileName(filter = "Configuration Files (*.json)")
+        filename = unicode(filename)
+        self.fc.load_configuration(filename)
+    
     
     def save(self):
-        pass
+        filename = QtGui.QFileDialog.getSaveFileName(filter = "Configuration Files (*.json)")
+        filename = unicode(filename)
+        self.fc.save_configuration(filename)
     
     def saveas(self):
         pass
@@ -192,7 +185,7 @@ class BciGui(QtGui.QMainWindow, Ui_MainWindow):
         if not feedbacks:
             QtGui.QMessageBox.warning(self,
                 "Ooops!",
-                "The Feedback Controller under the given adress: %s did not respond or has no feedbacks available!\n\nIt was not added to the list of available Feedback Controllers." % str(ip) + ":" + str(port))
+                "The Feedback Controller under the given adress: %s did not respond or has no feedbacks available!\n\nIt was not added to the list of available Feedback Controllers." % unicode(ip) + ":" + unicode(port))
             return
         else:
             feedbacks.sort()
@@ -242,7 +235,7 @@ class TableModel(QtCore.QAbstractTableModel):
             return QtCore.QVariant(QtGui.QColor(c))
         if role != QtCore.Qt.DisplayRole:
             return QtCore.QVariant() 
-        return QtCore.QVariant(str(self.entry[index.row()][index.column()]))
+        return QtCore.QVariant(unicode(self.entry[index.row()][index.column()]))
     
     def headerData(self, section, orientation, role):
         if role != QtCore.Qt.DisplayRole:
@@ -253,12 +246,13 @@ class TableModel(QtCore.QAbstractTableModel):
             return QtCore.QVariant(int(section))
         
     def setData(self, index, value, role):
+        """Is called whenever the user modified a value in the table."""
         if not index.isValid():
             return False
         #if not self.entry[index.row()].isValid(value.toString()):
         #    return False 
         #self.entry[index.row()][index.column()] = unicode(value.toString())
-        self.entry[index.row()].setValue(str(value.toString()))
+        self.entry[index.row()].setValue(unicode(value.toString()))
         self.entry[index.row()].modified = True
         self.emit(QtCore.SIGNAL("dataChanged(const QModelIndex &, const QModelIndex &)"), index, index)
         return True
