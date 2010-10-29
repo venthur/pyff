@@ -60,8 +60,6 @@ class VisionEggFeedback(MainloopFeedback, Config):
 
     def __setup_stim_factory(self):
         """ Create the factory for stimulus sequence handlers. """
-        refresh = VisionEgg.config.VISIONEGG_MONITOR_REFRESH_HZ
-        #self._stimseq_fact = StimulusSequenceFactory(1. / refresh)
         self._stimseq_fact = StimulusSequenceFactory(self._flag)
         self._stimseq_fact.set_view(self._view)
 
