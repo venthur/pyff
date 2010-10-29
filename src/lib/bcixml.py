@@ -179,7 +179,14 @@ class XmlDecoder(object):
         elif type in UNSUPPORTED_TYPE:
             return VARIABLE, (name, value)
         elif type in COMMAND_TYPE:
-            return COMMAND, value
+            d = dict()
+            # should only be one child node, since we allow only 1 kwargs-dict
+            # per command
+            for node in element.childNodes:
+                if node.nodeType == Node.ELEMENT_NODE:
+                    d = self.__parse_element(node)[-1][-1]
+            # TODO: test if all keys are strings
+            return COMMAND, (value, d)
         raise DecodingError("Unknown type: %s" % str(type))
 
         
@@ -279,9 +286,12 @@ class XmlEncoder(object):
         root.appendChild(root2)
         
         # Write the commands
-        for c in signal.commands:
+        # each element of the command list is a tuple (command, **kwargs)
+        for command, args in signal.commands:
             cmd = dom.createElement(COMMAND_TYPE[0])
-            cmd.setAttribute(VALUE, str(c))
+            cmd.setAttribute(VALUE, str(command))
+            if args:
+                self.__write_element(None, args, dom, cmd)
             root2.appendChild(cmd)
             
         # Write the data
@@ -359,8 +369,11 @@ class BciSignal(object):
     
     def __init__(self, data, commands, type):
         """
-        data and commands must be lists or None
-        type must be either CONTROL_ or INTERACTION-SIGNAL
+        Initialize a BciSignal object.
+
+        data -- dictionary of variables or None
+        commands -- list of tuples (commandname (str), dictionary (kwargs)) or None
+        type -- CONTROL_ or INTERACTION_SIGNAL
         """
         # if data or commands == None, convert to empty lists
         if not data:

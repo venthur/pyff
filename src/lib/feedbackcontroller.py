@@ -92,7 +92,7 @@ class FeedbackController(object):
     def _handle_is(self, signal):
         """Handle Interaction Signal."""
         self.logger.info("Got interaction signal: %s" % str(signal))
-        cmd = signal.commands[0] if len(signal.commands) > 0 else None
+        cmd = signal.commands[0][0] if len(signal.commands) > 0 else None
         
         # A few commands need to be handled by the Feedback Controller, the
         # rest goes to the Feedback

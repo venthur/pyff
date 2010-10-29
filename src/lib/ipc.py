@@ -185,7 +185,7 @@ class FeedbackIPCChannel(IPCChannel):
             self.feedback._on_control_event(message.data)
             return
         
-        cmd = message.commands[0] if len(message.commands) > 0 else None
+        cmd = message.commands[0][0] if len(message.commands) > 0 else None
         if cmd == bcixml.CMD_GET_VARIABLES:
             reply = bcixml.BciSignal({"variables" : self.feedback._get_variables()}, None,
                                      bcixml.REPLY_SIGNAL)
