@@ -48,6 +48,7 @@ FLOAT_TYPE = ("f", "float")
 LONG_TYPE = ("l", "long")
 COMPLEX_TYPE = ("c", "cmplx", "complex")
 STRING_TYPE = ("s", "str", "string")
+UNICODE_TYPE = ('u', 'unicode')
 LIST_TYPE = ("list",)
 TUPLE_TYPE = ("tuple",)
 SET_TYPE = ("set",)
@@ -91,7 +92,7 @@ class XmlDecoder(object):
         try:
             dom = minidom.parseString(packet)
         except:
-            raise DecodingError("Not XML at all! (%s)" % str(packet))
+            raise DecodingError("Not XML at all! (%s)" % unicode(packet))
         root = dom.documentElement
         l = []    # for the variables
         c = []    # for the commands
@@ -141,6 +142,8 @@ class XmlDecoder(object):
             return VARIABLE, (name, complex(value))
         elif type in STRING_TYPE: 
             return VARIABLE, (name, str(value))
+        elif type in UNICODE_TYPE:
+            return VARIABLE, (name, unicode(value))
         elif type in LIST_TYPE:
             l = list()
             for node in element.childNodes:
@@ -288,7 +291,7 @@ class XmlEncoder(object):
             except EncodingError, e:
                 # Ignore elements which are unkknown, just print a warning
                 self.logger.warning("Unable to write element (%s)" % str(e))
-        return dom.toxml()
+        return dom.toxml('utf-8')
     
     
     def __get_type(self, value):
@@ -304,6 +307,8 @@ class XmlEncoder(object):
             type = COMPLEX_TYPE
         elif isinstance(value, str):
             type = STRING_TYPE
+        elif isinstance(value, unicode):
+            type = UNICODE_TYPE
         elif isinstance(value, list):
             type = LIST_TYPE
         elif isinstance(value, tuple):
@@ -342,7 +347,7 @@ class XmlEncoder(object):
                 if self.__get_type(i[1]) != UNSUPPORTED_TYPE:
                     self.__write_element(None, i, dom, e)
         elif value != None:
-            e.setAttribute(VALUE, str(value))
+            e.setAttribute(VALUE, unicode(value))
         root.appendChild(e)
         
 

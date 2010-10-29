@@ -1,4 +1,5 @@
 # testbcixml.py -
+# encoding: utf8
 # Copyright (C) 2008-2009  Bastian Venthur
 #
 # This program is free software; you can redistribute it and/or modify
@@ -52,6 +53,10 @@ class BcixmlTestCase(unittest.TestCase):
     def testString(self):
         """Should correctly en/decode String."""
         self.__convert_and_compare("somename", "foo")
+
+    def testUnicode(self):
+        """Should correctly en/decode Unicode."""
+        self.__convert_and_compare("somename", u"ß")
 
     def testNone(self):
         """Should correctly en/decode None."""
@@ -164,7 +169,13 @@ class BcixmlTestCase(unittest.TestCase):
         signal2 = self.decoder.decode_packet(xml)
         self.assertEqual(signal.type, signal2.type)
 
-        
+    def test_Command(self):
+        """Should support Commands with arguments."""
+        signal = bcixml.BciSignal(None, [['foo', dict()]], bcixml.INTERACTION_SIGNAL)
+        xml = self.encoder.encode_packet(signal)
+        signal2 = self.decoder.decode_packet(xml)
+        self.assertEqual(signal.commands, signal2.commands)
+
 #suite = unittest.makeSuite(BcixmlTestCase)
 def suite():
     testSuite = unittest.makeSuite(BcixmlTestCase)
