@@ -128,8 +128,9 @@ class Control(VisionEggFeedback, Config):
         def gen():
             for symbol in self._iter(symbols):
                 try:
-                    self._trigger(symbol_trigger(symbol[0], self._current_target,
-                                                self._alphabet))
+                    self._trigger(symbol_trigger(symbol[0],
+                                                 self._current_target,
+                                                 self._alphabet))
                 except ValueError:
                     # redundant symbol
                     pass
