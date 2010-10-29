@@ -185,7 +185,7 @@ class FeedbackIPCChannel(IPCChannel):
             self.feedback._on_control_event(message.data)
             return
         
-        cmd = message.commands[0] if len(message.commands) > 0 else None
+        cmd = message.commands[0][0] if len(message.commands) > 0 else None
         if cmd == bcixml.CMD_GET_VARIABLES:
             reply = bcixml.BciSignal({"variables" : self.feedback._get_variables()}, None,
                                      bcixml.REPLY_SIGNAL)
@@ -202,7 +202,12 @@ class FeedbackIPCChannel(IPCChannel):
         elif cmd == bcixml.CMD_QUIT:
             self.feedback._on_quit()
         elif cmd == bcixml.CMD_SEND_INIT:
-            self.feedback._on_init()        
-    
+            self.feedback._on_init()
+        elif cmd == bcixml.CMD_SAVE_VARIABLES:
+            filename = message.commands[0][1]['filename']
+            self.feedback.save_variables(filename)
+        elif cmd == bcixml.CMD_LOAD_VARIABLES:
+            filename = message.commands[0][1]['filename']
+            self.feedback.load_variables(filename)
 
 

@@ -22,6 +22,7 @@ import logging
 import sys
 from xml.dom import minidom, Node
 
+from lib import pylibtobiic
 
 XML_ROOT = "bci-signal"
 VERSION = "version"
@@ -47,6 +48,7 @@ FLOAT_TYPE = ("f", "float")
 LONG_TYPE = ("l", "long")
 COMPLEX_TYPE = ("c", "cmplx", "complex")
 STRING_TYPE = ("s", "str", "string")
+UNICODE_TYPE = ('u', 'unicode')
 LIST_TYPE = ("list",)
 TUPLE_TYPE = ("tuple",)
 SET_TYPE = ("set",)
@@ -63,6 +65,9 @@ CMD_STOP = 'stop'
 CMD_QUIT = 'quit'
 CMD_SEND_INIT = 'sendinit'
 CMD_GET_VARIABLES = 'getvariables'
+CMD_SAVE_VARIABLES = 'savevariables'
+CMD_LOAD_VARIABLES = 'loadvariables'
+
 
 class XmlDecoder(object):
     """Parses XML strings and returns BciSignal containing the data of the
@@ -80,7 +85,7 @@ class XmlDecoder(object):
     def __init__(self):
         self.logger = logging.getLogger("XmlDecoder")
 
-    
+
     def decode_packet(self, packet):
         """Parse the XML string and return a BciSignal.
         
@@ -90,7 +95,7 @@ class XmlDecoder(object):
         try:
             dom = minidom.parseString(packet)
         except:
-            raise DecodingError("Not XML at all! (%s)" % str(packet))
+            raise DecodingError("Not XML at all! (%s)" % unicode(packet))
         root = dom.documentElement
         l = []    # for the variables
         c = []    # for the commands
@@ -140,6 +145,8 @@ class XmlDecoder(object):
             return VARIABLE, (name, complex(value))
         elif type in STRING_TYPE: 
             return VARIABLE, (name, str(value))
+        elif type in UNICODE_TYPE:
+            return VARIABLE, (name, unicode(value))
         elif type in LIST_TYPE:
             l = list()
             for node in element.childNodes:
@@ -175,7 +182,14 @@ class XmlDecoder(object):
         elif type in UNSUPPORTED_TYPE:
             return VARIABLE, (name, value)
         elif type in COMMAND_TYPE:
-            return COMMAND, value
+            d = dict()
+            # should only be one child node, since we allow only 1 kwargs-dict
+            # per command
+            for node in element.childNodes:
+                if node.nodeType == Node.ELEMENT_NODE:
+                    d = self.__parse_element(node)[-1][-1]
+            # TODO: test if all keys are strings
+            return COMMAND, (value, d)
         raise DecodingError("Unknown type: %s" % str(type))
 
         
@@ -194,6 +208,54 @@ class XmlDecoder(object):
 
         return None
         
+class TobiXmlDecoder(XmlDecoder):
+    def __init__(self):
+        XmlDecoder.__init__(self)
+
+    def decode_packet(self, packet):
+        """Parse the XML string and return a BciSignal.
+        
+        A DecodingError is raised when the parsing of the packet failed.
+        """
+        dom = None
+        try:
+            dom = minidom.parseString(packet)
+        except:
+            raise DecodingError("Not XML at all! (%s)" % str(packet))
+        
+        # the root element name will be "messagec" for TOBI interface C packets,
+        # if it is anything else, pass it on to the normal pyff decoder
+        if dom.documentElement.nodeName == "messagec":
+            return self.__decode_tobiic_packet(packet)
+        return XmlDecoder.decode_packet(self, packet)
+
+    def __decode_tobiic_packet(self, data):
+        l = []    # for the variables
+        c = []    # for the commands
+        t = None  # for the type
+
+        # deserialize the packet
+        icmessage = pylibtobiic.ICMessage()
+        icsr = pylibtobiic.ICSerializer(icmessage, True)
+        icsr.Deserialize(data)
+
+        # now extract the data from icmessage
+        # go through all the classifiers...
+        for classifier_name in icmessage.classifiers.map.keys():
+            classifier_data = icmessage.classifiers.map[classifier_name]
+            print "[TOBI-IC] %s" % classifier_name
+            # and all the classes inside the classifier...
+            values = []
+            for class_name in classifier_data.classes.map.keys():
+                class_data = classifier_data.classes.map[class_name]
+                print "[TOBI-IC] %s/%s: %.3f" % (classifier_name, class_name, class_data.GetValue())
+                # is this the correct way to pass the data value on to pyff??
+                values.append(class_data.GetValue())
+            l.append((u'cl_output', values))
+            break 
+
+        t = CONTROL_SIGNAL
+        return BciSignal(dict(l), c, t)
 
 class XmlEncoder(object):
     """Generates an XML string from a BciSignal object.
@@ -227,9 +289,12 @@ class XmlEncoder(object):
         root.appendChild(root2)
         
         # Write the commands
-        for c in signal.commands:
+        # each element of the command list is a tuple (command, **kwargs)
+        for command, args in signal.commands:
             cmd = dom.createElement(COMMAND_TYPE[0])
-            cmd.setAttribute(VALUE, str(c))
+            cmd.setAttribute(VALUE, str(command))
+            if args:
+                self.__write_element(None, args, dom, cmd)
             root2.appendChild(cmd)
             
         # Write the data
@@ -239,7 +304,7 @@ class XmlEncoder(object):
             except EncodingError, e:
                 # Ignore elements which are unkknown, just print a warning
                 self.logger.warning("Unable to write element (%s)" % str(e))
-        return dom.toxml()
+        return dom.toxml('utf-8')
     
     
     def __get_type(self, value):
@@ -255,6 +320,8 @@ class XmlEncoder(object):
             type = COMPLEX_TYPE
         elif isinstance(value, str):
             type = STRING_TYPE
+        elif isinstance(value, unicode):
+            type = UNICODE_TYPE
         elif isinstance(value, list):
             type = LIST_TYPE
         elif isinstance(value, tuple):
@@ -293,7 +360,7 @@ class XmlEncoder(object):
                 if self.__get_type(i[1]) != UNSUPPORTED_TYPE:
                     self.__write_element(None, i, dom, e)
         elif value != None:
-            e.setAttribute(VALUE, str(value))
+            e.setAttribute(VALUE, unicode(value))
         root.appendChild(e)
         
 
@@ -305,8 +372,11 @@ class BciSignal(object):
     
     def __init__(self, data, commands, type):
         """
-        data and commands must be lists or None
-        type must be either CONTROL_ or INTERACTION-SIGNAL
+        Initialize a BciSignal object.
+
+        data -- dictionary of variables or None
+        commands -- list of tuples (commandname (str), dictionary (kwargs)) or None
+        type -- CONTROL_ or INTERACTION_SIGNAL
         """
         # if data or commands == None, convert to empty lists
         if not data:
@@ -369,14 +439,15 @@ def main():
          "dict" : {"foo" : 1, "bar" : 2, "baz" : 3},
          "ddict" : {"key" : "value", "d-in-" : {"foo" : 1, "bar" : 2, "baz" : 3}}
          }
+    d = dict()
     t = "interaction-signal"
-    c = ["start", "stop", "init"]
+    c = [("start", {"foo" : 1}), ("stop", {1 : 2, "l" : [1,2,3]}), ("init", dict())]
 
     signal = BciSignal(d, c, t)
 
     encoder = XmlEncoder()
     xml = encoder.encode_packet(signal)
-#    print xml
+    print xml
     
     decoder = XmlDecoder()
     signal2 = decoder.decode_packet(xml)
@@ -391,7 +462,9 @@ def main():
         print i
         
     print d == d2
-    
+    print signal
+    print signal2
+
 if __name__ == "__main__":
     #from timeit import Timer
     #t = Timer("main()")

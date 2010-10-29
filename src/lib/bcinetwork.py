@@ -55,7 +55,7 @@ class BciNetwork(object):
         
     def getAvailableFeedbacks(self):
         """Get available Feedbacks from Feedback Controller."""
-        signal = bcixml.BciSignal(None, [bcixml.CMD_GET_FEEDBACKS], bcixml.INTERACTION_SIGNAL)
+        signal = bcixml.BciSignal(None, [(bcixml.CMD_GET_FEEDBACKS, dict())], bcixml.INTERACTION_SIGNAL)
         self.send_signal(signal)
         
         data, addr = self.receive(TIMEOUT)
@@ -68,32 +68,32 @@ class BciNetwork(object):
     
     def send_init(self, feedback):
         """Send 'send_init(feedback)' to Feedback Controller."""
-        signal = bcixml.BciSignal({"_feedback": str(feedback)}, [bcixml.CMD_SEND_INIT], bcixml.INTERACTION_SIGNAL)
+        signal = bcixml.BciSignal({"_feedback": str(feedback)}, [(bcixml.CMD_SEND_INIT, dict())], bcixml.INTERACTION_SIGNAL)
         self.send_signal(signal)
 
     def play(self):
         """Send 'play' to Feedback Controller."""
-        signal = bcixml.BciSignal(None, [bcixml.CMD_PLAY], bcixml.INTERACTION_SIGNAL)
+        signal = bcixml.BciSignal(None, [(bcixml.CMD_PLAY, dict())], bcixml.INTERACTION_SIGNAL)
         self.send_signal(signal)
 
     def pause(self):
         """Send 'pause' to Feedback Controller."""
-        signal = bcixml.BciSignal(None, [bcixml.CMD_PAUSE], bcixml.INTERACTION_SIGNAL)
+        signal = bcixml.BciSignal(None, [(bcixml.CMD_PAUSE, dict())], bcixml.INTERACTION_SIGNAL)
         self.send_signal(signal)
         
     def stop(self):
         """Send 'stop' to Feedback Controller."""
-        signal = bcixml.BciSignal(None, [bcixml.CMD_STOP], bcixml.INTERACTION_SIGNAL)
+        signal = bcixml.BciSignal(None, [(bcixml.CMD_STOP, dict())], bcixml.INTERACTION_SIGNAL)
         self.send_signal(signal)
 
     def quit(self):
         """Send 'quit' to Feedback Controller."""
-        signal = bcixml.BciSignal(None, [bcixml.CMD_QUIT], bcixml.INTERACTION_SIGNAL)
+        signal = bcixml.BciSignal(None, [(bcixml.CMD_QUIT, dict())], bcixml.INTERACTION_SIGNAL)
         self.send_signal(signal)
 
     def get_variables(self):
         """Get variables (name, type and value) from currently running Feedback."""
-        signal = bcixml.BciSignal(None, [bcixml.CMD_GET_VARIABLES], bcixml.INTERACTION_SIGNAL)
+        signal = bcixml.BciSignal(None, [(bcixml.CMD_GET_VARIABLES, dict())], bcixml.INTERACTION_SIGNAL)
         self.send_signal(signal)
 
         data, addr = self.receive(TIMEOUT)
@@ -103,11 +103,22 @@ class BciNetwork(object):
         answer = self.xmldecoder.decode_packet(data)
         return answer.data.get("variables")
 
+    def save_configuration(self, filename):
+        """Tell the Feedback to store it's variables to the given file."""
+        signal = bcixml.BciSignal(None, [(bcixml.CMD_SAVE_VARIABLES, {'filename' : filename})], bcixml.INTERACTION_SIGNAL)
+        self.send_signal(signal)
+
+    def load_configuration(self, filename):
+        """Tell the Feedback to load variable values from given file."""
+        signal = bcixml.BciSignal(None, [(bcixml.CMD_LOAD_VARIABLES,
+            {'filename' : filename})], bcixml.INTERACTION_SIGNAL)
+        self.send_signal(signal)
+
     def send_signal(self, signal):
         """Send a signal."""
         xml = self.xmlencoder.encode_packet(signal)
         self.socket.sendto(xml, self.addr)
-    
+
     def receive(self, timeout):
         """Receive a signal."""
         if self.SEND_ONLY:
@@ -123,4 +134,4 @@ class BciNetwork(object):
             # do something!
             self.logger.warning("Receiving from FC failed (timeout).")
         return data, addr
-        
+
