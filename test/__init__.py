@@ -13,4 +13,5 @@ program; if not, see <http://www.gnu.org/licenses/>.
 
 """
 
-#from .character_sequence import CharacterSequenceTest
+from .character_sequence import CharacterSequenceTest
+from .sequence_algorithm import SequenceAlgorithmTest
