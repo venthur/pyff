@@ -31,6 +31,7 @@ class Trial(object):
         self._inter_burst = config.inter_burst
         self._inter_sequence = config.inter_sequence
         self._color_groups = config.color_groups
+        self._symbol_duration = config.symbol_duration
         self._trial_fix_cross = trial_fix_cross
         self._burst_fix_cross = burst_fix_cross
         self._trial_input = trial_input
@@ -65,7 +66,7 @@ class Trial(object):
                 self._symbol_trigger(symbol[0])
                 self._view.symbol(*symbol)
                 yield
-        seq = self._stimulus_sequence(gen(), self._inter_burst)
+        seq = self._stimulus_sequence(gen(), self._symbol_duration)
         seq.run()
 
     def _ask(self):
