@@ -30,6 +30,8 @@ from AlphaBurst.model.palette import Palette
 from AlphaBurst.util.metadata import datadir
 from AlphaBurst.util.trigger import *
 from AlphaBurst.util.switcherator import *
+from AlphaBurst.trial import CountTrial, YesNoTrial
+from AlphaBurst.input import CountInputHandler, YesNoInputHandler
 
 class Control(VisionEggFeedback, Config):
     def __init__(self, *args, **kwargs):
@@ -48,17 +50,23 @@ class Control(VisionEggFeedback, Config):
         self._trigger = self.send_parallel
         self.count = 0
         self._palette = Palette()
+        self._trial_o = None
 
     def _create_view(self):
         return View(self._palette)
 
     def update_parameters(self):
         VisionEggFeedback.update_parameters(self)
-        self._trial_type = getattr(self, '_trial_' + str(self.trial_type))
+        #self._trial_type = getattr(self, '_trial_' + str(self.trial_type))
+        self._trials = [CountTrial, YesNoTrial]
+        trial_type = self._trials[self.trial_type - 1]
+        self._trial_o = trial_type(self._view, self._trigger, self._iter,
+                                   self.stimulus_sequence, self)
         self._process_input = getattr(self, '_process_input_' +
                                       str(self.trial_type))
-        params = dict([[p, getattr(self, p, None)] for p in
-                        self._view_parameters])
+        input_handlers = [CountInputHandler, YesNoInputHandler]
+        input_handler_type = input_handlers[self.trial_type - 1]
+        self._input_handler = input_handler_type(self)
         self._palette.set(self.symbol_colors, self.color_groups)
         self._alphabet = ''.join(self.color_groups)
 
@@ -92,90 +100,18 @@ class Control(VisionEggFeedback, Config):
                                             self.custom_post_sequences)
         self.detections = []
         self._view.target(self._current_target)
-        self._trial_type()
-
-    def _trial_1(self):
-        """ Count mode. """
-        self._view.show_fixation_cross()
-        for seq in self._iter(self._sequences):     
-            self._sequence(seq)
-        self._ask()
+        #self._trial_type()
+        self._input_handler.start_trial(self._trial_o)
+        self._trial_o.run(self._sequences, self._current_target)
         if self._flag:
-            diff = self.count - self._sequences.occurences(self._current_target)
-            constrained_diff = max(min(diff, self.max_diff), -self.max_diff)
-            if diff != constrained_diff:
-                self._logger.error('Too high count discrepancy: %d' % diff)
-            self._trigger(TRIG_COUNTED_OFFSET + diff)
-
-    def _trial_2(self):
-        """ Yes/No mode. """
-        for seq in self._iter(self._sequences):     
-            self.detections.append([])
-            self._sequence(seq, True, True)
-
-    def _sequence(self, sequence, fix=False, ask=False):
-        self._burst_constraints = BurstConstraints(fix, ask,
-                                                   self._view,
-                                                   self._ask, self.inter_burst,
-                                                   self._trigger)
-        for burst in self._iter(sequence):
-            with self._burst_constraints:
-                self._target_present = self._current_target in sequence
-                self._burst(burst)
-        sleep(self.inter_sequence)
-
-    def _burst(self, symbols):
-        def gen():
-            for symbol in self._iter(symbols):
-                try:
-                    self._trigger(symbol_trigger(symbol[0],
-                                                 self._current_target,
-                                                 self._alphabet))
-                except ValueError:
-                    # redundant symbol
-                    pass
-                self._view.symbol(*symbol)
-                yield
-
-        seq = self.stimulus_sequence(gen(), self.inter_burst)
-        seq.run()
-
-    def _ask(self):
-        self._asking = True
-        self._view.ask()
-        self._asking = False
+            self._input_handler.set_result(self)
+            self._trial_o.evaluate(self._input_handler)
 
     def keyboard_input(self, event):
-        if self._asking:
-            self._process_input(event)
+        if self._trial_o and self._trial_o._asking:
+            self._input_handler.keyboard(event)
+            #self._process_input(event)
         VisionEggFeedback.keyboard_input(self, event)
-
-    def _process_input_1(self, event):
-        """ Count mode. Record the entered digits in count. """
-        s = event.unicode
-        if event.key == pygame.K_RETURN:
-            self.count = int(self._digits)
-            self._digits = ''
-            self._view.answered()
-        elif self._digits and event.key == pygame.K_BACKSPACE:
-            del self._digits[-1]
-        elif s.isdigit():
-            self._digits += s
-
-    def _process_input_2(self, event):
-        """ Yes/No mode. Save the answer in the detections list, send
-        a trigger. The trigger value is determined by the presence of
-        the target and the subject's detection: 11 for no target, no
-        detection; 22 for present target and detection; and the false
-        variants with 12/21 in the same order. """
-        s = event.unicode
-        if s in [self.key_yes, self.key_no]:
-            yes = s == self.key_yes
-            self.detections[-1].append(yes)
-            trig = TRIG_TARGET_PRESENT_OFFSET if self._target_present else \
-                   TRIG_TARGET_ABSENT_OFFSET
-            self._trigger(trig + yes)
-            self._view.answered()
 
     def quit(self):
         self._view.answered()
