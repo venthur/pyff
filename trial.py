@@ -32,6 +32,7 @@ class Trial(object):
         self._inter_sequence = config.inter_sequence
         self._color_groups = config.color_groups
         self._symbol_duration = config.symbol_duration
+        self._max_diff = config.max_diff
         self._trial_fix_cross = trial_fix_cross
         self._burst_fix_cross = burst_fix_cross
         self._trial_input = trial_input
@@ -104,9 +105,13 @@ class CountTrial(CalibrationTrial):
         CalibrationTrial.__init__(self, trial_fix_cross=True, trial_input=True,
                                   *a, **kw)
 
+    def run(self, sequences, target):
+        self._count = sequences.occurences(target)
+        CalibrationTrial.run(self, sequences, target)
+
     def evaluate(self, input):
-        diff = input.count - self._sequences.occurences(self._current_target)
-        constrained_diff = max(min(diff, self.max_diff), -self.max_diff)
+        diff = input.count - self._count
+        constrained_diff = max(min(diff, self._max_diff), -self._max_diff)
         if diff != constrained_diff:
             self._logger.error('Too high count discrepancy: %d' % diff)
         self._trigger(TRIG_COUNTED_OFFSET + diff)
