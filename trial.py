@@ -35,8 +35,11 @@ class Trial(object):
         self._burst_fix_cross = burst_fix_cross
         self._trial_input = trial_input
         self._burst_input = burst_input
+        self.__init_attributes()
+
+    def __init_attributes(self):
         self._logger = logging.getLogger('Trial')
-        self._asking = False
+        self.asking = False
         self._alphabet = ''.join(self._color_groups)
 
     def _sequence(self, sequence):
@@ -66,9 +69,9 @@ class Trial(object):
         seq.run()
 
     def _ask(self):
-        self._asking = True
+        self.asking = True
         self._view.ask()
-        self._asking = False
+        self.asking = False
 
     def _symbol_trigger(self, symbol):
         try:

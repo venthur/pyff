@@ -17,7 +17,7 @@ import string
 
 class Config(object):
     def init(self):
-        self.trial_type = 1
+        self.trial_type = 2
         self.alternating_colors = True
         self.sequences_per_trial = 2
         self.fullscreen = False

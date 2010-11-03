@@ -50,20 +50,16 @@ class Control(VisionEggFeedback, Config):
         self._trigger = self.send_parallel
         self.count = 0
         self._palette = Palette()
-        self._trial_o = None
 
     def _create_view(self):
         return View(self._palette)
 
     def update_parameters(self):
         VisionEggFeedback.update_parameters(self)
-        #self._trial_type = getattr(self, '_trial_' + str(self.trial_type))
         self._trials = [CountTrial, YesNoTrial]
         trial_type = self._trials[self.trial_type - 1]
-        self._trial_o = trial_type(self._view, self._trigger, self._iter,
+        self._trial = trial_type(self._view, self._trigger, self._iter,
                                    self.stimulus_sequence, self)
-        self._process_input = getattr(self, '_process_input_' +
-                                      str(self.trial_type))
         input_handlers = [CountInputHandler, YesNoInputHandler]
         input_handler_type = input_handlers[self.trial_type - 1]
         self._input_handler = input_handler_type(self)
@@ -74,23 +70,21 @@ class Control(VisionEggFeedback, Config):
         try:
             if self.sound:
                 self._sound.play()
-            self._block()
+            self.block()
         except pygame.error, e:
             self.logger.error(e)
         self.quit()
 
-    def _block(self):
+    def block(self):
         for word in self._iter(self.words):
-            #self._trigger(TRIG_RUN_START)
             self._view.count_down()
             self._view.word(word)
             gen = self._iter(enumerate(word))
             for self.target_index, self._current_target in gen:
-                sleep(self.inter_trial)
-                self._trial()
-            #self._trigger(TRIG_RUN_END)
+                self.trial()
 
-    def _trial(self):
+    def trial(self):
+        sleep(self.inter_trial)
         factory = CharacterSequenceFactory(self.meaningless,
                                            self.alternating_colors,
                                            self._current_target,
@@ -100,17 +94,15 @@ class Control(VisionEggFeedback, Config):
                                             self.custom_post_sequences)
         self.detections = []
         self._view.target(self._current_target)
-        #self._trial_type()
-        self._input_handler.start_trial(self._trial_o)
-        self._trial_o.run(self._sequences, self._current_target)
+        self._input_handler.start_trial(self._trial)
+        self._trial.run(self._sequences, self._current_target)
         if self._flag:
             self._input_handler.set_result(self)
-            self._trial_o.evaluate(self._input_handler)
+            self._trial.evaluate(self._input_handler)
 
     def keyboard_input(self, event):
-        if self._trial_o and self._trial_o._asking:
+        if self._trial.asking:
             self._input_handler.keyboard(event)
-            #self._process_input(event)
         VisionEggFeedback.keyboard_input(self, event)
 
     def quit(self):
