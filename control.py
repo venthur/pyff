@@ -83,7 +83,7 @@ class Control(VisionEggFeedback, Config):
             #self._trigger(TRIG_RUN_END)
 
     def _trial(self):
-        factory = CharacterSequenceFactory(self.color_groups, self.meaningless,
+        factory = CharacterSequenceFactory(self.meaningless,
                                            self.alternating_colors,
                                            self._current_target,
                                            self._palette)

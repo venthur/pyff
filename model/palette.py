@@ -22,9 +22,17 @@ class Palette(object):
     def set(self, colors, groups):
         self._alt_colors = colors
         self._color_count = len(colors)
-        self._groups = groups
+        self.groups = groups
 
     def __call__(self, color):
+        """ Convert the argument into a (list of) pygame Color.
+        If color is a single character, return the color of the
+        corresponding color group.
+        If color is a literal name, return the pygame color by that
+        name.
+        If color is an integer, return the color of that position,
+        alternating the specified colors.
+        """
         if isinstance(color, list):
             return map(self, color)
         elif isinstance(color, (str, unicode)):
@@ -40,5 +48,5 @@ class Palette(object):
         return self(self._alt_colors[i % self._color_count])
 
     def symbol_color(self, symbol):
-        index = (i for i, g in enumerate(self._groups) if symbol in g).next()
+        index = (i for i, g in enumerate(self.groups) if symbol in g).next()
         return self(index)

@@ -29,11 +29,9 @@ class BurstConstraints(object):
     def __enter__(self):
         self._fixation_cross()
         self._trigger(TRIG_BURST_START)
-        sleep(0.05)
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self._clear_symbol()
-        sleep(0.05)
         self._trigger(TRIG_BURST_END)
         self._ask()
         sleep(self._sleep_interval)

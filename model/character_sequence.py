@@ -32,18 +32,12 @@ class CharacterSequence(list):
         self._alt_color = alt_color
         self._palette = palette
         self.__init_attributes()
-        self.reset()
 
     def __init_attributes(self):
         self._random = Random('BBCI')
         self._burst_signi_len = len(self._alphabet) / self._burst_count
         self._redundance_len = len(self._redundance)
         self._burst_len = self._burst_signi_len + self._redundance_len
-        self.done = False
-
-    def reset(self):
-        self._current_index = 0
-        self.done = False
         self._sequence = copy(self._alphabet)
         if self._shuffle:
             self._random.shuffle(self._sequence)
@@ -74,31 +68,15 @@ class CharacterSequence(list):
     def _new_redundance(self):
         return self._random.sample(self._redundance, self._redundance_len)
 
-    @property
-    def next_burst(self):
-        burst = self._bursts[self._current_index]
-        self.done = self._current_index + 1 == len(self._bursts)
-        if not self.done:
-            self._current_index += 1
-        return burst
-
-    def get_color(self, symbol):
-        try:
-            i = self.burst_sequence.index(symbol)
-            return self._colors[i]
-        except ValueError:
-            return None
-
 class CharacterSequenceFactory(object):
-    def __init__(self, color_groups, redundance, alt_color, target, palette):
-        self._color_groups = color_groups
+    def __init__(self, redundance, alt_color, target, palette):
         self._redundance = redundance
         self._alt_color = alt_color
         self._target = target
         self._palette = palette
-        self._color_offset = (i for i, g in enumerate(self._color_groups) if
+        self._color_offset = (i for i, g in enumerate(self._palette.groups) if
                               self._target in g).next()
-        self._rsvp = RSVP(self._color_groups)
+        self._rsvp = RSVP(self._palette.groups)
 
     def sequence(self, alphabet, shuffle=False):
         return CharacterSequence(alphabet, self._redundance, shuffle=shuffle,
@@ -140,26 +118,6 @@ class CharacterSequenceFactory(object):
         return Sequences(sequences)
 
 class Sequences(list):
-    def __init__(self, sequences):
-        list.__init__(self, sequences)
-        self._seq_iter = iter(self)
-        self.done = False
-        self.next()
-
-    @property
-    def next_burst(self):
-        return self.current_sequence.next_burst
-
-    @property
-    def sequence_done(self):
-        return self.current_sequence.done
-
-    def next(self):
-        try:
-            self.current_sequence = self._seq_iter.next()
-        except StopIteration:
-            self.done = True
-
     def occurences(self, symbol):
         return sum(len(filter(lambda s: s == symbol, seq.burst_sequence)) for
                    seq in self)
