@@ -25,8 +25,8 @@ class Config(object):
         self.font_size = 150
         self.headline_font_size = 72
         self.headline_target_font_size = 96
-        self.headline_vpos = 50
-        self.symbol_vpos = 300
+        self.headline_vpos = 100
+        self.symbol_vpos = 800
         self.font_color_name = 'orangered'
         self.symbol_colors = ['red', 'yellow', 'green', 'blue', 'black']
         self.bg_color = 'grey'
