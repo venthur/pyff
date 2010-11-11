@@ -73,7 +73,7 @@ class VisionEggFeedback(MainloopFeedback, Config):
         See L{Switcherator} for more.
         """
         self._flag = flag
-        self._iter = lambda it: Switcherator(flag, it)
+        self._iter = lambda it: Switcherator(flag, it, suspendable=True)
         self._view.set_iterator_semaphore(flag)
         
     def __setup_events(self):
@@ -113,10 +113,13 @@ class VisionEggFeedback(MainloopFeedback, Config):
             self.logger.error(e)
 
     def on_interaction_event(self, data):
-        self.update_parameters()
+        if not self._running:
+            self.update_parameters()
 
     def _mainloop(self):
+        self._running = True
         self.run()
+        self._running = False
 
     def on_pause(self):
         self._flag.toggle_suspension()

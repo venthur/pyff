@@ -13,6 +13,8 @@ program; if not, see <http://www.gnu.org/licenses/>.
 
 """
 
+from time import sleep
+
 class Flag(object):
     def __init__(self):
         self.reset()
@@ -22,19 +24,28 @@ class Flag(object):
 
     def off(self):
         self._flag = False
+        self.suspended = False
 
     def reset(self):
         self._flag = True
+        self.suspended = False
+
+    def toggle_suspension(self):
+        self.suspended = not self.suspended
 
 class Switcherator(object):
-    def __init__(self, flag, itr):
+    def __init__(self, flag, itr, suspendable=False):
         self._flag = flag
         self._iter = iter(itr)
+        self._suspendable = suspendable
 
     def __iter__(self):
         return self
 
     def next(self):
+        if self._suspendable:
+            while self._flag.suspended:
+                sleep(0.01)
         if not self._flag:
             raise StopIteration()
         return self._iter.next()
