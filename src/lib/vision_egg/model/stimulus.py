@@ -16,7 +16,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 """
 
 from time import sleep
-import datetime, collections
+import datetime, collections, logging
 
 def time():
     """ Return microsecond-accurate time since last midnight. 
@@ -34,6 +34,7 @@ class StimulusPainter(object):
         self._flag = flag
         self._wait_style_fixed = wait_style_fixed
         self._wait_time = 0.1
+        self._logger = logging.getLogger('StimulusPainter')
 
     def _setup_wait_time(self):
         self._individual_wait_times = (isinstance(self._wait_time_value,
@@ -57,7 +58,11 @@ class StimulusPainter(object):
     def _wait(self):
         next_wait_time = self._next_wait_time
         wait_time = self._last_start - time() + next_wait_time
-        sleep(wait_time)
+        try:
+            sleep(wait_time)
+        except IOError, e:
+            self._logger.error('Encountered "%s" with wait_time of %s'
+                               % (e, wait_time))
         if self._wait_style_fixed:
             self._last_start += next_wait_time
         else:
@@ -68,7 +73,6 @@ class StimulusPainter(object):
             return self._do_prepare()
 
     def _present(self):
-        print self._last_start
         self._view.present_frames(1)
 
     @property
