@@ -115,8 +115,14 @@ class VisionEggFeedback(MainloopFeedback, Config):
     def on_interaction_event(self, data):
         self.update_parameters()
 
+    def _mainloop(self):
+        self.run()
+
     def on_pause(self):
         self._flag.toggle_suspension()
+
+    def on_stop(self):
+        self.quit()
 
     def update_parameters(self):
         """ Apply new parameters set from pyff. """
@@ -125,7 +131,6 @@ class VisionEggFeedback(MainloopFeedback, Config):
         self._view.update_parameters(**params)
 
     def quit(self):
-        self.on_stop()
         self._flag.off()
         self._view.quit()
 
