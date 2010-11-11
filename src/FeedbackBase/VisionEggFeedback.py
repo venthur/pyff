@@ -60,8 +60,6 @@ class VisionEggFeedback(MainloopFeedback, Config):
 
     def __setup_stim_factory(self):
         """ Create the factory for stimulus sequence handlers. """
-        refresh = VisionEgg.config.VISIONEGG_MONITOR_REFRESH_HZ
-        #self._stimseq_fact = StimulusSequenceFactory(1. / refresh)
         self._stimseq_fact = StimulusSequenceFactory(self._flag)
         self._stimseq_fact.set_view(self._view)
 
@@ -101,7 +99,8 @@ class VisionEggFeedback(MainloopFeedback, Config):
 
     def keyboard_input(self, event):
         """ Handle pygame events like keyboard input. """
-        if event.key == pygame.K_q or event.type == pygame.QUIT:
+        quit_keys = [pygame.K_q, pygame.K_ESCAPE]
+        if event.key in quit_keys or event.type == pygame.QUIT:
             self.quit()
 
     def pre_mainloop(self):
@@ -116,6 +115,15 @@ class VisionEggFeedback(MainloopFeedback, Config):
     def on_interaction_event(self, data):
         self.update_parameters()
 
+    def _mainloop(self):
+        self.run()
+
+    def on_pause(self):
+        self._flag.toggle_suspension()
+
+    def on_stop(self):
+        self.quit()
+
     def update_parameters(self):
         """ Apply new parameters set from pyff. """
         params = dict([[p, getattr(self, p, None)] for p in
@@ -123,7 +131,6 @@ class VisionEggFeedback(MainloopFeedback, Config):
         self._view.update_parameters(**params)
 
     def quit(self):
-        self.on_stop()
         self._flag.off()
         self._view.quit()
 

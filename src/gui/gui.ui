@@ -1,7 +1,8 @@
-<ui version="4.0" >
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
  <class>MainWindow</class>
- <widget class="QMainWindow" name="MainWindow" >
-  <property name="geometry" >
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
@@ -9,266 +10,235 @@
     <height>693</height>
    </rect>
   </property>
-  <property name="windowTitle" >
-   <string>GUI</string>
+  <property name="windowTitle">
+   <string>Pyff</string>
   </property>
-  <widget class="QWidget" name="centralwidget" >
-   <layout class="QVBoxLayout" >
-    <property name="spacing" >
+  <property name="windowIcon">
+   <iconset resource="icons.qrc">
+    <normaloff>:/icons/PyffLogoNeu.png</normaloff>:/icons/PyffLogoNeu.png</iconset>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout">
+    <property name="spacing">
      <number>6</number>
     </property>
-    <property name="margin" >
+    <property name="margin">
      <number>9</number>
     </property>
     <item>
-     <layout class="QHBoxLayout" >
-      <property name="spacing" >
+     <layout class="QHBoxLayout">
+      <property name="spacing">
        <number>6</number>
       </property>
-      <property name="margin" >
+      <property name="margin">
        <number>0</number>
       </property>
       <item>
-       <widget class="QLabel" name="label" >
-        <property name="text" >
+       <widget class="QLabel" name="label">
+        <property name="text">
          <string>Filter:</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QLineEdit" name="lineEdit" >
-        <property name="text" >
+       <widget class="QLineEdit" name="lineEdit">
+        <property name="text">
          <string/>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QToolButton" name="toolButton_clearFilter" />
-      </item>
-      <item>
-       <widget class="QToolButton" name="toolButton_changeFeedbackController" />
-      </item>
-      <item>
-       <spacer>
-        <property name="orientation" >
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeType" >
-         <enum>QSizePolicy::Preferred</enum>
-        </property>
-        <property name="sizeHint" stdset="0" >
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item>
-       <widget class="QLabel" name="label_5" >
-        <property name="text" >
-         <string>Feedback:</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QComboBox" name="comboBox_feedback" >
-        <property name="sizePolicy" >
-         <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QToolButton" name="toolButton_sendinit" >
-        <property name="popupMode" >
-         <enum>QToolButton::DelayedPopup</enum>
-        </property>
-        <property name="arrowType" >
-         <enum>Qt::NoArrow</enum>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QToolButton" name="toolButton_send" />
-      </item>
-      <item>
-       <widget class="QToolButton" name="toolButton_get" />
-      </item>
-      <item>
-       <widget class="QToolButton" name="toolButton_play" />
-      </item>
-      <item>
-       <widget class="QToolButton" name="toolButton_pause" />
-      </item>
-      <item>
-       <widget class="QToolButton" name="toolButton_stop" />
-      </item>
-      <item>
-       <widget class="QToolButton" name="toolButton_quit" />
+       <widget class="QToolButton" name="toolButton_clearFilter"/>
       </item>
      </layout>
     </item>
     <item>
-     <widget class="QTableView" name="tableView" >
-      <property name="alternatingRowColors" >
+     <widget class="QTableView" name="tableView">
+      <property name="alternatingRowColors">
        <bool>true</bool>
       </property>
-      <property name="selectionBehavior" >
+      <property name="selectionBehavior">
        <enum>QAbstractItemView::SelectRows</enum>
       </property>
-      <property name="showGrid" >
+      <property name="showGrid">
        <bool>false</bool>
       </property>
      </widget>
     </item>
    </layout>
   </widget>
-  <widget class="QMenuBar" name="menubar" >
-   <property name="geometry" >
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
      <width>942</width>
-     <height>30</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>
-  <widget class="QStatusBar" name="statusbar" />
-  <action name="actionOpen" >
-   <property name="icon" >
-    <iconset resource="icons.qrc" >
+  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QToolBar" name="toolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <property name="toolButtonStyle">
+    <enum>Qt::ToolButtonTextUnderIcon</enum>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionOpen"/>
+   <addaction name="actionSave"/>
+   <addaction name="separator"/>
+   <addaction name="actionPlay"/>
+   <addaction name="actionPause"/>
+   <addaction name="actionStop"/>
+   <addaction name="actionQuit"/>
+   <addaction name="separator"/>
+   <addaction name="actionGet"/>
+   <addaction name="separator"/>
+   <addaction name="actionChangeFeedbackController"/>
+   <addaction name="actionSendInit"/>
+  </widget>
+  <action name="actionOpen">
+   <property name="icon">
+    <iconset resource="icons.qrc">
      <normaloff>:/icons/open.png</normaloff>:/icons/open.png</iconset>
    </property>
-   <property name="text" >
+   <property name="text">
     <string>&amp;Open...</string>
    </property>
-   <property name="statusTip" >
+   <property name="statusTip">
     <string>Open an Existing File</string>
    </property>
-   <property name="shortcut" >
+   <property name="shortcut">
     <string>Ctrl+O</string>
    </property>
   </action>
-  <action name="actionSave" >
-   <property name="icon" >
-    <iconset resource="icons.qrc" >
+  <action name="actionSave">
+   <property name="icon">
+    <iconset resource="icons.qrc">
      <normaloff>:/icons/save.png</normaloff>:/icons/save.png</iconset>
    </property>
-   <property name="text" >
+   <property name="text">
     <string>&amp;Save</string>
    </property>
-   <property name="shortcut" >
+   <property name="shortcut">
     <string>Ctrl+S</string>
    </property>
   </action>
-  <action name="actionSaveAs" >
-   <property name="icon" >
-    <iconset resource="icons.qrc" >
+  <action name="actionSaveAs">
+   <property name="icon">
+    <iconset resource="icons.qrc">
      <normaloff>:/icons/saveas.png</normaloff>:/icons/saveas.png</iconset>
    </property>
-   <property name="text" >
+   <property name="text">
     <string>Save &amp;As...</string>
    </property>
-   <property name="shortcut" >
+   <property name="shortcut">
     <string>Ctrl+A</string>
    </property>
   </action>
-  <action name="actionPlay" >
-   <property name="icon" >
-    <iconset resource="icons.qrc" >
+  <action name="actionPlay">
+   <property name="icon">
+    <iconset resource="icons.qrc">
      <normaloff>:/icons/play.png</normaloff>:/icons/play.png</iconset>
    </property>
-   <property name="text" >
+   <property name="text">
     <string>Play</string>
    </property>
   </action>
-  <action name="actionPause" >
-   <property name="icon" >
-    <iconset resource="icons.qrc" >
+  <action name="actionPause">
+   <property name="icon">
+    <iconset resource="icons.qrc">
      <normaloff>:/icons/pause.png</normaloff>:/icons/pause.png</iconset>
    </property>
-   <property name="text" >
+   <property name="text">
     <string>Pause</string>
    </property>
   </action>
-  <action name="actionGet" >
-   <property name="icon" >
-    <iconset resource="icons.qrc" >
+  <action name="actionGet">
+   <property name="icon">
+    <iconset resource="icons.qrc">
      <normaloff>:/icons/get.png</normaloff>:/icons/get.png</iconset>
    </property>
-   <property name="text" >
-    <string>Get</string>
+   <property name="text">
+    <string>Refresh</string>
+   </property>
+   <property name="toolTip">
+    <string>Refresh varialbes from Feedback</string>
    </property>
   </action>
-  <action name="actionSendInit" >
-   <property name="icon" >
-    <iconset resource="icons.qrc" >
+  <action name="actionSendInit">
+   <property name="icon">
+    <iconset resource="icons.qrc">
      <normaloff>:/icons/sendinit.png</normaloff>:/icons/sendinit.png</iconset>
    </property>
-   <property name="text" >
+   <property name="text">
     <string>SendInit</string>
    </property>
   </action>
-  <action name="actionSendAll" >
-   <property name="icon" >
-    <iconset resource="icons.qrc" >
+  <action name="actionSendAll">
+   <property name="icon">
+    <iconset resource="icons.qrc">
      <normaloff>:/icons/sendall.png</normaloff>:/icons/sendall.png</iconset>
    </property>
-   <property name="text" >
-    <string>Send All Variables</string>
+   <property name="text">
+    <string>Send All</string>
    </property>
   </action>
-  <action name="actionQuit" >
-   <property name="icon" >
-    <iconset resource="icons.qrc" >
+  <action name="actionQuit">
+   <property name="icon">
+    <iconset resource="icons.qrc">
      <normaloff>:/icons/quit.png</normaloff>:/icons/quit.png</iconset>
    </property>
-   <property name="text" >
+   <property name="text">
     <string>Quit</string>
    </property>
   </action>
-  <action name="actionChangeFeedbackController" >
-   <property name="icon" >
-    <iconset resource="icons.qrc" >
+  <action name="actionChangeFeedbackController">
+   <property name="icon">
+    <iconset resource="icons.qrc">
      <normaloff>:/icons/connect.png</normaloff>:/icons/connect.png</iconset>
    </property>
-   <property name="text" >
-    <string>Change FeedbackController</string>
+   <property name="text">
+    <string>Connect</string>
    </property>
   </action>
-  <action name="actionClearFilter" >
-   <property name="icon" >
-    <iconset resource="icons.qrc" >
+  <action name="actionClearFilter">
+   <property name="icon">
+    <iconset resource="icons.qrc">
      <normaloff>:/icons/clear.png</normaloff>:/icons/clear.png</iconset>
    </property>
-   <property name="text" >
+   <property name="text">
     <string>clearFilter</string>
    </property>
   </action>
-  <action name="actionSendModified" >
-   <property name="icon" >
-    <iconset resource="icons.qrc" >
+  <action name="actionSendModified">
+   <property name="icon">
+    <iconset resource="icons.qrc">
      <normaloff>:/icons/sendmodified.png</normaloff>:/icons/sendmodified.png</iconset>
    </property>
-   <property name="text" >
-    <string>Send Modified Variables</string>
+   <property name="text">
+    <string>Send Modified</string>
    </property>
   </action>
-  <action name="actionStop" >
-   <property name="icon" >
-    <iconset resource="icons.qrc" >
+  <action name="actionStop">
+   <property name="icon">
+    <iconset resource="icons.qrc">
      <normaloff>:/icons/stop.png</normaloff>:/icons/stop.png</iconset>
    </property>
-   <property name="text" >
+   <property name="text">
     <string>Stop</string>
    </property>
   </action>
  </widget>
  <resources>
-  <include location="icons.qrc" />
+  <include location="icons.qrc"/>
  </resources>
  <connections/>
 </ui>

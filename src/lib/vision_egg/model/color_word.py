@@ -20,20 +20,29 @@ import logging
 from text_list import TextList
 
 class ColorWord(TextList):
-    def __init__(self, position, text='', target=None, symbol_size=72,
+    def __init__(self, position=(0, 0), text='', target=None, symbol_size=72,
                  target_size=96, colors=[]):
         TextList.__init__(self, position)
+        self._target_index = None
         self.set_size(symbol_size, target_size)
-        self.set(text, target, colors)
+        self.set(text=text, target=target, colors=colors)
 
     def set(self, text=None, target=None, colors=None):
         if text is not None:
             self.text = text
+            self._target_index = None
         if colors is not None:
             self._colors = colors
+        if target is not None:
+            if isinstance(target, int) and 0 <= target <= len(self.text):
+                self._target_index = target
+            elif target in self.text:
+                self._target_index = self.text.index(target)
+            else:
+                self._target_index = None
         self.clear()
-        for l in self.text:
-            size = self._target_size if l == target else self._symbol_size
+        for i, l in enumerate(self.text):
+            size = self._target_size if target in (i, l) else self._symbol_size
             self.add(l, size)
         self._set_colors()
 

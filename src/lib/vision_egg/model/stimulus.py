@@ -68,7 +68,6 @@ class StimulusPainter(object):
             return self._do_prepare()
 
     def _present(self):
-        print self._last_start
         self._view.present_frames(1)
 
     @property

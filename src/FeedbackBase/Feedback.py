@@ -29,6 +29,7 @@ import cPickle as pickle
 from threading import Event, Timer
 import traceback
 import socket
+import json
 
 
 class Feedback(object):
@@ -361,6 +362,39 @@ class Feedback(object):
         self.logger.debug("Returning variables.")
         return d
 
+    def save_variables(self, filename):
+        """Save all variables which are pickleable in JSON format.
+
+        filename -- the file where to store the variables.
+        """
+        # the json pickler cannot pickle everything the python pickler can,
+        # prune away the variables which are not pickable, to avoid exception
+        var_clean = dict()
+        for k, v in self.__dict__.iteritems():
+            if k.startswith("_"):
+                continue
+            try:
+                json.dumps(v)
+            except TypeError:
+                continue
+            var_clean[k] = v
+        filehandle = open(filename, 'w')
+        json.dump(var_clean, filehandle, indent=4, sort_keys=True)
+        filehandle.close()
+
+    def load_variables(self, filename):
+        """Load variables from file and (over)write object attributes with
+        their values.
+
+        filename -- the file where the variables are stored.
+
+        This method expects the file to be in the same format as the
+        save_variables method produces (currently JSON).
+        """
+        filehandle = open(filename, 'r')
+        var = json.load(filehandle)
+        filehandle.close()
+        self.__dict__.update(var)
 
     def _playloop(self):
         """Loop which ensures that on_play always runs in main thread.
