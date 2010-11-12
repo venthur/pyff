@@ -19,7 +19,7 @@ class Config(object):
     def init(self):
         self.trial_type = 3
         self.alternating_colors = True
-        self.sequences_per_trial = 20
+        self.sequences_per_trial = 1
         self.fullscreen = False
         self.geometry = [0, 0, 500, 1000]
         self.font_size = 150
@@ -30,15 +30,15 @@ class Config(object):
         self.font_color_name = 'orangered'
         self.symbol_colors = ['red', 'yellow', 'green', 'blue', 'black']
         self.bg_color = 'grey'
-        #self.words = ['WINKT', 'FJORD', 'HYBRID', 'LUXUS', 'SPHINX', 'QUARZ',
-                      #'VODKA', 'YACHT', 'GEBOT', 'MEMME']
-        self.words = ['W']
+        self.words = ['WINKT', 'FJORD', 'HYBRID', 'LUXUS', 'SPHINX', 'QUARZ',
+                      'VODKA', 'YACHT', 'GEBOT', 'MEMME']
         self.color_groups = ["ABCDEFGHIJ", "KLMNOPQRST", "UVWXYZ.,:<"]
-        self.meaningless = '*+&%?;'
+        #self.meaningless = '*+&%?;'
+        self.meaningless = ''
         self.custom_pre_sequences = []
         self.custom_post_sequences = []
         self.symbol_duration = .05
-        self.inter_burst = .1
+        self.inter_burst = 0
         self.inter_sequence = .5
         self.inter_block = .1
         self.inter_trial = .1
@@ -55,7 +55,7 @@ class Config(object):
         self.current_word_index = 0
         self.current_letter_index = 0
         self.target_index = 0
-        self.free_letter_input_count = 3
+        self.delete_symbol = '<'
         self._view_parameters += ['symbol_duration', 'bg_color',
                                  'font_color_name', 'present_word_time',
                                  'present_target_time', 'fixation_cross_time',

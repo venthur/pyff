@@ -44,6 +44,7 @@ class Trial(object):
         self._logger = logging.getLogger('Trial')
         self.asking = False
         self._alphabet = ''.join(self._color_groups)
+        self._current_target = ''
 
     def _sequence(self, sequence):
         """ Iterate over the sequence of symbol bursts and present them.
@@ -54,7 +55,7 @@ class Trial(object):
                                              self._burst_input, self._view,
                                              self._ask, self._inter_burst,
                                              self._trigger)
-        self.current_sequence = sum(sequence, [])
+        self.sequence = sequence.sequence
         for burst in self._iter(sequence):
             symbols = [b[0] for b in burst]
             with burst_constraints:
@@ -86,8 +87,7 @@ class Trial(object):
         else:
             self._trigger(trigger)
 
-    def run(self, sequences, target):
-        self._current_target = target
+    def run(self, sequences):
         if self._trial_fix_cross:
             self._view.show_fixation_cross()
         for seq in self._iter(sequences):     
@@ -97,15 +97,18 @@ class Trial(object):
         if self._trial_input:
             self._ask()
 
+    def target(self, target):
+        self._current_target = target
+
     def evaluate(self, input):
         pass
 
-class CalibrationTrial(Trial):
+class OfflineTrial(Trial):
     pass
 
-class CountTrial(CalibrationTrial):
+class CountTrial(OfflineTrial):
     def __init__(self, *a, **kw):
-        CalibrationTrial.__init__(self, trial_fix_cross=True, trial_input=True,
+        OfflineTrial.__init__(self, trial_fix_cross=True, trial_input=True,
                                   *a, **kw)
 
     def run(self, sequences, target):
@@ -119,18 +122,24 @@ class CountTrial(CalibrationTrial):
             self._logger.error('Too high count discrepancy: %d' % diff)
         self._trigger(TRIG_COUNTED_OFFSET + diff)
 
-class YesNoTrial(CalibrationTrial):
+class YesNoTrial(OfflineTrial):
     def __init__(self, *a, **kw):
-        CalibrationTrial.__init__(self, burst_fix_cross=True, burst_input=True,
+        OfflineTrial.__init__(self, burst_fix_cross=True, burst_input=True,
                                  *a, **kw)
 
 class OnlineTrial(Trial):
-    def __init__(self, *a, **kw):
-        Trial.__init__(self, sequence_input=True, *a, **kw)
+    pass
+
+class CalibrationTrial(OnlineTrial):
+    pass
 
 class FreeSpellingTrial(OnlineTrial):
+    def __init__(self, *a, **kw):
+        OnlineTrial.__init__(self, trial_input=True, *a, **kw)
+
     def evaluate(self, input):
         print input._input
 
 class CopySpellingTrial(OnlineTrial):
-    pass
+    def __init__(self, *a, **kw):
+        OnlineTrial.__init__(self, trial_input=True, *a, **kw)

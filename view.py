@@ -83,12 +83,13 @@ class View(VisionEggView):
         self._present(self._present_target_time)
         self._center_text.set_all(on=True)
 
-    def eeg_letter(self, text):
+    def eeg_letter(self, text, symbol, update_word=True):
         colors = map(self._symbol_color, text)
-        self.symbol(text[-1], colors[-1])
+        self.symbol(symbol, self._symbol_color(symbol))
         self._present(self._present_eeg_input_time)
         self._center_text.set_all(on=False)
-        self._headline.set(text=text, target=len(text)-1, colors=colors)
+        if update_word:
+            self._headline.set(text=text, target=len(text)-1, colors=colors)
 
     def _present(self, sec):
         self.presentation.set(go_duration=(sec, 'seconds'))

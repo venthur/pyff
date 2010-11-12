@@ -22,25 +22,22 @@ from AlphaBurst.util.list import slices, remove_all
 from AlphaBurst.sequence_algorithm import RSVP
 
 class CharacterSequence(list):
-    def __init__(self, alphabet, redundance, burst_count=3, shuffle=False,
-                 alt_color=False, palette=None):
+    def __init__(self, sequence, redundance, burst_count=3, alt_color=False,
+                 palette=None):
         list.__init__(self, [])
-        self._alphabet = list(alphabet)
+        self.sequence = list(sequence)
         self._redundance = redundance
         self._burst_count = burst_count
-        self._shuffle = shuffle
         self._alt_color = alt_color
         self._palette = palette
         self.__init_attributes()
 
     def __init_attributes(self):
         self._random = Random('BBCI')
-        self._burst_signi_len = len(self._alphabet) / self._burst_count
+        self._burst_signi_len = len(self.sequence) / self._burst_count
         self._redundance_len = len(self._redundance)
         self._burst_len = self._burst_signi_len + self._redundance_len
-        self._sequence = copy(self._alphabet)
-        if self._shuffle:
-            self._random.shuffle(self._sequence)
+        self._sequence = copy(self.sequence)
         self._create_burst_sequence()
         self._zip_colors()
 
@@ -58,7 +55,6 @@ class CharacterSequence(list):
         self._colors = map(self._positional_color, xrange(nsym))
         zipped = zip(self.burst_sequence, self._colors)
         self[:] = slices(zipped, self._burst_len)
-        self._bursts = self
 
     def _positional_color(self, i):
         if self._alt_color:
@@ -74,12 +70,15 @@ class CharacterSequenceFactory(object):
         self._alt_color = alt_color
         self._target = target
         self._palette = palette
-        self._color_offset = (i for i, g in enumerate(self._palette.groups) if
-                              self._target in g).next()
+        try:
+            self._color_offset = (i for i, g in enumerate(self._palette.groups)
+                                  if self._target in g).next()
+        except StopIteration, e:
+            self._color_offset = -1
         self._rsvp = RSVP(self._palette.groups)
 
-    def sequence(self, alphabet, shuffle=False):
-        return CharacterSequence(alphabet, self._redundance, shuffle=shuffle,
+    def sequence(self, sequence):
+        return CharacterSequence(sequence, self._redundance,
                                  alt_color=self._alt_color,
                                  palette=self._palette)
 

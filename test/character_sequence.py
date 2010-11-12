@@ -17,12 +17,14 @@ from string import ascii_uppercase
 from unittest import TestCase
 
 from Feedbacks.AlphaBurst.model.character_sequence import CharacterSequenceFactory
+from Feedbacks.AlphaBurst.model.palette import Palette
 
 class CharacterSequenceTest(TestCase):
     def test_color(self):
+        symbol_colors = ['red', 'yellow', 'green', 'blue', 'black']
+        color_groups = ["ABCDEFGHIJ", "KLMNOPQRST", "UVWXYZ.,:<"]
         palette = Palette()
-        palette.set(self.symbol_colors, self.color_groups)
-        factory = CharacterSequenceFactory(["ABCDEFGHIJ", "KLMNOPQRST",
-                                            "UVWXYZ.,:<"], '!@#$%^?', True, 'E')
-        s = factory.sequences(4, [10, 3], [4])
+        palette.set(symbol_colors, color_groups)
+        factory = CharacterSequenceFactory('!@#$%^?', True, 'E', palette)
+        s = factory.sequences(4, [], [])
         print [seq.burst_sequence for seq in s]

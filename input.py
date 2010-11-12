@@ -81,35 +81,51 @@ class YesNoInputHandler(InputHandler):
     def set_result(self, control):
         control.detections = self.detections
 
-class FreeSpellingInputHandler(InputHandler):
-    def __init__(self, *a, **kw):
+CalibrationInputHandler = InputHandler
+
+class SpellingInputHandler(InputHandler):
+    def __init__(self, control, *a, **kw):
         self._input = ''
         self._digits = ''
-        InputHandler.__init__(self, *a, **kw)
+        self._delete_symbol = control.delete_symbol
+        InputHandler.__init__(self, control, *a, **kw)
 
     def start_trial(self, trial):
         InputHandler.start_trial(self, trial)
         self._digits = ''
-        self._input = ''
 
     def keyboard(self, event):
         s = event.unicode
+        print s
         if event.key == pygame.K_RETURN:
-            if self.eeg_select(int(self._digits)):
-                self._digits = ''
+            self.eeg_select(int(self._digits))
+            self._digits = ''
         elif self._digits and event.key == pygame.K_BACKSPACE:
             self._digits = self._digits[:-1]
         elif s.isdigit():
             self._digits += s
+        elif s in self._trial.sequence:
+            self.eeg_select(self._trial.sequence.index(s))
 
     def eeg_select(self, cls):
-        if cls < len(self._trial.current_sequence):
-            symbol = self._trial.current_sequence[cls][0]
-            self._input += symbol
-            self._view.eeg_letter(self._input)
-            self._view.answered()
+        if cls < len(self._trial.sequence):
+            symbol = self._trial.sequence[cls]
+            if symbol == self._delete_symbol:
+                self._input = self._input[:-1]
+            else:
+                self._input += symbol
+            self._process_eeg_input(symbol)
             return True
 
-class CopySpellingInputHandler(InputHandler):
-    pass
+    def _process_eeg_input(self, symbol):
+        self._view.answered()
 
+class FreeSpellingInputHandler(SpellingInputHandler):
+    def _process_eeg_input(self, symbol):
+        self._view.eeg_letter(self._input, symbol)
+        SpellingInputHandler._process_eeg_input(self, symbol)
+
+class CopySpellingInputHandler(SpellingInputHandler):
+    def _process_eeg_input(self, symbol):
+        self._view.eeg_letter(self._input, symbol, update_word=False)
+        SpellingInputHandler._process_eeg_input(self, symbol)
