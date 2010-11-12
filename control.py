@@ -88,7 +88,6 @@ class Control(VisionEggFeedback, Config):
 
     def block(self):
         for word in self._iter(self.words):
-            print word
             self._view.count_down()
             if self._display_word:
                 self._view.word(word)

@@ -72,8 +72,6 @@ class TargetWord(ColorWord):
         self._add_frame()
 
     def _add_frame(self):
-        print self
-        print self._target_index
         if self._target_frame and self._target_index is not None:
             current = self[self._target_index]
             pos = current.parameters.position
