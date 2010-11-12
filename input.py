@@ -80,3 +80,36 @@ class YesNoInputHandler(InputHandler):
 
     def set_result(self, control):
         control.detections = self.detections
+
+class FreeSpellingInputHandler(InputHandler):
+    def __init__(self, *a, **kw):
+        self._input = ''
+        self._digits = ''
+        InputHandler.__init__(self, *a, **kw)
+
+    def start_trial(self, trial):
+        InputHandler.start_trial(self, trial)
+        self._digits = ''
+        self._input = ''
+
+    def keyboard(self, event):
+        s = event.unicode
+        if event.key == pygame.K_RETURN:
+            if self.eeg_select(int(self._digits)):
+                self._digits = ''
+        elif self._digits and event.key == pygame.K_BACKSPACE:
+            self._digits = self._digits[:-1]
+        elif s.isdigit():
+            self._digits += s
+
+    def eeg_select(self, cls):
+        if cls < len(self._trial.current_sequence):
+            symbol = self._trial.current_sequence[cls][0]
+            self._input += symbol
+            self._view.symbol(symbol)
+            self._view.answered()
+            return True
+
+class CopySpellingInputHandler(InputHandler):
+    pass
+

@@ -120,3 +120,17 @@ class YesNoTrial(CalibrationTrial):
     def __init__(self, *a, **kw):
         CalibrationTrial.__init__(self, burst_fix_cross=True, burst_input=True,
                                  *a, **kw)
+
+class OnlineTrial(Trial):
+    pass
+
+class FreeSpellingTrial(OnlineTrial):
+    def __init__(self, *a, **kw):
+        OnlineTrial.__init__(self, trial_fix_cross=True, trial_input=True, *a,
+                             **kw)
+
+    def evaluate(self, input):
+        print input._input
+
+class CopySpellingTrial(OnlineTrial):
+    pass

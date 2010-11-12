@@ -20,6 +20,8 @@ from Feedbacks.AlphaBurst.model.character_sequence import CharacterSequenceFacto
 
 class CharacterSequenceTest(TestCase):
     def test_color(self):
+        palette = Palette()
+        palette.set(self.symbol_colors, self.color_groups)
         factory = CharacterSequenceFactory(["ABCDEFGHIJ", "KLMNOPQRST",
                                             "UVWXYZ.,:<"], '!@#$%^?', True, 'E')
         s = factory.sequences(4, [10, 3], [4])

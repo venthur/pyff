@@ -30,8 +30,9 @@ from AlphaBurst.model.palette import Palette
 from AlphaBurst.util.metadata import datadir
 from AlphaBurst.util.trigger import *
 from AlphaBurst.util.switcherator import *
-from AlphaBurst.trial import CountTrial, YesNoTrial
-from AlphaBurst.input import CountInputHandler, YesNoInputHandler
+from AlphaBurst.trial import CountTrial, YesNoTrial, FreeSpellingTrial
+from AlphaBurst.input import CountInputHandler, YesNoInputHandler, \
+                             FreeSpellingInputHandler, CopySpellingInputHandler
 
 class Control(VisionEggFeedback, Config):
     def __init__(self, *args, **kwargs):
@@ -57,15 +58,17 @@ class Control(VisionEggFeedback, Config):
 
     def update_parameters(self):
         VisionEggFeedback.update_parameters(self)
-        self._trials = [CountTrial, YesNoTrial]
+        self._trials = [CountTrial, YesNoTrial, FreeSpellingTrial]
         trial_type = self._trials[self.trial_type - 1]
         self._trial = trial_type(self._view, self._trigger, self._iter,
                                    self.stimulus_sequence, self)
-        input_handlers = [CountInputHandler, YesNoInputHandler]
+        input_handlers = [CountInputHandler, YesNoInputHandler,
+                          FreeSpellingInputHandler, CopySpellingInputHandler]
         input_handler_type = input_handlers[self.trial_type - 1]
         self._input_handler = input_handler_type(self)
         self._palette.set(self.symbol_colors, self.color_groups)
         self._alphabet = ''.join(self.color_groups)
+        self._display_word = self.trial_type != 3
 
     def play_tick(self):
         try:
@@ -78,8 +81,10 @@ class Control(VisionEggFeedback, Config):
 
     def block(self):
         for word in self._iter(self.words):
+            self._input = ''
             self._view.count_down()
-            self._view.word(word)
+            if self._display_word:
+                self._view.word(word)
             gen = self._iter(enumerate(word))
             for self.target_index, self._current_target in gen:
                 self.trial()
@@ -109,6 +114,12 @@ class Control(VisionEggFeedback, Config):
     def quit(self):
         self._view.answered()
         VisionEggFeedback.quit(self)
+
+    def on_control_event(self, data):
+        cls = data.get('cl_output', None)
+        if cls is not None:
+            #self._eeg_select(cls)
+            self._input_handler.classifier(class_no)
 
 class AlphaBurst(Control):
     pass

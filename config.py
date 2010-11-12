@@ -17,11 +17,11 @@ import string
 
 class Config(object):
     def init(self):
-        self.trial_type = 2
+        self.trial_type = 3
         self.alternating_colors = True
-        self.sequences_per_trial = 2
+        self.sequences_per_trial = 1
         self.fullscreen = False
-        self.geometry = [0, 0, 640, 480]
+        self.geometry = [0, 0, 500, 1000]
         self.font_size = 150
         self.headline_font_size = 72
         self.headline_target_font_size = 96
@@ -30,14 +30,14 @@ class Config(object):
         self.font_color_name = 'orangered'
         self.symbol_colors = ['red', 'yellow', 'green', 'blue', 'black']
         self.bg_color = 'grey'
-        self.words = ['WINKT', 'FJORD', 'HYBRID', 'LUXUS', 'SPHINX', 'QUARZ',
-                      'VODKA', 'YACHT', 'GEBOT', 'MEMME']
+        #self.words = ['WINKT', 'FJORD', 'HYBRID', 'LUXUS', 'SPHINX', 'QUARZ',
+                      #'VODKA', 'YACHT', 'GEBOT', 'MEMME']
+        self.words = ['W']
         self.color_groups = ["ABCDEFGHIJ", "KLMNOPQRST", "UVWXYZ.,:<"]
         self.meaningless = '*+&%?;'
-        self.custom_pre_sequences = [[8, 10], [4, 8]]
-        self.custom_post_sequences = [[2, 5]]
-        self.symbol_duration = 0.1
-        self.burst_duration = 1.
+        self.custom_pre_sequences = []
+        self.custom_post_sequences = []
+        self.symbol_duration = .1
         self.inter_burst = .1
         self.inter_sequence = .5
         self.inter_block = .1
@@ -54,7 +54,7 @@ class Config(object):
         self.current_word_index = 0
         self.current_letter_index = 0
         self.target_index = 0
-        self._view_parameters = ['symbol_duration', 'bg_color',
+        self._view_parameters += ['symbol_duration', 'bg_color',
                                  'font_color_name', 'present_word_time',
                                  'present_target_time', 'fixation_cross_time',
                                  'count_down_start',
@@ -64,3 +64,5 @@ class Config(object):
                                  'headline_target_font_size', 'geometry',
                                  'symbol_colors', 'headline_vpos',
                                  'symbol_vpos']
+        self._trial_parameters = ['inter_burst', 'inter_sequence',
+                                  'color_groups']
