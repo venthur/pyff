@@ -50,7 +50,6 @@ class Control(VisionEggFeedback, Config):
         self._trigger = self.send_parallel
         self.count = 0
         self._palette = Palette()
-        self._trial_o = None
 
     def _create_view(self):
         return View(self._palette)
