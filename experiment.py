@@ -41,13 +41,6 @@ class Experiment(object):
         self._custom_post_sequences = config.custom_post_sequences
         self._current_target = ''
 
-    def run(self):
-        for word in self._iter(self._words):
-            self._view.count_down()
-            self._view.word(word)
-            for self._current_target in self._iter(word):
-                self.trial()
-
     def trial(self):
         sleep(self._inter_trial)
         factory = CharacterSequenceFactory(self._redundance,
@@ -64,9 +57,16 @@ class Experiment(object):
             self._trial.evaluate(self._input_handler)
 
 class GuidedExperiment(Experiment):
-    def trial(self):
-        self._view.target(self._current_target)
-        self._trial.target(self._current_target)
+    def run(self):
+        for word in self._iter(self._words):
+            self._view.count_down()
+            self._view.word(word)
+            for target in enumerate(self._iter(word)):
+                self.trial(*target)
+
+    def trial(self, index, target):
+        self._view.target(index)
+        self._trial.target(target)
         Experiment.trial(self)
 
 YesNoExperiment = GuidedExperiment

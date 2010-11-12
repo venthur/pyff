@@ -78,11 +78,11 @@ class View(VisionEggView):
         self._present(self._present_word_time)
         self._headline.set(text=word, colors=colors)
 
-    def target(self, symbol):
+    def target(self, index):
         """ Introduce a new target symbol by increasing its size and
         presenting the word in the headline.
         """
-        self._headline.set(target=symbol)
+        self._headline.set(target=index)
         self._headline.set_all(on=True)
         self._center_text.set_all(on=False)
         self._present(self._present_target_time)
