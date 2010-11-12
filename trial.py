@@ -23,7 +23,7 @@ from AlphaBurst.util.trigger import *
 class Trial(object):
     def __init__(self, view, trigger, iter, seq_fac, config,
                  trial_fix_cross=False, burst_fix_cross=False,
-                 trial_input=False, burst_input=False):
+                 trial_input=False, burst_input=False, sequence_input=False):
         self._view = view
         self._trigger = trigger
         self._iter = iter
@@ -37,6 +37,7 @@ class Trial(object):
         self._burst_fix_cross = burst_fix_cross
         self._trial_input = trial_input
         self._burst_input = burst_input
+        self._sequence_input = sequence_input
         self.__init_attributes()
 
     def __init_attributes(self):
@@ -91,6 +92,8 @@ class Trial(object):
             self._view.show_fixation_cross()
         for seq in self._iter(sequences):     
             self._sequence(seq)
+            if self._sequence_input:
+                self._ask()
         if self._trial_input:
             self._ask()
 
@@ -122,13 +125,10 @@ class YesNoTrial(CalibrationTrial):
                                  *a, **kw)
 
 class OnlineTrial(Trial):
-    pass
+    def __init__(self, *a, **kw):
+        Trial.__init__(self, sequence_input=True, *a, **kw)
 
 class FreeSpellingTrial(OnlineTrial):
-    def __init__(self, *a, **kw):
-        OnlineTrial.__init__(self, trial_fix_cross=True, trial_input=True, *a,
-                             **kw)
-
     def evaluate(self, input):
         print input._input
 

@@ -106,7 +106,7 @@ class FreeSpellingInputHandler(InputHandler):
         if cls < len(self._trial.current_sequence):
             symbol = self._trial.current_sequence[cls][0]
             self._input += symbol
-            self._view.symbol(symbol)
+            self._view.eeg_letter(self._input)
             self._view.answered()
             return True
 

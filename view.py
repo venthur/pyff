@@ -66,8 +66,7 @@ class View(VisionEggView):
                self._font_color
 
     def word(self, word):
-        """ Introduce a new word, optionally with colored symbols.
-        """
+        """ Introduce a new word, optionally with colored symbols. """
         self._headline.set_all(on=False)
         colors = map(self._symbol_color, word)
         self._center_word(word, colors)
@@ -83,6 +82,13 @@ class View(VisionEggView):
         self._center_text.set_all(on=False)
         self._present(self._present_target_time)
         self._center_text.set_all(on=True)
+
+    def eeg_letter(self, text):
+        colors = map(self._symbol_color, text)
+        self.symbol(text[-1], colors[-1])
+        self._present(self._present_eeg_input_time)
+        self._center_text.set_all(on=False)
+        self._headline.set(text=text, target=len(text)-1, colors=colors)
 
     def _present(self, sec):
         self.presentation.set(go_duration=(sec, 'seconds'))

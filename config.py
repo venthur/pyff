@@ -19,7 +19,7 @@ class Config(object):
     def init(self):
         self.trial_type = 3
         self.alternating_colors = True
-        self.sequences_per_trial = 1
+        self.sequences_per_trial = 20
         self.fullscreen = False
         self.geometry = [0, 0, 500, 1000]
         self.font_size = 150
@@ -37,7 +37,7 @@ class Config(object):
         self.meaningless = '*+&%?;'
         self.custom_pre_sequences = []
         self.custom_post_sequences = []
-        self.symbol_duration = .1
+        self.symbol_duration = .05
         self.inter_burst = .1
         self.inter_sequence = .5
         self.inter_block = .1
@@ -45,6 +45,7 @@ class Config(object):
         self.present_word_time = .2
         self.fixation_cross_time = 0.
         self.present_target_time = .1
+        self.present_eeg_input_time = 1
         self.count_down_start = 0
         self.count_down_symbol_duration = .5
         self.key_yes = 'j'
@@ -54,6 +55,7 @@ class Config(object):
         self.current_word_index = 0
         self.current_letter_index = 0
         self.target_index = 0
+        self.free_letter_input_count = 3
         self._view_parameters += ['symbol_duration', 'bg_color',
                                  'font_color_name', 'present_word_time',
                                  'present_target_time', 'fixation_cross_time',
@@ -63,6 +65,4 @@ class Config(object):
                                  'headline_font_size', 'fullscreen',
                                  'headline_target_font_size', 'geometry',
                                  'symbol_colors', 'headline_vpos',
-                                 'symbol_vpos']
-        self._trial_parameters = ['inter_burst', 'inter_sequence',
-                                  'color_groups']
+                                 'symbol_vpos', 'present_eeg_input_time']
