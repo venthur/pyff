@@ -30,7 +30,7 @@ class Config(object):
         self.font_color_name = 'orangered'
         self.symbol_colors = ['red', 'yellow', 'green', 'blue', 'black']
         self.bg_color = 'grey'
-        self.words = ['WINKT', 'FJORD', 'HYBRID', 'LUXUS', 'SPHINX', 'QUARZ',
+        self.words = ['LUXUS', 'WINKT', 'FJORD', 'HYBRID', 'SPHINX', 'QUARZ',
                       'VODKA', 'YACHT', 'GEBOT', 'MEMME']
         self.color_groups = ["ABCDEFGHIJ", "KLMNOPQRST", "UVWXYZ.,:<"]
         #self.meaningless = '*+&%?;'
@@ -56,6 +56,8 @@ class Config(object):
         self.current_letter_index = 0
         self.target_index = 0
         self.delete_symbol = '<'
+        self.target_frame = True
+        self.target_frame_width = 2
         self._view_parameters += ['symbol_duration', 'bg_color',
                                  'font_color_name', 'present_word_time',
                                  'present_target_time', 'fixation_cross_time',
@@ -65,4 +67,5 @@ class Config(object):
                                  'headline_font_size', 'fullscreen',
                                  'headline_target_font_size', 'geometry',
                                  'symbol_colors', 'headline_vpos',
-                                 'symbol_vpos', 'present_eeg_input_time']
+                                 'symbol_vpos', 'present_eeg_input_time',
+                                 'target_frame', 'target_frame_width']

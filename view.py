@@ -23,6 +23,7 @@ from lib.vision_egg import VisionEggView
 from lib.vision_egg.model.color_word import ColorWord
 
 from AlphaBurst.util.switcherator import Switcherator
+from AlphaBurst.model.target_word import TargetWord
 
 class View(VisionEggView):
     def __init__(self, palette):
@@ -47,10 +48,14 @@ class View(VisionEggView):
         set positions accordingly.
         """
         sz = self.screen.size
-        self._headline = ColorWord((sz[0] / 2., sz[1] - self._headline_vpos),
-                                   symbol_size=self._headline_font_size,
-                                   target_size=self._headline_target_font_size)
-        self._center_text = ColorWord((sz[0] / 2., sz[1] - self._symbol_vpos),
+        self._headline = TargetWord(position=(sz[0] / 2., sz[1] -
+                                              self._headline_vpos),
+                                    symbol_size=self._headline_font_size,
+                                    target_size=self._headline_target_font_size,
+                                    target_frame=self._target_frame,
+                                    target_frame_width=self._target_frame_width)
+        self._center_text = ColorWord(position=(sz[0] / 2., sz[1] -
+                                                self._symbol_vpos),
                                       symbol_size=self._font_size)
 
     def __init_viewports(self):
