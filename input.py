@@ -96,7 +96,7 @@ class SpellingInputHandler(InputHandler):
 
     def keyboard(self, event):
         s = event.unicode
-        if event.key == pygame.K_RETURN:
+        if event.key == pygame.K_RETURN and self._digits:
             self.eeg_select(int(self._digits))
             self._digits = ''
         elif self._digits and event.key == pygame.K_BACKSPACE:
