@@ -21,12 +21,14 @@ class Config(object):
         self.alternating_colors = True
         self.sequences_per_trial = 1
         self.fullscreen = False
-        self.geometry = [0, 0, 500, 1000]
+        self.geometry = [100, 100, 1024, 768]
         self.font_size = 150
         self.headline_font_size = 72
+        self.alphabet_font_size = 64
         self.headline_target_font_size = 96
         self.headline_vpos = 100
-        self.symbol_vpos = 800
+        self.alphabet_vpos = 500
+        self.symbol_vpos = 300
         self.font_color_name = 'orangered'
         self.symbol_colors = ['red', 'yellow', 'green', 'blue', 'black']
         self.bg_color = 'grey'
@@ -58,14 +60,17 @@ class Config(object):
         self.delete_symbol = '<'
         self.target_frame = True
         self.target_frame_width = 2
+        self.show_alphabet = True
         self._view_parameters += ['symbol_duration', 'bg_color',
-                                 'font_color_name', 'present_word_time',
-                                 'present_target_time', 'fixation_cross_time',
-                                 'count_down_start',
-                                 'count_down_symbol_duration', 'color_groups',
-                                 'alternating_colors', 'font_size',
-                                 'headline_font_size', 'fullscreen',
-                                 'headline_target_font_size', 'geometry',
-                                 'symbol_colors', 'headline_vpos',
-                                 'symbol_vpos', 'present_eeg_input_time',
-                                 'target_frame', 'target_frame_width']
+                                  'font_color_name', 'present_word_time',
+                                  'present_target_time', 'fixation_cross_time',
+                                  'count_down_start',
+                                  'count_down_symbol_duration', 'color_groups',
+                                  'alternating_colors', 'font_size',
+                                  'headline_font_size', 'fullscreen',
+                                  'headline_target_font_size', 'geometry',
+                                  'symbol_colors', 'headline_vpos',
+                                  'symbol_vpos', 'present_eeg_input_time',
+                                  'target_frame', 'target_frame_width',
+                                  'alphabet_vpos', 'alphabet_font_size',
+                                  'show_alphabet']

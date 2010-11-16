@@ -57,18 +57,29 @@ class View(VisionEggView):
         self._center_text = ColorWord(position=(sz[0] / 2., sz[1] -
                                                 self._symbol_vpos),
                                       symbol_size=self._font_size)
+        self._footline = ColorWord(position=(sz[0] / 2., sz[1] -
+                                   self._alphabet_vpos),
+                                   symbol_size=self._alphabet_font_size)
 
     def __init_viewports(self):
         self._headline_viewport = Viewport(screen=self.screen,
                                            stimuli=self._headline)
+        self.add_viewport(self._headline_viewport)
         self._viewport = Viewport(screen=self.screen,
                                   stimuli=self._center_text)
-        self.add_viewport(self._headline_viewport)
         self.add_viewport(self._viewport)
+        if self._show_alphabet:
+            self._footline_viewport = Viewport(screen=self.screen,
+                                               stimuli=self._footline)
+            self.add_viewport(self._footline_viewport)
 
     def _symbol_color(self, symbol):
         return self._palette(symbol) if self._alternating_colors else \
                self._font_color
+
+    def alphabet(self, alphabet):
+        colors = map(self._symbol_color, alphabet)
+        self._footline.set(text=alphabet, colors=colors)
 
     def word(self, word):
         """ Introduce a new word, optionally with colored symbols. """

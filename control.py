@@ -60,7 +60,7 @@ class Control(VisionEggFeedback, Config):
     def update_parameters(self):
         VisionEggFeedback.update_parameters(self)
         self._palette.set(self.symbol_colors, self.color_groups)
-        self._alphabet = ''.join(self.color_groups)
+        self.alphabet = ''.join(self.color_groups)
         self._display_word = self.trial_type != 3
         self._current_target = ''
         types = ['Count', 'YesNo', 'Calibration', 'FreeSpelling',
@@ -75,11 +75,12 @@ class Control(VisionEggFeedback, Config):
         self._experiment = eval(experiment_type)(self._view, self._trial,
                                                  self._input_handler,
                                                  self._flag, self._iter,
-                                                 self._alphabet, self._palette,
+                                                 self.alphabet, self._palette,
                                                  self)
 
     def run(self):
         try:
+            self._view.alphabet(self.alphabet)
             self._experiment.run()
         except AlphaBurstException as e:
             self.logger.error(e)
