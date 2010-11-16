@@ -74,9 +74,9 @@ CopySpellingExperiment = GuidedExperiment
 CalibrationExperiment = GuidedExperiment
 
 class CountExperiment(GuidedExperiment):
-    def trial(self):
+    def trial(self, *a, **kw):
         self.detections = []
-        GuidedExperiment.trial(self)
+        GuidedExperiment.trial(self, *a, **kw)
 
 class FreeSpellingExperiment(Experiment):
     def run(self):

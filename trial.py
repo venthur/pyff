@@ -111,9 +111,9 @@ class CountTrial(OfflineTrial):
         OfflineTrial.__init__(self, trial_fix_cross=True, trial_input=True,
                                   *a, **kw)
 
-    def run(self, sequences, target):
-        self._count = sequences.occurences(target)
-        CalibrationTrial.run(self, sequences, target)
+    def run(self, sequences):
+        self._count = sequences.occurences(self._current_target)
+        OfflineTrial.run(self, sequences)
 
     def evaluate(self, input):
         diff = input.count - self._count
