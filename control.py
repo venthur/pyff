@@ -33,6 +33,7 @@ from AlphaBurst.util.switcherator import *
 from AlphaBurst.trial import *
 from AlphaBurst.input import *
 from AlphaBurst.experiment import *
+from AlphaBurst.util.error import AlphaBurstException
 
 class Control(VisionEggFeedback, Config):
     def __init__(self, *args, **kwargs):
@@ -78,12 +79,10 @@ class Control(VisionEggFeedback, Config):
                                                  self)
 
     def run(self):
-        self._experiment.run()
-        #if self.trial_type == 3:
-            #while self._running:
-                #self.trial()
-        #else:
-            #self.block()
+        try:
+            self._experiment.run()
+        except AlphaBurstException as e:
+            self.logger.error(e)
         self.quit()
 
     def block(self):

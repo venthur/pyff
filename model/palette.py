@@ -15,6 +15,15 @@ program; if not, see <http://www.gnu.org/licenses/>.
 
 from pygame import Color
 
+from AlphaBurst.util.error import AlphaBurstException
+
+class NoMatchingSymbolColor(AlphaBurstException):
+    """ The color for a symbol has been queried that does not exist
+    in a present color group. """
+    def __init__(self, symbol):
+        text = 'Symbol not found in color groups: %s' % symbol
+        super(NoMatchingSymbolColor, self).__init__(text)
+        
 class Palette(object):
     def __init__(self):
         self.set(['black'], ['A'])
@@ -48,5 +57,8 @@ class Palette(object):
         return self(self._alt_colors[i % self._color_count])
 
     def symbol_color(self, symbol):
-        index = (i for i, g in enumerate(self.groups) if symbol in g).next()
+        try:
+            index = (i for i, g in enumerate(self.groups) if symbol in g).next()
+        except StopIteration:
+            raise NoMatchingSymbolColor(symbol)
         return self(index)
