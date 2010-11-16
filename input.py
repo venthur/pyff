@@ -37,11 +37,12 @@ class CountInputHandler(InputHandler):
 
     def keyboard(self, event):
         s = event.unicode
-        if event.key == pygame.K_RETURN:
-            self._process_keyboard_input()
-            self._digits = ''
-        elif self._digits and event.key == pygame.K_BACKSPACE:
-            self._digits = self._digits[:-1]
+        if self._digits:
+            if event.key == pygame.K_RETURN:
+                self._process_keyboard_input()
+                self._digits = ''
+            elif event.key == pygame.K_BACKSPACE:
+                self._digits = self._digits[:-1]
         elif s.isdigit():
             self._digits += s
         else:
@@ -83,14 +84,15 @@ class SpellingInputHandler(CountInputHandler):
     def __init__(self, control, update_word=False, *a, **kw):
         self._input = ''
         self._delete_symbol = control.delete_symbol
-        self._alphabet = control.alphabet
+        self._alphabet = list(control.alphabet)
         self._update_word = update_word
+        self._allow_keyboard = control.allow_keyboard_input
         CountInputHandler.__init__(self, control, *a, **kw)
 
     def keyboard(self, event):
         s = event.unicode
-        if (not CountInputHandler.keyboard(self, event) and s in
-            self._alphabet):
+        if (self._allow_keyboard and not CountInputHandler.keyboard(self, event)
+            and s in self._alphabet):
             self.eeg_select(self._alphabet.index(s))
 
     def _process_keyboard_input(self):

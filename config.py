@@ -35,8 +35,8 @@ class Config(object):
         self.words = ['LUXUS', 'WINKT', 'FJORD', 'HYBRID', 'SPHINX', 'QUARZ',
                       'VODKA', 'YACHT', 'GEBOT', 'MEMME']
         self.color_groups = ["ABCDEFGHIJ", "KLMNOPQRST", "UVWXYZ.,:<"]
-        #self.meaningless = '*+&%?;'
-        self.meaningless = ''
+        self.meaningless = '*+&%?;'
+        #self.meaningless = ''
         self.custom_pre_sequences = []
         self.custom_post_sequences = []
         self.symbol_duration = .05
@@ -61,6 +61,7 @@ class Config(object):
         self.target_frame = True
         self.target_frame_width = 2
         self.show_alphabet = True
+        self.allow_keyboard_input = True
         self._view_parameters += ['symbol_duration', 'bg_color',
                                   'font_color_name', 'present_word_time',
                                   'present_target_time', 'fixation_cross_time',
