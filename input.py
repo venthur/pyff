@@ -96,10 +96,10 @@ class SpellingInputHandler(CountInputHandler):
             self.eeg_select(self._alphabet.index(s))
 
     def _process_keyboard_input(self):
-        self.eeg_select(int(self._digits))
+        self.eeg_select(int(self._digits) - 1)
 
     def eeg_select(self, cls):
-        if cls < len(self._alphabet):
+        if 0 <= cls < len(self._alphabet):
             symbol = self._alphabet[cls]
             if symbol == self._delete_symbol:
                 self._input = self._input[:-1]
