@@ -24,9 +24,13 @@ TRIG_TARGET_ADD = 40
 TRIG_COUNTED_OFFSET = 150
 TRIG_TARGET_ABSENT_OFFSET = 11
 TRIG_TARGET_PRESENT_OFFSET = 21
+TRIG_EEG = 131
 
-def symbol_trigger(symbol, target, alphabet):
-    value = TRIG_LETTER + alphabet.index(symbol)
+def symbol_trigger(symbol, target, alphabet, base=TRIG_LETTER):
+    value = base + alphabet.index(symbol)
     if symbol == target:
         value += TRIG_TARGET_ADD
     return value
+
+def eeg_trigger(symbol, alphabet):
+    return symbol_trigger(symbol, None, alphabet, base=TRIG_EEG)

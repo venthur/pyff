@@ -109,6 +109,7 @@ class SpellingInputHandler(CountInputHandler):
             return True
 
     def _process_eeg_input(self, symbol):
+        self._trigger(eeg_trigger(symbol, self._alphabet))
         self._view.eeg_letter(self._input, symbol,
                               update_word=self._update_word)
         self._view.answered()
