@@ -46,13 +46,11 @@ class Control(VisionEggFeedback, Config):
         self.update_parameters()
 
     def __init_attributes(self):
-        self._asking = False
-        self._digits = ''
         self._sound = pygame.mixer.Sound(path.join(datadir, 'sound.ogg'))
         self._trigger = self.send_parallel
-        self.count = 0
         self._palette = Palette()
-        self._trial_o = None
+        self._trial_types = ['Count', 'YesNo', 'Calibration', 'FreeSpelling',
+                             'CopySpelling']
 
     def _create_view(self):
         return View(self._palette)
@@ -61,17 +59,22 @@ class Control(VisionEggFeedback, Config):
         VisionEggFeedback.update_parameters(self)
         self._palette.set(self.symbol_colors, self.color_groups)
         self.alphabet = ''.join(self.color_groups)
-        self._display_word = self.trial_type != 3
-        self._current_target = ''
-        types = ['Count', 'YesNo', 'Calibration', 'FreeSpelling',
-                 'CopySpelling']
-        trial = types[self.trial_type - 1]
-        trial_type =  trial + 'Trial'
+        self._trial_name = self._trial_types[self.trial_type - 1]
+        self._setup_trial()
+        self._setup_input_handler()
+        self._setup_experiment()
+
+    def _setup_trial(self):
+        trial_type = self._trial_name + 'Trial'
         self._trial = eval(trial_type)(self._view, self._trigger, self._iter,
                                    self.stimulus_sequence, self)
-        input_handler_type = trial + 'InputHandler'
+
+    def _setup_input_handler(self):
+        input_handler_type = self._trial_name + 'InputHandler'
         self._input_handler = eval(input_handler_type)(self)
-        experiment_type = trial + 'Experiment'
+
+    def _setup_experiment(self):
+        experiment_type = self._trial_name + 'Experiment'
         self._experiment = eval(experiment_type)(self._view, self._trial,
                                                  self._input_handler,
                                                  self._flag, self._iter,
