@@ -53,7 +53,6 @@ class Experiment(object):
         self._input_handler.start_trial(self._trial)
         self._trial.run(sequences)
         if self._flag:
-            self._input_handler.set_result(self)
             self._trial.evaluate(self._input_handler)
 
 class GuidedExperiment(Experiment):

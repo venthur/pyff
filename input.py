@@ -26,9 +26,6 @@ class InputHandler(object):
     def start_trial(self, trial):
         self._trial = trial
 
-    def set_result(self, control):
-        pass
-
 class CountInputHandler(InputHandler):
     def __init__(self, control):
         self._digits = ''
@@ -39,19 +36,21 @@ class CountInputHandler(InputHandler):
         self._digits = ''
 
     def keyboard(self, event):
-        """ Count mode. Record the entered digits in count. """
         s = event.unicode
         if event.key == pygame.K_RETURN:
-            self.count = int(self._digits)
+            self._process_keyboard_input()
             self._digits = ''
-            self._view.answered()
         elif self._digits and event.key == pygame.K_BACKSPACE:
             self._digits = self._digits[:-1]
         elif s.isdigit():
             self._digits += s
+        else:
+            return False
+        return True
 
-    def set_result(self, control):
-        control.count = self.count
+    def _process_keyboard_input(self):
+        self.count = int(self._digits)
+        self._view.answered()
 
 class YesNoInputHandler(InputHandler):
     def __init__(self, control):
@@ -73,38 +72,28 @@ class YesNoInputHandler(InputHandler):
         if s in [self._key_yes, self._key_no]:
             yes = s == self._key_yes
             self.detections.append(yes)
-            trig = TRIG_TARGET_PRESENT_OFFSET if self._trial._target_present else \
-                   TRIG_TARGET_ABSENT_OFFSET
+            trig = TRIG_TARGET_PRESENT_OFFSET if self._trial._target_present \
+                   else TRIG_TARGET_ABSENT_OFFSET
             self._trigger(trig + yes)
             self._view.answered()
 
-    def set_result(self, control):
-        control.detections = self.detections
-
 CalibrationInputHandler = InputHandler
 
-class SpellingInputHandler(InputHandler):
+class SpellingInputHandler(CountInputHandler):
     def __init__(self, control, *a, **kw):
         self._input = ''
-        self._digits = ''
         self._delete_symbol = control.delete_symbol
-        InputHandler.__init__(self, control, *a, **kw)
-
-    def start_trial(self, trial):
-        InputHandler.start_trial(self, trial)
-        self._digits = ''
+        self._alphabet = control.alphabet
+        CountInputHandler.__init__(self, control, *a, **kw)
 
     def keyboard(self, event):
         s = event.unicode
-        if event.key == pygame.K_RETURN and self._digits:
-            self.eeg_select(int(self._digits))
-            self._digits = ''
-        elif self._digits and event.key == pygame.K_BACKSPACE:
-            self._digits = self._digits[:-1]
-        elif s.isdigit():
-            self._digits += s
-        elif s in self._trial.sequence:
-            self.eeg_select(self._trial.sequence.index(s))
+        if (not CountInputHandler.keyboard(self, event) and s in
+            self._alphabet):
+            self.eeg_select(self._alphabet.index(s))
+
+    def _process_keyboard_input(self):
+        self.eeg_select(int(self._digits))
 
     def eeg_select(self, cls):
         if cls < len(self._trial.sequence):
@@ -117,6 +106,8 @@ class SpellingInputHandler(InputHandler):
             return True
 
     def _process_eeg_input(self, symbol):
+        self._view.eeg_letter(self._input, symbol,
+                              update_word=self._update_word)
         self._view.answered()
 
 class FreeSpellingInputHandler(SpellingInputHandler):
