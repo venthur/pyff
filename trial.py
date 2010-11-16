@@ -62,7 +62,6 @@ class Trial(object):
             with burst_constraints:
                 self._target_present = self._current_target in symbols
                 self._burst(burst)
-        sleep(self._inter_sequence)
 
     def _burst(self, symbols):
         def gen():
@@ -96,6 +95,7 @@ class Trial(object):
             self._sequence(seq)
             if self._sequence_input:
                 self._ask()
+            sleep(self._inter_sequence)
         if self._trial_input:
             self._ask()
 

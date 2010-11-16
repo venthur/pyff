@@ -17,6 +17,7 @@ import string
 
 class Config(object):
     def init(self):
+        # 1: Count, 2: YesNo, 3: Calibration, 4: FreeSpelling, 5: CopySpelling
         self.trial_type = 5
         self.alternating_colors = True
         self.sequences_per_trial = 1
@@ -39,30 +40,44 @@ class Config(object):
         #self.meaningless = ''
         self.custom_pre_sequences = []
         self.custom_post_sequences = []
+        # The time for that one single letter is displayed
         self.symbol_duration = .05
+        # Pause time directly after each burst
         self.inter_burst = 0
+        # Pause time directly after one sequence of bursts or the
+        # following user input if set
         self.inter_sequence = .5
-        self.inter_block = .1
+        # Pause time directly after one set of sequences for one letter
+        # or the following user input if set (count, spelling)
         self.inter_trial = .1
+        # Pause time after all targets in one word have been processed
+        self.inter_word = .1
+        # Display time of a new word in the center
         self.present_word_time = .2
         self.fixation_cross_time = 0.
+        # Display time of the next target in the headline
         self.present_target_time = .1
+        # Display time of the classifier-selected letter
         self.present_eeg_input_time = 1
         self.countdown_start = 5
         self.countdown_symbol_duration = .5
         self.key_yes = 'j'
         self.key_no = 'k'
+        # What's considered as valid count input discrepancy
         self.max_diff = 10
         self.sound = False
-        self.current_word_index = 0
-        self.current_letter_index = 0
-        self.target_index = 0
         self.delete_symbol = '<'
+        # Display a frame around the current target
         self.show_target_frame = True
         self.target_frame_width = 2
+        # Display the current alphabet in corresponding colors at the
+        # bottom
         self.show_alphabet = True
+        # Allow the eeg input to be simulated by keyboard (for debug)
         self.allow_keyboard_input = True
+        # Display the countdown before each new word
         self.show_word_countdown = False
+        # Display the countdown before each new target
         self.show_trial_countdown = False
         self._view_parameters += ['symbol_duration', 'bg_color',
                                   'font_color_name', 'present_word_time',

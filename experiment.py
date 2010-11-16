@@ -35,6 +35,7 @@ class Experiment(object):
         self._redundance = config.meaningless
         self._words = config.words
         self._inter_trial = config.inter_trial
+        self._inter_word = config.inter_word
         self._alternating_colors = config.alternating_colors
         self._sequences_per_trial = config.sequences_per_trial
         self._custom_pre_sequences = config.custom_pre_sequences
@@ -43,7 +44,6 @@ class Experiment(object):
         self._current_target = ''
 
     def trial(self):
-        sleep(self._inter_trial)
         factory = CharacterSequenceFactory(self._redundance,
                                            self._alternating_colors,
                                            self._current_target,
@@ -64,6 +64,8 @@ class GuidedExperiment(Experiment):
             self._view.word(word)
             for target in enumerate(self._iter(word)):
                 self.trial(*target)
+                sleep(self._inter_trial)
+            sleep(self._inter_word)
 
     def trial(self, index, target):
         self._view.target(index)
