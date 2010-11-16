@@ -86,33 +86,6 @@ class Control(VisionEggFeedback, Config):
             self.logger.error(e)
         self.quit()
 
-    def block(self):
-        for word in self._iter(self.words):
-            self._view.count_down()
-            if self._display_word:
-                self._view.word(word)
-            gen = self._iter(enumerate(word))
-            for self.target_index, self._current_target in gen:
-                self.trial()
-
-    def trial(self):
-        sleep(self.inter_trial)
-        factory = CharacterSequenceFactory(self.meaningless,
-                                           self.alternating_colors,
-                                           self._current_target,
-                                           self._palette)
-        self._sequences = factory.sequences(self.sequences_per_trial,
-                                            self.custom_pre_sequences,
-                                            self.custom_post_sequences)
-        self.detections = []
-        if self.trial_type != 3:
-            self._view.target(self._current_target)
-        self._input_handler.start_trial(self._trial)
-        self._trial.run(self._sequences, self._current_target)
-        if self._flag:
-            self._input_handler.set_result(self)
-            self._trial.evaluate(self._input_handler)
-
     def keyboard_input(self, event):
         if self._trial.asking:
             self._input_handler.keyboard(event)
