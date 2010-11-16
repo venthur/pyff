@@ -58,7 +58,7 @@ class Config(object):
         self.current_letter_index = 0
         self.target_index = 0
         self.delete_symbol = '<'
-        self.target_frame = True
+        self.show_target_frame = True
         self.target_frame_width = 2
         self.show_alphabet = True
         self.allow_keyboard_input = True
@@ -74,6 +74,6 @@ class Config(object):
                                   'headline_target_font_size', 'geometry',
                                   'symbol_colors', 'headline_vpos',
                                   'symbol_vpos', 'present_eeg_input_time',
-                                  'target_frame', 'target_frame_width',
+                                  'show_target_frame', 'target_frame_width',
                                   'alphabet_vpos', 'alphabet_font_size',
                                   'show_alphabet']

@@ -52,7 +52,7 @@ class View(VisionEggView):
                                               self._headline_vpos),
                                     symbol_size=self._headline_font_size,
                                     target_size=self._headline_target_font_size,
-                                    target_frame=self._target_frame,
+                                    target_frame=self._show_target_frame,
                                     target_frame_width=self._target_frame_width)
         self._center_text = ColorWord(position=(sz[0] / 2., sz[1] -
                                                 self._symbol_vpos),
