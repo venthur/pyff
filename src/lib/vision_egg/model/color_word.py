@@ -23,28 +23,42 @@ class ColorWord(TextList):
     def __init__(self, position=(0, 0), text='', target=None, symbol_size=72,
                  target_size=96, colors=[]):
         TextList.__init__(self, position)
-        self._target_index = None
         self.set_size(symbol_size, target_size)
+        self._target = None
+        self._target_index = None
         self.set(text=text, target=target, colors=colors)
 
     def set(self, text=None, target=None, colors=None):
         if text is not None:
-            self.text = text
-            self._target_index = None
+            self.set_text(text)
         if colors is not None:
             self._colors = colors
         if target is not None:
-            if isinstance(target, int) and 0 <= target <= len(self.text):
-                self._target_index = target
-            elif target in self.text:
-                self._target_index = self.text.index(target)
-            else:
-                self._target_index = None
+            self.set_target(target)
+        self.rebuild(target)
+
+    def rebuild(self, target=None):
         self.clear()
         for i, l in enumerate(self.text):
-            size = self._target_size if target in (i, l) else self._symbol_size
+            size = self._target_size if self._target in (i, l) \
+                   else self._symbol_size
             self.add(l, size)
         self._set_colors()
+
+    def set_text(self, text):
+        self.text = text
+        self._target_index = None
+
+    def set_target(self, target):
+        if isinstance(target, int) and 0 <= target <= len(self.text):
+            self._target = self.text[target]
+            self._target_index = target
+        elif target in self.text:
+            self._target = target
+            self._target_index = self.text.index(target)
+        else:
+            self._target = None
+            self._target_index = None
 
     def set_size(self, symbol_size=72, target_size=96):
         self._symbol_size = symbol_size
