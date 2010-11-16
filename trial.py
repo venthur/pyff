@@ -65,12 +65,11 @@ class Trial(object):
 
     def _burst(self, symbols):
         def gen():
-            for symbol in self._iter(symbols):
+            for symbol in symbols:
                 self._symbol_trigger(symbol[0])
                 self._view.symbol(*symbol)
                 yield
-        seq = self._stimulus_sequence(gen(), self._symbol_duration)
-        seq.run()
+        self._stimulus_sequence(gen(), self._symbol_duration).run()
 
     def _ask(self):
         self.asking = True
