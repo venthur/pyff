@@ -62,19 +62,36 @@ class Frame(Stimulus):
             gl.glEnd()
 
 class TargetWord(ColorWord):
-    def __init__(self, target_frame=False, target_frame_width=2, **kw):
+    def __init__(self, target_frame=False, target_frame_width=2,
+                 center_at_target=False, **kw):
         self._target_frame = target_frame
         self._target_frame_width = target_frame_width
+        self._center_at_target = center_at_target
         ColorWord.__init__(self, **kw)
 
     def set(self, **kw):
         ColorWord.set(self, **kw)
-        self._add_frame()
+        if self._center_at_target:
+            self._center_target()
+        if self._target_frame: 
+            self._add_frame()
 
     def _add_frame(self):
-        if self._target_frame and self._target_index is not None:
-            current = self[self._target_index]
-            pos = current.parameters.position
-            size = current.parameters.size
+        """ Add a rectangle around the target symbol. """
+        if self._target_index is not None:
+            target = self[self._target_index]
+            pos = target.parameters.position
+            size = target.parameters.size
             frame = Frame(pos, size, line_width=self._target_frame_width)
             self.insert(0, frame)
+
+    def _center_target(self):
+        """ Move the target symbol to the word's position by moving all
+        symbols by the difference.
+        """
+        if self._target_index is not None:
+            target = self[self._target_index]
+            diff = self._position[0] - target.parameters.position[0]
+            for symbol in self:
+                pos = symbol.parameters.position
+                symbol.set(position=(pos[0] + diff, pos[1]))
