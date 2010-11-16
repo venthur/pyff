@@ -33,6 +33,7 @@ class Trial(object):
         self._color_groups = config.color_groups
         self._symbol_duration = config.symbol_duration
         self._max_diff = config.max_diff
+        self._trial_countdown = config.show_trial_countdown
         self._trial_fix_cross = trial_fix_cross
         self._burst_fix_cross = burst_fix_cross
         self._trial_input = trial_input
@@ -87,6 +88,8 @@ class Trial(object):
             self._trigger(trigger)
 
     def run(self, sequences):
+        if self._trial_countdown:
+            self._view.countdown()
         if self._trial_fix_cross:
             self._view.show_fixation_cross()
         for seq in self._iter(sequences):     

@@ -147,8 +147,8 @@ class View(VisionEggView):
         self._present(0.0000000001)
         self._center_text.set_all(on=True)
 
-    def count_down(self):
-        for i in self._iter(reversed(xrange(self._count_down_start + 1))):
+    def countdown(self):
+        for i in self._iter(reversed(xrange(self._countdown_start + 1))):
             self._center_word(str(i))
-            self._present(self._count_down_symbol_duration)
+            self._present(self._countdown_symbol_duration)
         self.clear_symbol()

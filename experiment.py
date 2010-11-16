@@ -39,6 +39,7 @@ class Experiment(object):
         self._sequences_per_trial = config.sequences_per_trial
         self._custom_pre_sequences = config.custom_pre_sequences
         self._custom_post_sequences = config.custom_post_sequences
+        self._word_countdown = config.show_word_countdown
         self._current_target = ''
 
     def trial(self):
@@ -58,7 +59,8 @@ class Experiment(object):
 class GuidedExperiment(Experiment):
     def run(self):
         for word in self._iter(self._words):
-            self._view.count_down()
+            if self._word_countdown:
+                self._view.countdown()
             self._view.word(word)
             for target in enumerate(self._iter(word)):
                 self.trial(*target)

@@ -17,7 +17,7 @@ import string
 
 class Config(object):
     def init(self):
-        self.trial_type = 3
+        self.trial_type = 5
         self.alternating_colors = True
         self.sequences_per_trial = 1
         self.fullscreen = False
@@ -48,8 +48,8 @@ class Config(object):
         self.fixation_cross_time = 0.
         self.present_target_time = .1
         self.present_eeg_input_time = 1
-        self.count_down_start = 0
-        self.count_down_symbol_duration = .5
+        self.countdown_start = 5
+        self.countdown_symbol_duration = .5
         self.key_yes = 'j'
         self.key_no = 'k'
         self.max_diff = 10
@@ -62,11 +62,13 @@ class Config(object):
         self.target_frame_width = 2
         self.show_alphabet = True
         self.allow_keyboard_input = True
+        self.show_word_countdown = False
+        self.show_trial_countdown = False
         self._view_parameters += ['symbol_duration', 'bg_color',
                                   'font_color_name', 'present_word_time',
                                   'present_target_time', 'fixation_cross_time',
-                                  'count_down_start',
-                                  'count_down_symbol_duration', 'color_groups',
+                                  'countdown_start',
+                                  'countdown_symbol_duration', 'color_groups',
                                   'alternating_colors', 'font_size',
                                   'headline_font_size', 'fullscreen',
                                   'headline_target_font_size', 'geometry',
