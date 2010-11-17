@@ -40,12 +40,13 @@ class Frame(Stimulus):
                           [ul[0] + size[0], ul[1] + size[1], 0],
                           [ul[0], ul[1] + size[1], 0]]
         self._color = Color('red')
+        self._gl_color = gl.glColor3f if len(self._color) == 3 else gl.glColor4f
         self._line_width = line_width
 
     def draw(self):
         p = self.parameters
         if p.on:
-            gl.glColor3f(*self._color)
+            self._gl_color(*self._color)
             gl.glDisable(gl.GL_TEXTURE_2D)
             if p.depth_test:
                 gl.glEnable(gl.GL_DEPTH_TEST)
