@@ -150,6 +150,11 @@ class VisionEggView(object):
         self.presentation.set(go_duration=(num_frames, 'frames'))
         self.presentation.go()
 
+    def update(self):
+        """ Repaint the canvas for one frame to update changed stimuli.
+        """
+        self.present_frames(1)
+
     def _center_word(self, text, color=None):
         """ Set the standard word in the screen center. """
         self._center_text.set(text=text)
@@ -170,6 +175,7 @@ class VisionEggView(object):
         after subject input.
         """
         self.presentation.set(quit=True)
+        self.clear_symbol()
 
     def show_fixation_cross(self):
         """ Display a plus sign as fixation cross for the period of time
@@ -181,9 +187,8 @@ class VisionEggView(object):
     def clear_symbol(self):
         """ Remove the stimulus from the screen. Alternatives welcome.
         """
-        self._center_text.set_all(on=False)
-        self.present_frames(1)
-        self._center_text.set_all(on=True)
+        self._center_word('')
+        self.update()
 
     def count_down(self):
         """ Display a countdown according to pyff parameters
