@@ -78,8 +78,7 @@ class Control(VisionEggFeedback, Config):
         self._experiment = eval(experiment_type)(self._view, self._trial,
                                                  self._input_handler,
                                                  self._flag, self._iter,
-                                                 self.alphabet, self._palette,
-                                                 self)
+                                                 self._palette, self)
 
     def run(self):
         try:

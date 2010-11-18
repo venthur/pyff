@@ -23,14 +23,13 @@ __all__ = ['CountExperiment', 'YesNoExperiment', 'CopySpellingExperiment',
            'CalibrationExperiment', 'FreeSpellingExperiment']
 
 class Experiment(object):
-    def __init__(self, view, trial, input_handler, flag, iter, alphabet,
+    def __init__(self, view, trial, input_handler, flag, iter,
                  palette, config):
         self._view = view
         self._trial = trial
         self._input_handler = input_handler
         self._flag = flag
         self._iter = iter
-        self._alphabet = alphabet
         self._palette = palette
         self._redundance = config.meaningless
         self._words = config.words
