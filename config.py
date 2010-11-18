@@ -28,7 +28,7 @@ class Config(object):
         self.alphabet_font_size = 64
         self.headline_target_font_size = 96
         self.headline_vpos = 100
-        self.alphabet_vpos = 500
+        self.alphabet_vpos = 1000
         self.symbol_vpos = 300
         self.font_color_name = 'orangered'
         self.symbol_colors = ['red', 'yellow', 'green', 'blue', 'black']
@@ -54,7 +54,7 @@ class Config(object):
         self.inter_word = .1
         # Display time of a new word in the center
         self.present_word_time = .2
-        self.fixation_cross_time = 0.
+        self.fixation_cross_time = 2.
         # Display time of the next target in the headline
         self.present_target_time = .1
         # Display time of the classifier-selected letter
@@ -76,7 +76,7 @@ class Config(object):
         # Allow the eeg input to be simulated by keyboard (for debug)
         self.allow_keyboard_input = True
         # Display the countdown before each new word
-        self.show_word_countdown = False
+        self.show_word_countdown = True
         # Display the countdown before each new target
         self.show_trial_countdown = False
         self._view_parameters += ['symbol_duration', 'bg_color',
