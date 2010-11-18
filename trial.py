@@ -34,8 +34,8 @@ class Trial(object):
         self._symbol_duration = config.symbol_duration
         self._max_diff = config.max_diff
         self._trial_countdown = config.show_trial_countdown
-        self._trial_fix_cross = trial_fix_cross
-        self._burst_fix_cross = burst_fix_cross
+        self._trial_fix_cross = config.show_trial_fix_cross
+        self._burst_fix_cross = config.show_burst_fix_cross
         self._trial_input = trial_input
         self._burst_input = burst_input
         self._sequence_input = sequence_input

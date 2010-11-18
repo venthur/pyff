@@ -40,6 +40,7 @@ class Experiment(object):
         self._custom_pre_sequences = config.custom_pre_sequences
         self._custom_post_sequences = config.custom_post_sequences
         self._word_countdown = config.show_word_countdown
+        self._word_fix_cross = config.show_word_fix_cross
         self._current_target = ''
 
     def trial(self):
@@ -61,6 +62,8 @@ class GuidedExperiment(Experiment):
             if self._word_countdown:
                 self._view.countdown()
             self._view.word(word)
+            if self._word_fix_cross:
+                self._view.show_fixation_cross()
             for target in enumerate(self._iter(word)):
                 self.trial(*target)
                 sleep(self._inter_trial)

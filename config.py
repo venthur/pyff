@@ -55,6 +55,9 @@ class Config(object):
         # Display time of a new word in the center
         self.present_word_time = .2
         self.fixation_cross_time = 2.
+        self.show_trial_fix_cross = True
+        self.show_burst_fix_cross = False
+        self.show_word_fix_cross = False
         # Display time of the next target in the headline
         self.present_target_time = .1
         # Display time of the classifier-selected letter
