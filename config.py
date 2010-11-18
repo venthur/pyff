@@ -35,7 +35,7 @@ class Config(object):
         self.bg_color = 'grey'
         self.words = ['LUXUS', 'WINKT', 'FJORD', 'HYBRID', 'SPHINX', 'QUARZ',
                       'VODKA', 'YACHT', 'GEBOT', 'MEMME']
-        self.color_groups = ["ABCDEFGHIJ", "KLMNOPQRST", "UVWXYZ.,:<"]
+        self.color_groups = ["ABCEQWFGHI", "KLMNOPDRST", "UVXYJZ.,:<"]
         self.meaningless = '*+&%?;'
         #self.meaningless = ''
         self.custom_pre_sequences = []

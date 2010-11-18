@@ -58,7 +58,7 @@ class Control(VisionEggFeedback, Config):
     def update_parameters(self):
         VisionEggFeedback.update_parameters(self)
         self._palette.set(self.symbol_colors, self.color_groups)
-        self.alphabet = ''.join(self.color_groups)
+        self.alphabet = sorted(''.join(self.color_groups))
         self._trial_name = self._trial_types[self.trial_type - 1]
         self._setup_trial()
         self._setup_input_handler()
