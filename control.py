@@ -29,7 +29,6 @@ from AlphaBurst.model.character_sequence import CharacterSequenceFactory
 from AlphaBurst.model.palette import Palette
 from AlphaBurst.util.metadata import datadir
 from AlphaBurst.util.trigger import *
-from AlphaBurst.util.switcherator import *
 from AlphaBurst.trial import *
 from AlphaBurst.input import *
 from AlphaBurst.experiment import *

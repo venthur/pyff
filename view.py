@@ -22,7 +22,6 @@ from pygame import Color
 from lib.vision_egg import VisionEggView
 from lib.vision_egg.model.color_word import ColorWord
 
-from AlphaBurst.util.switcherator import Switcherator
 from AlphaBurst.model.target_word import TargetWord
 
 class View(VisionEggView):
