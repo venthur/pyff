@@ -18,7 +18,7 @@ import string
 class Config(object):
     def init(self):
         # 1: Count, 2: YesNo, 3: Calibration, 4: FreeSpelling, 5: CopySpelling
-        self.trial_type = 5
+        self.trial_type = 4
         self.alternating_colors = True
         self.sequences_per_trial = 1
         self.fullscreen = False
@@ -55,7 +55,7 @@ class Config(object):
         # Display time of a new word in the center
         self.present_word_time = .2
         self.fixation_cross_time = 2.
-        self.show_trial_fix_cross = True
+        self.show_trial_fix_cross = False
         self.show_burst_fix_cross = False
         self.show_word_fix_cross = False
         # Display time of the next target in the headline
@@ -79,7 +79,7 @@ class Config(object):
         # Allow the eeg input to be simulated by keyboard (for debug)
         self.allow_keyboard_input = True
         # Display the countdown before each new word
-        self.show_word_countdown = True
+        self.show_word_countdown = False
         # Display the countdown before each new target
         self.show_trial_countdown = False
         self._view_parameters += ['symbol_duration', 'bg_color',

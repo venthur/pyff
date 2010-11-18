@@ -23,6 +23,9 @@ class InputHandler(object):
         self._view = control._view
         self._trigger = control._trigger
 
+    def start_experiment(self, experiment):
+        self._experiment = experiment
+
     def start_trial(self, trial):
         self._trial = trial
 
@@ -102,10 +105,12 @@ class SpellingInputHandler(CountInputHandler):
         if 0 <= cls < len(self._alphabet):
             symbol = self._alphabet[cls]
             if symbol == self._delete_symbol:
+                self._experiment.delete()
                 self._input = self._input[:-1]
             else:
                 self._input += symbol
             self._process_eeg_input(symbol)
+            print self._input
             return True
 
     def _process_eeg_input(self, symbol):

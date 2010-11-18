@@ -18,6 +18,7 @@ from time import sleep
 from itertools import count
 
 from AlphaBurst.model.character_sequence import CharacterSequenceFactory
+from AlphaBurst.util.list import TargetIndex
 
 __all__ = ['CountExperiment', 'YesNoExperiment', 'CopySpellingExperiment',
            'CalibrationExperiment', 'FreeSpellingExperiment']
@@ -43,6 +44,9 @@ class Experiment(object):
         self._word_fix_cross = config.show_word_fix_cross
         self._current_target = ''
 
+    def run(self):
+        self._input_handler.start_experiment(self)
+
     def trial(self):
         factory = CharacterSequenceFactory(self._redundance,
                                            self._alternating_colors,
@@ -56,15 +60,20 @@ class Experiment(object):
         if self._flag:
             self._trial.evaluate(self._input_handler)
 
+    def delete(self):
+        pass
+
 class GuidedExperiment(Experiment):
     def run(self):
+        super(GuidedExperiment, self).run()
         for word in self._iter(self._words):
             if self._word_countdown:
                 self._view.countdown()
             self._view.word(word)
             if self._word_fix_cross:
                 self._view.show_fixation_cross()
-            for target in enumerate(self._iter(word)):
+            self._target_index = TargetIndex(word)
+            for target in self._iter(self._target_index):
                 self.trial(*target)
                 sleep(self._inter_trial)
             sleep(self._inter_word)
@@ -73,6 +82,9 @@ class GuidedExperiment(Experiment):
         self._view.target(index)
         self._trial.target(target)
         Experiment.trial(self)
+
+    def delete(self):
+        self._target_index.delete()
 
 YesNoExperiment = GuidedExperiment
 CopySpellingExperiment = GuidedExperiment
@@ -85,5 +97,6 @@ class CountExperiment(GuidedExperiment):
 
 class FreeSpellingExperiment(Experiment):
     def run(self):
+        super(FreeSpellingExperiment, self).run()
         for i in self._iter(count()):
             self.trial()
