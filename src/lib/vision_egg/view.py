@@ -126,7 +126,7 @@ class VisionEggView(object):
 
     def set_stimuli(self, *stimuli):
         """ Set the list of stimulus objects.  """
-        self._standard_viewport.set(stimuli=stimuli)
+        self._standard_viewport.set(stimuli=list(stimuli))
 
     def _set_font_color(self):
         """ Set the standard font color by pygame name. """
