@@ -53,7 +53,7 @@ class ColorWord(TextList):
         if isinstance(target, int) and 0 <= target <= len(self.text):
             self._target = self.text[target]
             self._target_index = target
-        elif target in self.text:
+        elif isinstance(target, (str, unicode)) and target in self.text:
             self._target = target
             self._target_index = self.text.index(target)
         else:
