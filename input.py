@@ -105,12 +105,10 @@ class SpellingInputHandler(CountInputHandler):
         if 0 <= cls < len(self._alphabet):
             symbol = self._alphabet[cls]
             if symbol == self._delete_symbol:
-                self._experiment.delete()
-                self._input = self._input[:-1]
+                self._delete()
             else:
                 self._input += symbol
             self._process_eeg_input(symbol)
-            print self._input
             return True
 
     def _process_eeg_input(self, symbol):
@@ -119,8 +117,14 @@ class SpellingInputHandler(CountInputHandler):
                               update_word=self._update_word)
         self._view.answered()
 
+    def _delete(self):
+        self._input += self._delete_symbol
+
 class FreeSpellingInputHandler(SpellingInputHandler):
     def __init__(self, *a, **kw):
         SpellingInputHandler.__init__(self, update_word=True, *a, **kw)
+
+    def _delete(self):
+        self._input = self._input[:-1]
 
 CopySpellingInputHandler = SpellingInputHandler

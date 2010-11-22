@@ -18,7 +18,6 @@ from time import sleep
 from itertools import count
 
 from AlphaBurst.model.character_sequence import CharacterSequenceFactory
-from AlphaBurst.util.list import TargetIndex
 
 __all__ = ['CountExperiment', 'YesNoExperiment', 'CopySpellingExperiment',
            'CalibrationExperiment', 'FreeSpellingExperiment']
@@ -72,8 +71,7 @@ class GuidedExperiment(Experiment):
             self._view.word(word)
             if self._word_fix_cross:
                 self._view.show_fixation_cross()
-            self._target_index = TargetIndex(word)
-            for target in self._iter(self._target_index):
+            for target in self._iter(enumerate(word)):
                 self.trial(*target)
                 sleep(self._inter_trial)
             sleep(self._inter_word)
@@ -82,9 +80,6 @@ class GuidedExperiment(Experiment):
         self._view.target(index)
         self._trial.target(target)
         Experiment.trial(self)
-
-    def delete(self):
-        self._target_index.delete()
 
 YesNoExperiment = GuidedExperiment
 CopySpellingExperiment = GuidedExperiment
