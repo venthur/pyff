@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # trigger.py - Common trigger definitions.
-# Copyright (C) 2010  Mirko Dietrich
+# Copyright (C) 2010  Bastian Venthur <bastian.venthur@tu-berlin.de>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -55,7 +55,7 @@ PAUSE_START, PAUSE_END = 248, 249
 
 if __name__ == '__main__':
     _tmp = list()
-    for name, value in locals().items():
+    for name, value in globals().items():
         # ignore magic variables
         if name.startswith('__') and name.endswith('__'):
             print "Ignoring magic %s" % name
