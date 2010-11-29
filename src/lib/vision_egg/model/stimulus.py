@@ -60,7 +60,7 @@ class StimulusPainter(object):
         next_wait_time = self._next_wait_time
         wait_time = self._last_start - time() + next_wait_time
         try:
-            if wait_time >= 0:
+            if wait_time > 0:
                 sleep(wait_time)
         except IOError, e:
             self._logger.error('Encountered "%s" with wait_time of %s'
