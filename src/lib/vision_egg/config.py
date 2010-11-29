@@ -29,6 +29,7 @@ class Config(object):
         self.fixation_cross_time = 1.
         self.count_down_symbol_duration = 0.5
         self.count_down_start = 5
+        self.print_frames = True
         self._view_parameters = ['fullscreen', 'geometry', 'bg_color',
                                  'font_color_name', 'font_size',
                                  'fixation_cross_time',

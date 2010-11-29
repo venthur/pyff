@@ -58,11 +58,6 @@ class VisionEggFeedback(MainloopFeedback, Config):
         self.__setup_events()
         self.__setup_stim_factory()
 
-    def __setup_stim_factory(self):
-        """ Create the factory for stimulus sequence handlers. """
-        self._stimseq_fact = StimulusSequenceFactory(self._flag)
-        self._stimseq_fact.set_view(self._view)
-
     def _create_view(self):
         """ Instantiate the view class. Overload this for custom
         parameter specification. """
@@ -80,6 +75,12 @@ class VisionEggFeedback(MainloopFeedback, Config):
         """ Set L{keyboard_input} to serve as keyboard handler. """
         handlers = [(pygame.KEYDOWN, self.keyboard_input)]
         self._view.set_event_handlers(handlers)
+
+    def __setup_stim_factory(self):
+        """ Create the factory for stimulus sequence handlers. """
+        self._stimseq_fact = StimulusSequenceFactory(self._flag,
+                                                     self.print_frames)
+        self._stimseq_fact.set_view(self._view)
 
     def stimulus_sequence(self, prepare, presentation_time):
         """ Returns an object presenting a series of stimuli.
