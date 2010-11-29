@@ -40,10 +40,11 @@ class ColorWord(TextList):
 
     def rebuild(self, target=None):
         self.clear()
-        for i, l in enumerate(self.text):
-            size = self._target_size if self._target in (i, l) \
-                   else self._symbol_size
-            self.add(l, size)
+        sizes = [self._symbol_size] * len(self.text)
+        if self._target_index is not None:
+            sizes[self._target_index] = self._target_size
+        for letter, size in izip(self.text, sizes):
+            self.add(letter, size)
         self._set_colors()
 
     def set_text(self, text):
@@ -54,7 +55,7 @@ class ColorWord(TextList):
         if isinstance(target, int) and 0 <= target <= len(self.text):
             self._target = self.text[target]
             self._target_index = target
-        elif target in self.text:
+        elif isinstance(target, (str, unicode)) and target in self.text:
             self._target = target
             self._target_index = self.text.index(target)
         else:
