@@ -23,7 +23,6 @@ import pygame
 from FeedbackBase.MainloopFeedback import MainloopFeedback
 
 from lib.vision_egg.view import VisionEggView
-from lib.vision_egg.config import Config
 from lib.vision_egg.util.stimulus import StimulusSequenceFactory
 from lib.vision_egg.util.switcherator import Flag, Switcherator
 
@@ -31,7 +30,7 @@ VisionEgg.config.VISIONEGG_GUI_INIT = 0
 VisionEgg.config.VISIONEGG_LOG_TO_STDERR = 0
 VisionEgg.logger.setLevel(logging.ERROR)
 
-class VisionEggFeedback(MainloopFeedback, Config):
+class VisionEggFeedback(MainloopFeedback):
     """ Main controlling class for VisionEgg feedbacks. It holds and
     creates the view object, handles keyboard input and provides an
     interface for creating stimulus sequence objects, that ensure
@@ -44,9 +43,45 @@ class VisionEggFeedback(MainloopFeedback, Config):
         type can be specified here. See _create_view for more.
         """
         MainloopFeedback.__init__(self, *args, **kwargs)
-        Config.__init__(self)
         self._view_type = view_type
+        self.__init_parameters()
         self.__init_attributes()
+
+    def __init_parameters(self):
+        """ Initialize the pyff parameters. The list _view_parameters
+        defines what to pass along to the view object.
+        wait_style_fixed: Whether to calculate the presentation time
+        of the next stimulus by the previously calculated waiting time
+        or the actual real time at the end of the presentation period.
+        fullscreen: Run the feedback in fullscreen/window.
+        geometry: Upperleft x-pos, y-pos, width, height.
+        bg_color: Background color.
+        font_color_name: The color used for built-in text, like
+        countdown or the center text.
+        font_size: Size of the center text.
+        fixation_cross_time: How long to display the built-in fixation
+        cross when invoked.
+        count_down_symbol_duration: How long to display each digit of
+        the built-in countdown when invoked.
+        count_down_start: First digit of the built-in countdown.
+        print_frames: Whether to debug-print the number of frames
+        rendered during each stimulus presentation.
+        """
+        self.wait_style_fixed = True
+        self.fullscreen = False
+        self.geometry = [100, 100, 640, 480]
+        self.bg_color = 'grey'
+        self.font_color_name = 'green'
+        self.font_size = 150
+        self.fixation_cross_time = 1.
+        self.count_down_symbol_duration = 0.5
+        self.count_down_start = 5
+        self.print_frames = True
+        self._view_parameters = ['fullscreen', 'geometry', 'bg_color',
+                                 'font_color_name', 'font_size',
+                                 'fixation_cross_time',
+                                 'count_down_symbol_duration',
+                                 'count_down_start']
 
     def __init_attributes(self):
         """ Setup internal attributes. """
