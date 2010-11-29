@@ -24,7 +24,7 @@ from FeedbackBase.MainloopFeedback import MainloopFeedback
 
 from lib.vision_egg.view import VisionEggView
 from lib.vision_egg.config import Config
-from lib.vision_egg.model.stimulus import StimulusSequenceFactory
+from lib.vision_egg.util.stimulus import StimulusSequenceFactory
 from lib.vision_egg.util.switcherator import Flag, Switcherator
 
 VisionEgg.config.VISIONEGG_GUI_INIT = 0
@@ -78,9 +78,8 @@ class VisionEggFeedback(MainloopFeedback, Config):
 
     def __setup_stim_factory(self):
         """ Create the factory for stimulus sequence handlers. """
-        self._stimseq_fact = StimulusSequenceFactory(self._flag,
+        self._stimseq_fact = StimulusSequenceFactory(self._view, self._flag,
                                                      self.print_frames)
-        self._stimseq_fact.set_view(self._view)
 
     def stimulus_sequence(self, prepare, presentation_time):
         """ Returns an object presenting a series of stimuli.

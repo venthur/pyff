@@ -20,7 +20,7 @@ class Config(object):
     defines what to pass along to the view object.
     """
     def __init__(self):
-        self.wait_style_fixed = False
+        self.wait_style_fixed = True
         self.fullscreen = False
         self.geometry = [100, 100, 640, 480]
         self.bg_color = 'grey'

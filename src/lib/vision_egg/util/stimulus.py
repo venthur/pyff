@@ -118,18 +118,14 @@ class StimulusIterator(StimulusPainter):
             return False
 
 class StimulusSequenceFactory(object):
-    def __init__(self, flag, print_frames=False):
+    def __init__(self, view, flag, print_frames=False):
+        self._view = view
         self._flag = flag
         self._print_frames = print_frames
 
-    def set_view(self, view):
-        self._view = view
-        
     def create(self, prepare, presentation_time, wait_style_fixed):
-        #real_time = presentation_time - self._frame_duration
-        real_time = presentation_time
         typ = StimulusIterator if hasattr(prepare, '__iter__') else \
                StimulusSequence
-        return typ(prepare, real_time, self._view, self._flag,
+        return typ(prepare, presentation_time, self._view, self._flag,
                    wait_style_fixed=wait_style_fixed,
                    print_frames=self._print_frames)
