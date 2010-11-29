@@ -137,6 +137,14 @@ class VisionEggView(object):
         self.add_stimuli(txt)
         return txt
 
+    def add_image(self, filename, **kw):
+        if not kw.has_key('anchor'):
+            kw['anchor'] = 'center'
+        txtr = VisionEgg.Textures.Texture(filename)
+        img = VisionEgg.Textures.TextureStimulus(texture=txtr, **kw)
+        self.add_stimuli(img)
+        return img
+
     def _set_font_color(self):
         """ Set the standard font color by pygame name. """
         try:

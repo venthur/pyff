@@ -206,3 +206,12 @@ class VisionEggFeedback(MainloopFeedback):
         See also example 1.
         """
         return self._view.add_text(text=text, font_size=font_size, **kw)
+
+    def add_image(self, filename, **kw):
+        """ Load the image file given and return an image object, a
+        VisionEgg.Textures.TextureStimulus instance.
+        Parameters work just as in add_text, see
+        http://visionegg.org/reference/VisionEgg.Textures.TextureStimulus-class.html
+        and example 1.
+        """
+        return self._view.add_image(filename, **kw)
