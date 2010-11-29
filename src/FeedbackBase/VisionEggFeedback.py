@@ -195,3 +195,14 @@ class VisionEggFeedback(MainloopFeedback):
         previously added or set stimuli.
         """
         self._view.set_stimuli(*stimuli)
+
+    def add_text(self, text, font_size=None, **kw):
+        """ Create a text object displaying the given text and add it
+        to the standard viewport. The returned object is an instance of
+        VisionEgg.Text.Text, whose parameters can be changed later using
+        its set() function, which, just as this one, takes arbitrary
+        additional parameters listed at
+        http://visionegg.org/reference/VisionEgg.Text.Text-class.html
+        See also example 1.
+        """
+        return self._view.add_text(text=text, font_size=font_size, **kw)

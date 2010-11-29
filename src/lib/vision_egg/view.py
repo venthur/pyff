@@ -17,6 +17,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 import logging, os
 
+import VisionEgg
 from VisionEgg.Core import Screen, Viewport
 from VisionEgg.FlowControl import Presentation
 
@@ -127,6 +128,14 @@ class VisionEggView(object):
     def set_stimuli(self, *stimuli):
         """ Set the list of stimulus objects.  """
         self._standard_viewport.set(stimuli=list(stimuli))
+
+    def add_text(self, text, font_size=None, **kw):
+        if not kw.has_key('anchor'):
+            kw['anchor'] = 'center'
+        font_size = font_size or self._font_size
+        txt = VisionEgg.Text.Text(text=text, font_size=font_size, **kw)
+        self.add_stimuli(txt)
+        return txt
 
     def _set_font_color(self):
         """ Set the standard font color by pygame name. """
