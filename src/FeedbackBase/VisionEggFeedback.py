@@ -86,9 +86,6 @@ class VisionEggFeedback(MainloopFeedback):
     def __init_attributes(self):
         """ Setup internal attributes. """
         self._view = self._create_view()
-        self.add_viewport = self._view.add_viewport
-        self.add_stimuli = self._view.add_stimuli
-        self.set_stimuli = self._view.set_stimuli
         self.set_iterator_semaphore(Flag())
         self.__setup_events()
         self.__setup_stim_factory()
@@ -174,3 +171,27 @@ class VisionEggFeedback(MainloopFeedback):
 
     def post_mainloop(self):
         self._view.close()
+
+    def add_viewport(self, viewport):
+        """ Add an additional custom viewport object to the list of
+        viewports. A viewport is a collection of stimulus objects.
+        See http://visionegg.org/reference/VisionEgg.Core.Viewport-class.html
+        """
+        self._view.add_viewport(viewport)
+
+    def add_stimuli(self, *stimuli):
+        """ Add a number of stimulus objects to the standard viewport.
+        Example:
+            txt = Text(text='foo')
+            txtr = TextureStimulus(texture=Texture('pic.jpg'))
+            self.add_stimuli(txt, txtr)
+        The stimulus objects can be any class derived from VisionEgg's
+        Core.Stimulus class.
+        """
+        self._view.add_stimuli(*stimuli)
+
+    def set_stimuli(self, *stimuli):
+        """ Set the stimuli of the standard viewport. This removes any
+        previously added or set stimuli.
+        """
+        self._view.set_stimuli(*stimuli)

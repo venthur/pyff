@@ -118,14 +118,23 @@ class StimulusIterator(StimulusPainter):
             return False
 
 class StimulusSequenceFactory(object):
+    """ This class instantiates StimulusPainter in create().
+    Depending on whether the supplied prepare object is a function or a
+    generator, StimulusSequence or StimulusIterator are used,
+    respectively.
+    """
     def __init__(self, view, flag, print_frames=False):
         self._view = view
         self._flag = flag
         self._print_frames = print_frames
 
-    def create(self, prepare, presentation_time, wait_style_fixed):
+    def create(self, prepare, presentation_times, wait_style_fixed):
+        """ Create a StimulusPainter using the preparation object
+        prepare, with given presentation times and wait style.
+        Global parameters from pyff are used as given in __init__.
+        """
         typ = StimulusIterator if hasattr(prepare, '__iter__') else \
                StimulusSequence
-        return typ(prepare, presentation_time, self._view, self._flag,
+        return typ(prepare, presentation_times, self._view, self._flag,
                    wait_style_fixed=wait_style_fixed,
                    print_frames=self._print_frames)
