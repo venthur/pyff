@@ -28,7 +28,6 @@ from AlphaBurst.burst import BurstConstraints
 from AlphaBurst.model.character_sequence import CharacterSequenceFactory
 from AlphaBurst.model.palette import Palette
 from AlphaBurst.util.metadata import datadir
-from AlphaBurst.util.trigger import *
 from AlphaBurst.trial import *
 from AlphaBurst.input import *
 from AlphaBurst.experiment import *
@@ -46,7 +45,6 @@ class Control(VisionEggFeedback, Config):
 
     def __init_attributes(self):
         self._sound = pygame.mixer.Sound(path.join(datadir, 'sound.ogg'))
-        self._trigger = self.send_parallel
         self._palette = Palette()
         self._trial_types = ['Count', 'YesNo', 'Calibration', 'FreeSpelling',
                              'CopySpelling']

@@ -41,7 +41,7 @@ class Config(object):
         self.custom_pre_sequences = []
         self.custom_post_sequences = []
         # The time for that one single letter is displayed
-        self.symbol_duration = .05
+        self.symbol_duration = .1
         # Pause time directly after each burst
         self.inter_burst = 0
         # Pause time directly after one sequence of bursts or the
@@ -54,7 +54,6 @@ class Config(object):
         self.inter_word = .1
         # Display time of a new word in the center
         self.present_word_time = .2
-        self.fixation_cross_time = 2.
         self.show_trial_fix_cross = False
         self.show_burst_fix_cross = False
         self.show_word_fix_cross = False
@@ -62,8 +61,6 @@ class Config(object):
         self.present_target_time = .1
         # Display time of the classifier-selected letter
         self.present_eeg_input_time = 1
-        self.countdown_start = 5
-        self.countdown_symbol_duration = .5
         self.key_yes = 'j'
         self.key_no = 'k'
         # What's considered as valid count input discrepancy
@@ -84,9 +81,7 @@ class Config(object):
         self.show_trial_countdown = False
         self._view_parameters += ['symbol_duration', 'bg_color',
                                   'font_color_name', 'present_word_time',
-                                  'present_target_time', 'fixation_cross_time',
-                                  'countdown_start',
-                                  'countdown_symbol_duration', 'color_groups',
+                                  'present_target_time', 'color_groups',
                                   'alternating_colors', 'font_size',
                                   'headline_font_size', 'fullscreen',
                                   'headline_target_font_size', 'geometry',

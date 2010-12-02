@@ -35,9 +35,6 @@ class View(VisionEggView):
         self._symbol_duration = 0.05
         self._font_size = 150
 
-    def acquire(self):
-        self._screen_acquired = True
-
     def init(self):
         self.__init_text()
         self.__init_viewports()
@@ -85,8 +82,8 @@ class View(VisionEggView):
         """ Introduce a new word, optionally with colored symbols. """
         self._headline.set_all(on=False)
         colors = map(self._symbol_color, word)
-        self._center_word(word, colors)
-        self._present(self._present_word_time)
+        self.center_word(word, colors)
+        self.present(self._present_word_time)
         self._headline.set(text=word, colors=colors)
 
     def target(self, index):
@@ -96,41 +93,16 @@ class View(VisionEggView):
         self._headline.set(target=index)
         self._headline.set_all(on=True)
         self._center_text.set_all(on=False)
-        self._present(self._present_target_time)
+        self.present(self._present_target_time)
         self._center_text.set_all(on=True)
 
     def eeg_letter(self, text, symbol, update_word=True):
         colors = map(self._symbol_color, text)
         self.symbol(symbol, self._symbol_color(symbol))
-        self._present(self._present_eeg_input_time)
+        self.present(self._present_eeg_input_time)
         self._center_text.set_all(on=False)
         if update_word:
             self._headline.set(text=text, target=len(text)-1, colors=colors)
-
-    def _present(self, sec):
-        self.presentation.set(go_duration=(sec, 'seconds'))
-        self.presentation.go()
-
-    def _center_word(self, text, color=None):
-        self._center_text.set(text=text)
-        self._center_text.set(colors=color or (self._font_color for l in
-                                           self._center_text))
-
-    def ask(self):
-        self._center_word('?')
-        self._asking = True
-        self.presentation.run_forever()
-        self.presentation.set(quit=False)
-
-    def answered(self):
-        """ Abort the current presentation (normally the question mark)
-        after subject input.
-        """
-        self.presentation.set(quit=True)
-
-    def show_fixation_cross(self):
-        self._center_word('+')
-        self._present(self._fixation_cross_time)
 
     def symbol(self, symbol, color=None):
         """ Display a single symbol, either in the standard font color
@@ -138,17 +110,4 @@ class View(VisionEggView):
         """
         if color is None:
             color = self._font_color
-        self._center_word(symbol, (color,))
-
-    def clear_symbol(self):
-        """ Remove the stimulus from the screen. Alternatives welcome.
-        """
-        self._center_text.set_all(on=False)
-        self._present(0.0000000001)
-        self._center_text.set_all(on=True)
-
-    def countdown(self):
-        for i in self._iter(reversed(xrange(self._countdown_start + 1))):
-            self._center_word(str(i))
-            self._present(self._countdown_symbol_duration)
-        self.clear_symbol()
+        self.center_word(symbol, (color,))
