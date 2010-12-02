@@ -75,7 +75,7 @@ class VisionEggFeedback(MainloopFeedback):
         self.fullscreen = False
         self.geometry = [100, 100, 640, 480]
         self.bg_color = 'grey'
-        self.font_color_name = 'green'
+        self.font_color_name = 'black'
         self.font_size = 150
         self.fixation_cross_time = .2
         self.fixation_cross_symbol = '+'
