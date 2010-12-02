@@ -194,6 +194,10 @@ class VisionEggFeedback(MainloopFeedback):
         """
         self._view.add_viewport(viewport)
 
+    def clear_stimuli(self):
+        """ Remove all existing stimuli in the standard viewport. """
+        self._view.clear_stimuli()
+
     def add_stimuli(self, *stimuli):
         """ Add a number of stimulus objects to the standard viewport.
         Example:

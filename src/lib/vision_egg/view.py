@@ -123,6 +123,10 @@ class VisionEggView(object):
         self._viewports.append(viewport)
         self.presentation.set(viewports=self._viewports)
 
+    def clear_stimuli(self):
+        """ Remove all existing stimuli in the standard viewport. """
+        self.set_stimuli()
+
     def add_stimuli(self, *stimuli):
         """ Add additional custom stimulus objects to the list of
         stimuli.
