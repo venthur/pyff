@@ -14,23 +14,27 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, see <http://www.gnu.org/licenses/>.
 """
 
-from threading import Thread
+import logging
+import threading
 
 import pygame
 
-class FrameCounter(Thread):
+class FrameCounter(threading.Thread):
     """ Runs a thread that calls flip() repeatedly, which waits for
     vsync and thus indicates real display redraws. """
     def __init__(self, flag):
-        Thread.__init__(self)
+        threading.Thread.__init__(self)
         self._flag = flag
         self.frame = 0
         self._locked_frame = 0
         
     def run(self):
-        while self._flag:
-            pygame.display.flip()
-            self.frame += 1
+        try:
+            while self._flag:
+                pygame.display.flip()
+                self.frame += 1
+        except pygame.error as e:
+            logging.getLogger('FrameCounter').error(unicode(e))
 
     def lock(self):
         self._locked_frame = self.frame
