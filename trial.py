@@ -57,6 +57,7 @@ class Trial(object):
                 self._view.symbol(*symbol)
                 yield
         self._stimulus_sequence(gen(), self._symbol_duration).run()
+        self._view.clear_symbol()
 
     def _ask(self):
         self.asking = True
