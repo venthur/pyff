@@ -161,9 +161,9 @@ class VisionEggFeedback(MainloopFeedback):
 
     def _mainloop(self):
         self._running = True
-        self._trigger(marker.FEEDBACK_START)
+        self._trigger(marker.RUN_START)
         self.run()
-        self._trigger(marker.FEEDBACK_END)
+        self._trigger(marker.RUN_END)
         self._running = False
 
     def on_pause(self):
