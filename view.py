@@ -37,38 +37,26 @@ class View(VisionEggView):
 
     def init(self):
         self.__init_text()
-        self.__init_viewports()
 
     def __init_text(self):
-        """ Calculate the height of the headline from the font size and
-        set positions accordingly.
+        """ Initialize the target word and alphabet texts and adjust
+        the symbol position.
         """
         sz = self.screen.size
-        self._headline = TargetWord(position=(sz[0] / 2., sz[1] -
-                                              self._headline_vpos),
-                                    symbol_size=self._headline_font_size,
-                                    target_size=self._headline_target_font_size,
+        self._word = TargetWord(position=(sz[0] / 2., sz[1] -
+                                              self._word_vpos),
+                                    symbol_size=self._word_font_size,
+                                    target_size=self._word_target_font_size,
                                     target_frame=self._show_target_frame,
                                     target_frame_width=self._target_frame_width,
                                     center_at_target=True)
-        self._center_text = ColorWord(position=(sz[0] / 2., sz[1] -
-                                                self._symbol_vpos),
-                                      symbol_size=self._font_size)
-        self._footline = ColorWord(position=(sz[0] / 2., sz[1] -
-                                   self._alphabet_vpos),
-                                   symbol_size=self._alphabet_font_size)
-
-    def __init_viewports(self):
-        self._headline_viewport = Viewport(screen=self.screen,
-                                           stimuli=self._headline)
-        self.add_viewport(self._headline_viewport)
-        self._viewport = Viewport(screen=self.screen,
-                                  stimuli=self._center_text)
-        self.add_viewport(self._viewport)
+        self.add_stimuli(self._word)
+        self._center_text.set_position((sz[0] / 2., sz[1] - self._symbol_vpos))
         if self._show_alphabet:
-            self._footline_viewport = Viewport(screen=self.screen,
-                                               stimuli=self._footline)
-            self.add_viewport(self._footline_viewport)
+            self._alphabet = self.add_color_word(position=(sz[0] / 2., sz[1] -
+                                                           self._alphabet_vpos),
+                                                 font_size=
+                                                 self._alphabet_font_size)
 
     def _symbol_color(self, symbol):
         return self._palette(symbol) if self._alternating_colors else \
@@ -76,22 +64,22 @@ class View(VisionEggView):
 
     def alphabet(self, alphabet):
         colors = map(self._symbol_color, alphabet)
-        self._footline.set(text=alphabet, colors=colors)
+        self._alphabet.set(text=alphabet, colors=colors)
 
     def word(self, word):
         """ Introduce a new word, optionally with colored symbols. """
-        self._headline.set_all(on=False)
+        self._word.set_all(on=False)
         colors = map(self._symbol_color, word)
         self.center_word(word, colors)
         self.present(self._present_word_time)
-        self._headline.set(text=word, colors=colors)
+        self._word.set(text=word, colors=colors)
 
     def target(self, index):
         """ Introduce a new target symbol by increasing its size and
         presenting the word in the headline.
         """
-        self._headline.set(target=index)
-        self._headline.set_all(on=True)
+        self._word.set(target=index)
+        self._word.set_all(on=True)
         self._center_text.set_all(on=False)
         self.present(self._present_target_time)
         self._center_text.set_all(on=True)
@@ -102,7 +90,7 @@ class View(VisionEggView):
         self.present(self._present_eeg_input_time)
         self._center_text.set_all(on=False)
         if update_word:
-            self._headline.set(text=text, target=len(text)-1, colors=colors)
+            self._word.set(text=text, target=len(text)-1, colors=colors)
 
     def symbol(self, symbol, color=None):
         """ Display a single symbol, either in the standard font color

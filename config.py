@@ -18,17 +18,15 @@ import string
 class Config(object):
     def init(self):
         # 1: Count, 2: YesNo, 3: Calibration, 4: FreeSpelling, 5: CopySpelling
-        self.trial_type = 4
+        self.trial_type = 5
         self.alternating_colors = True
         self.sequences_per_trial = 1
-        self.fullscreen = False
         self.geometry = [100, 100, 1024, 768]
-        self.font_size = 150
-        self.headline_font_size = 72
+        self.word_font_size = 72
         self.alphabet_font_size = 64
-        self.headline_target_font_size = 96
-        self.headline_vpos = 100
-        self.alphabet_vpos = 1000
+        self.word_target_font_size = 96
+        self.word_vpos = 100
+        self.alphabet_vpos = 500
         self.symbol_vpos = 300
         self.font_color_name = 'orangered'
         self.symbol_colors = ['red', 'yellow', 'green', 'blue', 'black']
@@ -57,7 +55,7 @@ class Config(object):
         self.show_trial_fix_cross = False
         self.show_burst_fix_cross = False
         self.show_word_fix_cross = False
-        # Display time of the next target in the headline
+        # Display time of the next target in the word
         self.present_target_time = .1
         # Display time of the classifier-selected letter
         self.present_eeg_input_time = 1
@@ -82,10 +80,10 @@ class Config(object):
         self._view_parameters += ['symbol_duration', 'bg_color',
                                   'font_color_name', 'present_word_time',
                                   'present_target_time', 'color_groups',
-                                  'alternating_colors', 'font_size',
-                                  'headline_font_size', 'fullscreen',
-                                  'headline_target_font_size', 'geometry',
-                                  'symbol_colors', 'headline_vpos',
+                                  'alternating_colors',
+                                  'word_font_size',
+                                  'word_target_font_size', 'geometry',
+                                  'symbol_colors', 'word_vpos',
                                   'symbol_vpos', 'present_eeg_input_time',
                                   'show_target_frame', 'target_frame_width',
                                   'alphabet_vpos', 'alphabet_font_size',
