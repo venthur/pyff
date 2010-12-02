@@ -176,6 +176,10 @@ class VisionEggView(object):
         self.presentation.set(go_duration=(num_frames, 'frames'))
         self.presentation.go()
 
+    def present(self, sec):
+        self.presentation.set(go_duration=(sec, 'seconds'))
+        self.presentation.go()
+
     def update(self):
         """ Repaint the canvas for one frame to update changed stimuli.
         """

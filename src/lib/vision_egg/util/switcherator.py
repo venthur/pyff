@@ -33,6 +33,10 @@ class Flag(object):
     def toggle_suspension(self):
         self.suspended = not self.suspended
 
+    def wait(self):
+        while self.suspended:
+            sleep(0.1)
+
 class Switcherator(object):
     def __init__(self, flag, itr, suspendable=False):
         self._flag = flag
@@ -44,8 +48,7 @@ class Switcherator(object):
 
     def next(self):
         if self._suspendable:
-            while self._flag.suspended:
-                sleep(0.01)
+            self._flag.wait()
         if not self._flag:
             raise StopIteration()
         return self._iter.next()
