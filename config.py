@@ -28,9 +28,7 @@ class Config(object):
         self.word_vpos = 100
         self.alphabet_vpos = 500
         self.symbol_vpos = 300
-        self.font_color_name = 'orangered'
         self.symbol_colors = ['red', 'yellow', 'green', 'blue', 'black']
-        self.bg_color = 'grey'
         self.words = ['LUXUS', 'WINKT', 'FJORD', 'HYBRID', 'SPHINX', 'QUARZ',
                       'VODKA', 'YACHT', 'GEBOT', 'MEMME']
         self.color_groups = ["ABCEQWFGHI", "KLMNOPDRST", "UVXYJZ.,:<"]
@@ -77,14 +75,11 @@ class Config(object):
         self.show_word_countdown = False
         # Display the countdown before each new target
         self.show_trial_countdown = False
-        self._view_parameters += ['symbol_duration', 'bg_color',
-                                  'font_color_name', 'present_word_time',
+        self._view_parameters += ['symbol_duration', 'present_word_time',
                                   'present_target_time', 'color_groups',
-                                  'alternating_colors',
-                                  'word_font_size',
-                                  'word_target_font_size', 'geometry',
-                                  'symbol_colors', 'word_vpos',
-                                  'symbol_vpos', 'present_eeg_input_time',
-                                  'show_target_frame', 'target_frame_width',
-                                  'alphabet_vpos', 'alphabet_font_size',
-                                  'show_alphabet']
+                                  'alternating_colors', 'word_font_size',
+                                  'word_target_font_size', 'symbol_colors',
+                                  'word_vpos', 'symbol_vpos',
+                                  'present_eeg_input_time', 'show_target_frame',
+                                  'target_frame_width', 'alphabet_vpos',
+                                  'alphabet_font_size', 'show_alphabet']
