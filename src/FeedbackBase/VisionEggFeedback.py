@@ -171,6 +171,9 @@ class VisionEggFeedback(MainloopFeedback):
     def on_stop(self):
         self.quit()
 
+    def on_quit(self):
+        self.quit()
+
     def update_parameters(self):
         """ Apply new parameters set from pyff. """
         params = dict([[p, getattr(self, p, None)] for p in
