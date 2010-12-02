@@ -22,6 +22,8 @@ import pygame
 
 from FeedbackBase.MainloopFeedback import MainloopFeedback
 
+from lib import marker
+
 from lib.vision_egg.view import VisionEggView
 from lib.vision_egg.util.stimulus import StimulusSequenceFactory
 from lib.vision_egg.util.switcherator import Flag, Switcherator
@@ -89,7 +91,9 @@ class VisionEggFeedback(MainloopFeedback):
 
     def __init_attributes(self):
         """ Setup internal attributes. """
+        self._trigger = self.send_parallel
         self._view = self._create_view()
+        self._view.set_trigger_function(self._trigger)
         self.set_iterator_semaphore(Flag())
         self.__setup_events()
         self.__setup_stim_factory()
@@ -154,11 +158,15 @@ class VisionEggFeedback(MainloopFeedback):
 
     def _mainloop(self):
         self._running = True
+        self._trigger(marker.FEEDBACK_START)
         self.run()
+        self._trigger(marker.FEEDBACK_END)
         self._running = False
 
     def on_pause(self):
         self._flag.toggle_suspension()
+        self._trigger(marker.PAUSE_START if self._flag.suspended else
+                      marker.PAUSE_END)
 
     def on_stop(self):
         self.quit()

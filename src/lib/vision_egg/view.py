@@ -23,6 +23,8 @@ from VisionEgg.FlowControl import Presentation
 
 from pygame import Color
 
+from lib import marker
+
 from model.color_word import ColorWord
 from util.switcherator import Flag, Switcherator
 
@@ -41,6 +43,9 @@ class VisionEggView(object):
         self._logger.addHandler(logging.FileHandler('log'))
         self._screen_acquired = False
         self._viewports = []
+
+    def set_trigger_function(self, trigger):
+        self._trigger = trigger
 
     def set_event_handlers(self, event_handlers):
         """ Set pygame/VisionEgg event handler function. """
@@ -195,11 +200,13 @@ class VisionEggView(object):
         self.clear_symbol()
 
     def show_fixation_cross(self):
-        """ Display a plus sign as fixation cross for the period of time
-        given by pyff parameter 'fixation_cross_time'.
+        """ Display the pyff parameter 'fixation_cross_symbol' for the
+        period of time given by pyff parameter 'fixation_cross_time'.
         """
-        self._center_word('+')
+        self.center_word(self._fixation_cross_symbol)
+        self._trigger(marker.FIXATION_START)
         self._present(self._fixation_cross_time)
+        self._trigger(marker.FIXATION_END)
 
     def clear_symbol(self):
         """ Remove the stimulus from the screen. Alternatives welcome.
@@ -211,9 +218,11 @@ class VisionEggView(object):
         """ Display a countdown according to pyff parameters
         'countdown_start' and 'countdown_symbol_duration'.
         """
+        self._trigger(marker.COUNTDOWN_START)
         for i in self._iter(reversed(xrange(self._countdown_start + 1))):
             self._center_word(str(i))
             self._present(self._countdown_symbol_duration)
+        self._trigger(marker.COUNTDOWN_END)
         self.clear_symbol()
 
     def close(self):
