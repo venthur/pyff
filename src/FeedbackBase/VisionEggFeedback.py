@@ -121,7 +121,7 @@ class VisionEggFeedback(MainloopFeedback):
         self._stimseq_fact = StimulusSequenceFactory(self._view, self._flag,
                                                      self.print_frames)
 
-    def stimulus_sequence(self, prepare, presentation_time):
+    def stimulus_sequence(self, prepare, presentation_time, suspendable=True):
         """ Returns an object presenting a series of stimuli.
         @param prepare: This is the core connection between the sequence
         handler and user code. It can either be a generator (so
@@ -133,9 +133,12 @@ class VisionEggFeedback(MainloopFeedback):
         single stimulus, in seconds. Can also be a sequence of values.
         If the prepare function doesn't terminate when the sequence is
         exhausted, it is restarted.
+        @param suspendable: Whether the sequence should halt when pause
+        is pressed.
         """
         return self._stimseq_fact.create(prepare, presentation_time,
-                                         self.wait_style_fixed)
+                                         self.wait_style_fixed,
+                                         suspendable=suspendable)
 
     def keyboard_input(self, event):
         """ Handle pygame events like keyboard input. """

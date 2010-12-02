@@ -32,16 +32,18 @@ def time():
 class StimulusPainter(object):
     """ Painter for a series of stimuli. """
     def __init__(self, prepare, wait, view, flag, wait_style_fixed=False,
-                 print_frames=False):
+                 print_frames=False, suspendable=True):
         self._prepare_func = prepare
         self._wait_time_value = wait
         self._view = view
         self._flag = flag
         self._wait_style_fixed = wait_style_fixed
         self._print_frames = print_frames
+        self._suspendable = suspendable
         self._wait_time = 0.1
         self._logger = logging.getLogger('StimulusPainter')
         self._frame_counter = FrameCounter(self._flag)
+        self._suspended_time = 0.
 
     def run(self):
         self._setup_wait_time()
@@ -57,7 +59,8 @@ class StimulusPainter(object):
             self._wait()
 
     def _wait(self):
-        next_wait_time = self._next_wait_time
+        next_wait_time = self._next_wait_time + self._suspended_time
+        self._suspended_time = 0.
         wait_time = self._last_start - time() + next_wait_time
         try:
             if wait_time > 0:
@@ -84,6 +87,10 @@ class StimulusPainter(object):
 
     def _prepare(self):
         if self._flag:
+            if self._suspendable and self._flag.suspended:
+                suspend_start = time()
+                self._flag.wait()
+                self._suspended_time = time() - suspend_start
             return self._do_prepare()
 
     def _present(self):
@@ -91,7 +98,7 @@ class StimulusPainter(object):
             self._logger.debug('Frames before stimulus change: %d' %
                                self._frame_counter.last_interval)
             self._frame_counter.lock()
-        self._view.present_frames(1)
+        self._view.update()
 
     @property
     def _next_wait_time(self):
@@ -128,13 +135,16 @@ class StimulusSequenceFactory(object):
         self._flag = flag
         self._print_frames = print_frames
 
-    def create(self, prepare, presentation_times, wait_style_fixed):
+    def create(self, prepare, presentation_times, wait_style_fixed,
+               suspendable=True):
         """ Create a StimulusPainter using the preparation object
         prepare, with given presentation times and wait style.
+        If suspendable is True, the sequence halts when on_pause is
+        pressed.
         Global parameters from pyff are used as given in __init__.
         """
         typ = StimulusIterator if hasattr(prepare, '__iter__') else \
                StimulusSequence
         return typ(prepare, presentation_times, self._view, self._flag,
                    wait_style_fixed=wait_style_fixed,
-                   print_frames=self._print_frames)
+                   print_frames=self._print_frames, suspendable=suspendable)
