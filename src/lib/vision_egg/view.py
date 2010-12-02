@@ -240,3 +240,4 @@ class VisionEggView(object):
     def quit(self):
         """ Stop the presentation. """
         self.presentation.set(quit=True)
+        self.presentation.set(go_duration=(1, 'frames'))
