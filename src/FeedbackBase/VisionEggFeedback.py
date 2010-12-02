@@ -61,9 +61,11 @@ class VisionEggFeedback(MainloopFeedback):
         font_size: Size of the center text.
         fixation_cross_time: How long to display the built-in fixation
         cross when invoked.
-        count_down_symbol_duration: How long to display each digit of
+        fixation_cross_symbol: What character to display as a fixation
+        cross.
+        countdown_symbol_duration: How long to display each digit of
         the built-in countdown when invoked.
-        count_down_start: First digit of the built-in countdown.
+        countdown_start: First digit of the built-in countdown.
         print_frames: Whether to debug-print the number of frames
         rendered during each stimulus presentation.
         """
@@ -73,15 +75,17 @@ class VisionEggFeedback(MainloopFeedback):
         self.bg_color = 'grey'
         self.font_color_name = 'green'
         self.font_size = 150
-        self.fixation_cross_time = 1.
-        self.count_down_symbol_duration = 0.5
-        self.count_down_start = 5
-        self.print_frames = True
+        self.fixation_cross_time = .2
+        self.fixation_cross_symbol = '+'
+        self.countdown_symbol_duration = 0.5
+        self.countdown_start = 1
+        self.print_frames = False
         self._view_parameters = ['fullscreen', 'geometry', 'bg_color',
                                  'font_color_name', 'font_size',
                                  'fixation_cross_time',
-                                 'count_down_symbol_duration',
-                                 'count_down_start']
+                                 'fixation_cross_symbol',
+                                 'countdown_symbol_duration',
+                                 'countdown_start']
 
     def __init_attributes(self):
         """ Setup internal attributes. """

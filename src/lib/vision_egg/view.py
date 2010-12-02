@@ -207,13 +207,13 @@ class VisionEggView(object):
         self._center_word('')
         self.update()
 
-    def count_down(self):
+    def countdown(self):
         """ Display a countdown according to pyff parameters
-        'count_down_start' and 'count_down_symbol_duration'.
+        'countdown_start' and 'countdown_symbol_duration'.
         """
-        for i in self._iter(reversed(xrange(self._count_down_start + 1))):
+        for i in self._iter(reversed(xrange(self._countdown_start + 1))):
             self._center_word(str(i))
-            self._present(self._count_down_symbol_duration)
+            self._present(self._countdown_symbol_duration)
         self.clear_symbol()
 
     def close(self):
