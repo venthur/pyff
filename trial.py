@@ -17,6 +17,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 import logging
 from time import sleep
 
+from lib import marker
+
 from AlphaBurst.burst import BurstConstraints
 from AlphaBurst.util.trigger import *
 
@@ -78,7 +80,9 @@ class Trial(object):
         pass
 
     def run(self, sequences):
+        self._trigger(marker.TRIAL_START)
         self._run(sequences)
+        self._trigger(marker.TRIAL_END)
 
     def _run(self, sequences):
         if self._trial_countdown:
