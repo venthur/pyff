@@ -28,6 +28,13 @@ class Trial(object):
         self._trigger = trigger
         self._iter = iter
         self._stimulus_sequence = seq_fac
+        self._trial_input = trial_input
+        self._burst_input = burst_input
+        self._sequence_input = sequence_input
+        self.__init_parameters(config)
+        self.__init_attributes()
+
+    def __init_parameters(self, config):
         self._inter_burst = config.inter_burst
         self._inter_sequence = config.inter_sequence
         self._color_groups = config.color_groups
@@ -36,32 +43,12 @@ class Trial(object):
         self._trial_countdown = config.show_trial_countdown
         self._trial_fix_cross = config.show_trial_fix_cross
         self._burst_fix_cross = config.show_burst_fix_cross
-        self._trial_input = trial_input
-        self._burst_input = burst_input
-        self._sequence_input = sequence_input
-        self.__init_attributes()
 
     def __init_attributes(self):
         self._logger = logging.getLogger('Trial')
         self.asking = False
         self._alphabet = ''.join(self._color_groups)
         self._current_target = ''
-
-    def _sequence(self, sequence):
-        """ Iterate over the sequence of symbol bursts and present them.
-        The BurstConstraints object controls the display of the fixation
-        cross, user input query and trigger transmission.
-        """
-        burst_constraints = BurstConstraints(self._burst_fix_cross,
-                                             self._burst_input, self._view,
-                                             self._ask, self._inter_burst,
-                                             self._trigger)
-        self.sequence = sequence.sequence
-        for burst in self._iter(sequence):
-            symbols = [b[0] for b in burst]
-            with burst_constraints:
-                self._target_present = self._current_target in symbols
-                self._burst(burst)
 
     def _burst(self, symbols):
         def gen():
@@ -86,7 +73,13 @@ class Trial(object):
         else:
             self._trigger(trigger)
 
+    def _sequence(self, sequence):
+        pass
+
     def run(self, sequences):
+        self._run(sequences)
+
+    def _run(self, sequences):
         if self._trial_countdown:
             self._view.countdown()
         if self._trial_fix_cross:
@@ -106,16 +99,30 @@ class Trial(object):
         pass
 
 class OfflineTrial(Trial):
-    pass
+    def _sequence(self, sequence):
+        """ Iterate over the sequence of symbol bursts and present them.
+        The BurstConstraints object controls the display of the fixation
+        cross, user input query and trigger transmission.
+        """
+        burst_constraints = BurstConstraints(self._burst_fix_cross,
+                                             self._burst_input, self._view,
+                                             self._ask, self._inter_burst,
+                                             self._trigger)
+        self.sequence = sequence.sequence
+        for burst in self._iter(sequence.bursts):
+            symbols = [b[0] for b in burst]
+            with burst_constraints:
+                self._target_present = self._current_target in symbols
+                self._burst(burst)
 
 class CountTrial(OfflineTrial):
     def __init__(self, *a, **kw):
         OfflineTrial.__init__(self, trial_fix_cross=True, trial_input=True,
                                   *a, **kw)
 
-    def run(self, sequences):
+    def _run(self, sequences):
         self._count = sequences.occurences(self._current_target)
-        OfflineTrial.run(self, sequences)
+        OfflineTrial._run(self, sequences)
 
     def evaluate(self, input):
         diff = input.count - self._count
@@ -130,7 +137,8 @@ class YesNoTrial(OfflineTrial):
                                  *a, **kw)
 
 class OnlineTrial(Trial):
-    pass
+    def _sequence(self, sequence):
+        self._burst(sequence)
 
 class CalibrationTrial(OnlineTrial):
     pass

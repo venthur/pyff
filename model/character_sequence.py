@@ -54,7 +54,8 @@ class CharacterSequence(list):
         nsym = len(self.burst_sequence)
         self._colors = map(self._positional_color, xrange(nsym))
         zipped = zip(self.burst_sequence, self._colors)
-        self[:] = slices(zipped, self._burst_len)
+        self[:] = zipped
+        self.bursts = slices(zipped, self._burst_len)
 
     def _positional_color(self, i):
         if self._alt_color:
