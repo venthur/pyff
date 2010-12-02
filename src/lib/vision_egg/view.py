@@ -177,7 +177,7 @@ class VisionEggView(object):
         """
         self.present_frames(1)
 
-    def _center_word(self, text, color=None):
+    def center_word(self, text, color=None):
         """ Set the standard word in the screen center. """
         self._center_text.set(text=text)
         self._center_text.set(colors=color or (self._font_color for l in
@@ -187,7 +187,7 @@ class VisionEggView(object):
         """ Display a question mark in the center and wait for keyboard
         input. The query is terminated by calling L{answered}.
         """
-        self._center_word('?')
+        self.center_word('?')
         self._asking = True
         self.presentation.run_forever()
         self.presentation.set(quit=False)
@@ -205,13 +205,12 @@ class VisionEggView(object):
         """
         self.center_word(self._fixation_cross_symbol)
         self._trigger(marker.FIXATION_START)
-        self._present(self._fixation_cross_time)
+        self.present(self._fixation_cross_time)
         self._trigger(marker.FIXATION_END)
 
     def clear_symbol(self):
-        """ Remove the stimulus from the screen. Alternatives welcome.
-        """
-        self._center_word('')
+        """ Remove the center word from the screen. """
+        self.center_word('')
         self.update()
 
     def countdown(self):
@@ -220,8 +219,8 @@ class VisionEggView(object):
         """
         self._trigger(marker.COUNTDOWN_START)
         for i in self._iter(reversed(xrange(self._countdown_start + 1))):
-            self._center_word(str(i))
-            self._present(self._countdown_symbol_duration)
+            self.center_word(str(i))
+            self.present(self._countdown_symbol_duration)
         self._trigger(marker.COUNTDOWN_END)
         self.clear_symbol()
 

@@ -94,7 +94,7 @@ class VisionEggFeedback(MainloopFeedback):
         self._trigger = self.send_parallel
         self._view = self._create_view()
         self._view.set_trigger_function(self._trigger)
-        self.set_iterator_semaphore(Flag())
+        self._set_iterator_semaphore(Flag())
         self.__setup_events()
         self.__setup_stim_factory()
 
@@ -103,7 +103,7 @@ class VisionEggFeedback(MainloopFeedback):
         parameter specification. """
         return self._view_type()
 
-    def set_iterator_semaphore(self, flag):
+    def _set_iterator_semaphore(self, flag):
         """ Specify the object to be used as semaphore for iterators.
         See L{Switcherator} for more.
         """
