@@ -26,6 +26,7 @@ from pygame import Color
 from lib import marker
 
 from model.color_word import ColorWord
+from model.color_word import TextList
 from util.switcherator import Flag, Switcherator
 
 class VisionEggView(object):
@@ -71,9 +72,9 @@ class VisionEggView(object):
     def reinit(self):
         """ Initialize VisionEgg objects. """
         self.__init_screen()
-        self.__init_text()
         self.__init_presentation()
         self.__init_viewports()
+        self.__init_text()
         self.init()
 
     def init(self):
@@ -97,24 +98,24 @@ class VisionEggView(object):
         self._set_bg_color()
         self._set_font_color()
 
+    def __init_presentation(self):
+        """ Provide a standard presentation object. """
+        self.presentation = Presentation(handle_event_callbacks=
+                                         self._event_handlers)
+
+    def __init_viewports(self):
+        """ Provide a standard viewport. """
+        self._standard_viewport = Viewport(screen=self.screen)
+        self.add_viewport(self._standard_viewport)
+
     def __init_text(self):
         """ Provide a text in the screen center for standard stimuli and
         fixation cross etc.
         """
         sz = self.screen.size
-        self._center_text = ColorWord((sz[0] / 2., sz[1] / 2.),
-                                      symbol_size=self._font_size)
-
-    def __init_viewports(self):
-        """ Provide a standard viewport. """
-        self._standard_viewport = Viewport(screen=self.screen,
-                                         stimuli=self._center_text)
-        self.add_viewport(self._standard_viewport)
-
-    def __init_presentation(self):
-        """ Provide a standard presentation object. """
-        self.presentation = Presentation(handle_event_callbacks=
-                                         self._event_handlers)
+        self._center_text = self.add_color_word(position=(sz[0] / 2.,
+                                                          sz[1] / 2.),
+                                                font_size=self._font_size)
 
     def add_viewport(self, viewport):
         """ Add an additional custom viewport object to the list of
@@ -129,10 +130,19 @@ class VisionEggView(object):
 
     def add_stimuli(self, *stimuli):
         """ Add additional custom stimulus objects to the list of
-        stimuli.
+        stimuli. TextList instances need their own Viewport, as they
+        consist of multiple stimulus objects that are deleted everytime
+        they change, and so the Viewport needs to have a reference to
+        the containing TextList, otherwise they get lost.
         """
+        text_lists = filter(lambda s: isinstance(s, TextList), stimuli)
+        if text_lists:
+            for text in text_lists:
+                self.add_viewport(Viewport(screen=self.screen, stimuli=text))
+            stimuli = filter(lambda s: not isinstance(s, TextList), stimuli)
         stimuli = self._standard_viewport.parameters.stimuli + list(stimuli)
-        self.set_stimuli(*stimuli)
+        if stimuli:
+            self.set_stimuli(*stimuli)
 
     def set_stimuli(self, *stimuli):
         """ Set the list of stimulus objects.  """
@@ -143,6 +153,12 @@ class VisionEggView(object):
             kw['anchor'] = 'center'
         font_size = font_size or self._font_size
         txt = VisionEgg.Text.Text(text=text, font_size=font_size, **kw)
+        self.add_stimuli(txt)
+        return txt
+
+    def add_color_word(self, text='', font_size=None, **kw):
+        font_size = font_size or self._font_size
+        txt = ColorWord(text=text, symbol_size=font_size, **kw)
         self.add_stimuli(txt)
         return txt
 
