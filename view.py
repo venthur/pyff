@@ -64,8 +64,9 @@ class View(VisionEggView):
                self._font_color
 
     def alphabet(self, alphabet):
-        colors = map(self._symbol_color, alphabet)
-        self._alphabet.set(text=alphabet, colors=colors)
+        if self._show_alphabet:
+            colors = map(self._symbol_color, alphabet)
+            self._alphabet.set(text=alphabet, colors=colors)
 
     def word(self, word):
         """ Introduce a new word, optionally with colored symbols. """
