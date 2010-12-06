@@ -32,7 +32,7 @@ def time():
 class StimulusPainter(object):
     """ Painter for a series of stimuli. """
     def __init__(self, prepare, wait, view, flag, wait_style_fixed=False,
-                 print_frames=False, suspendable=True):
+                 print_frames=False, suspendable=True, pre_stimulus=None):
         self._prepare_func = prepare
         self._wait_time_value = wait
         self._view = view
@@ -40,6 +40,7 @@ class StimulusPainter(object):
         self._wait_style_fixed = wait_style_fixed
         self._print_frames = print_frames
         self._suspendable = suspendable
+        self._pre_stimulus = pre_stimulus
         self._wait_time = 0.1
         self._logger = logging.getLogger('StimulusPainter')
         self._frame_counter = FrameCounter(self._flag)
@@ -98,6 +99,8 @@ class StimulusPainter(object):
             self._logger.debug('Frames before stimulus change: %d' %
                                self._frame_counter.last_interval)
             self._frame_counter.lock()
+        if self._pre_stimulus is not None:
+            self._pre_stimulus()
         self._view.update()
 
     @property
@@ -136,7 +139,7 @@ class StimulusSequenceFactory(object):
         self._print_frames = print_frames
 
     def create(self, prepare, presentation_times, wait_style_fixed,
-               suspendable=True):
+               suspendable=True, pre_stimulus=None):
         """ Create a StimulusPainter using the preparation object
         prepare, with given presentation times and wait style.
         If suspendable is True, the sequence halts when on_pause is
@@ -147,4 +150,5 @@ class StimulusSequenceFactory(object):
                StimulusSequence
         return typ(prepare, presentation_times, self._view, self._flag,
                    wait_style_fixed=wait_style_fixed,
-                   print_frames=self._print_frames, suspendable=suspendable)
+                   print_frames=self._print_frames, suspendable=suspendable,
+                   pre_stimulus=pre_stimulus)
