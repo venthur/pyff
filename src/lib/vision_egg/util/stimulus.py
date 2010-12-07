@@ -18,7 +18,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 from time import sleep
 import datetime, collections, logging, itertools
 
-import pygame
+import pygame, VisionEgg
 
 from lib.vision_egg.util.frame_counter import FrameCounter
 
@@ -32,7 +32,8 @@ def time():
 class StimulusPainter(object):
     """ Painter for a series of stimuli. """
     def __init__(self, prepare, wait, view, flag, wait_style_fixed=False,
-                 print_frames=False, suspendable=True, pre_stimulus=None):
+                 print_frames=False, suspendable=True, pre_stimulus=None,
+                 frame_transition=False):
         self._prepare_func = prepare
         self._wait_times = itertools.cycle(wait)
         self._view = view
@@ -41,10 +42,12 @@ class StimulusPainter(object):
         self._print_frames = print_frames
         self._suspendable = suspendable
         self._pre_stimulus = pre_stimulus
+        self._frame_transition = frame_transition
         self._wait_time = 0.1
         self._logger = logging.getLogger('StimulusPainter')
         self._frame_counter = FrameCounter(self._flag)
         self._suspended_time = 0.
+        self._wait = self._frame_wait if frame_transition else self._time_wait
 
     def run(self):
         if self._print_frames:
@@ -56,9 +59,21 @@ class StimulusPainter(object):
             while self._prepare():
                 self._wait()
                 self._present()
-            self._wait()
+            if self._flag:
+                self._wait()
+        if self._print_frames:
+            self._logger.debug('Frames rendered during last sequence: %d' %
+                               self._frame_counter.frame)
 
-    def _wait(self):
+    def _frame_wait(self):
+        next_interval = self._next_wait_time
+        while self._frame_counter.last_interval < next_interval:
+            sleep(0.01)
+        if self._print_frames:
+            self._logger.debug('Frames after waiting: %d' %
+                               self._frame_counter.last_interval)
+
+    def _time_wait(self):
         next_wait_time = self._next_wait_time + self._suspended_time
         self._suspended_time = 0.
         wait_time = self._last_start - time() + next_wait_time
@@ -116,24 +131,46 @@ class StimulusSequenceFactory(object):
     generator, StimulusSequence or StimulusIterator are used,
     respectively.
     """
-    def __init__(self, view, flag, print_frames=False):
+    def __init__(self, view, flag, print_frames=False, vsync_times=False,
+                 frame_transition=False):
         self._view = view
         self._flag = flag
         self._print_frames = print_frames
+        self._vsync_times = vsync_times
+        self._frame_transition = frame_transition
+        self._refresh_rate = VisionEgg.config.VISIONEGG_MONITOR_REFRESH_HZ
+        self._frame_length = 1. / self._refresh_rate
+        self._logger = logging.getLogger('StimulusSequenceFactory')
 
-    def create(self, prepare, presentation_times, wait_style_fixed,
-               suspendable=True, pre_stimulus=None):
+    def create(self, prepare, times, wait_style_fixed, suspendable=True,
+               pre_stimulus=None):
         """ Create a StimulusPainter using the preparation object
         prepare, with given presentation times and wait style.
         If suspendable is True, the sequence halts when on_pause is
         pressed.
         Global parameters from pyff are used as given in __init__.
         """
-        if not isinstance(presentation_times, collections.Sequence):
-            presentation_times = [presentation_times]
+        if not isinstance(times, collections.Sequence):
+            times = [times]
+        times = self._adapt_times(times)
         typ = StimulusIterator if hasattr(prepare, '__iter__') else \
                StimulusSequence
-        return typ(prepare, presentation_times, self._view, self._flag,
+        return typ(prepare, times, self._view, self._flag,
                    wait_style_fixed=wait_style_fixed,
                    print_frames=self._print_frames, suspendable=suspendable,
-                   pre_stimulus=pre_stimulus)
+                   pre_stimulus=pre_stimulus,
+                   frame_transition=self._frame_transition)
+
+    def _adapt_times(self, times):
+        frames = [int(float(time) * self._refresh_rate) for time in times]
+        new_times = [t * self._frame_length for t in frames]
+        if self._frame_transition:
+            text = ('Adapted stimulus times %s to %s frames (%s)' %
+                    (times, frames, new_times))
+            times = frames
+            self._logger.debug(text)
+        elif self._vsync_times:
+            text = 'Adapted stimulus times %s to %s' % (times, new_times)
+            times = new_times
+            self._logger.debug(text)
+        return times

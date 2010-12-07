@@ -70,6 +70,11 @@ class VisionEggFeedback(MainloopFeedback):
         countdown_start: First digit of the built-in countdown.
         print_frames: Whether to debug-print the number of frames
         rendered during each stimulus presentation.
+        adapt_times_to_refresh_rate: Whether to round off the stimulus
+        presentation times to a multiple of the duration of one frame
+        of the display device
+        framecount_stimulus_transition: Whether to use vsync-determined
+        frame counts to assess the stimulus display time
         """
         self.wait_style_fixed = True
         self.fullscreen = False
@@ -81,7 +86,9 @@ class VisionEggFeedback(MainloopFeedback):
         self.fixation_cross_symbol = '+'
         self.countdown_symbol_duration = 0.5
         self.countdown_start = 1
-        self.print_frames = False
+        self.print_frames = True
+        self.adapt_times_to_refresh_rate = True
+        self.framecount_stimulus_transition = True
         self._view_parameters = ['fullscreen', 'geometry', 'bg_color',
                                  'font_color_name', 'font_size',
                                  'fixation_cross_time',
@@ -119,7 +126,9 @@ class VisionEggFeedback(MainloopFeedback):
     def __setup_stim_factory(self):
         """ Create the factory for stimulus sequence handlers. """
         self._stimseq_fact = StimulusSequenceFactory(self._view, self._flag,
-                                                     self.print_frames)
+                                                     self.print_frames,
+                                            self.adapt_times_to_refresh_rate,
+                                            self.framecount_stimulus_transition)
 
     def stimulus_sequence(self, prepare, presentation_time, suspendable=True,
                           pre_stimulus_function=None):
