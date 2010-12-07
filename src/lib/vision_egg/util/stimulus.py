@@ -16,7 +16,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 """
 
 from time import sleep
-import datetime, collections, logging
+import datetime, collections, logging, itertools
 
 import pygame
 
@@ -34,7 +34,7 @@ class StimulusPainter(object):
     def __init__(self, prepare, wait, view, flag, wait_style_fixed=False,
                  print_frames=False, suspendable=True, pre_stimulus=None):
         self._prepare_func = prepare
-        self._wait_time_value = wait
+        self._wait_times = itertools.cycle(wait)
         self._view = view
         self._flag = flag
         self._wait_style_fixed = wait_style_fixed
@@ -47,7 +47,6 @@ class StimulusPainter(object):
         self._suspended_time = 0.
 
     def run(self):
-        self._setup_wait_time()
         if self._print_frames:
             self._frame_counter.start()
         if self._prepare():
@@ -77,15 +76,6 @@ class StimulusPainter(object):
             self._logger.debug('Frames after waiting: %d' %
                                self._frame_counter.last_interval)
 
-    def _setup_wait_time(self):
-        self._individual_wait_times = (isinstance(self._wait_time_value,
-                                                 collections.Sequence) and
-                                       self._wait_time_value)
-        if self._individual_wait_times:
-            self._wait_time = iter(self._wait_time_value)
-        else:
-            self._wait_time = self._wait_time_value
-
     def _prepare(self):
         if self._flag:
             if self._suspendable and self._flag.suspended:
@@ -105,14 +95,7 @@ class StimulusPainter(object):
 
     @property
     def _next_wait_time(self):
-        if self._individual_wait_times:
-            try:
-                return self._wait_time.next()
-            except StopIteration:
-                self._setup_wait_time()
-                return self._wait_time.next()
-        else:
-            return self._wait_time
+        return self._wait_times.next()
 
 class StimulusSequence(StimulusPainter):
     def _do_prepare(self):
@@ -146,6 +129,8 @@ class StimulusSequenceFactory(object):
         pressed.
         Global parameters from pyff are used as given in __init__.
         """
+        if not isinstance(presentation_times, collections.Sequence):
+            presentation_times = [presentation_times]
         typ = StimulusIterator if hasattr(prepare, '__iter__') else \
                StimulusSequence
         return typ(prepare, presentation_times, self._view, self._flag,
