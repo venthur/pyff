@@ -55,6 +55,7 @@ class Trial(object):
         self._trial_input = trial_input
         self._burst_input = burst_input
         self._sequence_input = sequence_input
+        self._triggerer = Triggerer(config.alphabet, trigger)
         self.__init_parameters(config)
         self.__init_attributes()
 
@@ -76,27 +77,18 @@ class Trial(object):
 
     def _burst(self, symbols):
         def gen():
-            for symbol in symbols:
-                self._symbol_trigger(symbol[0])
-                self._view.symbol(*symbol)
+            for symbol, color in symbols:
+                self._triggerer.symbol(symbol)
+                self._view.symbol(symbol, color)
                 yield
-        self._stimulus_sequence(gen(), self._symbol_duration).run()
+        self._stimulus_sequence(gen(), self._symbol_duration,
+                                pre_stimulus_function=self._triggerer).run()
         self._view.clear_symbol()
 
     def _ask(self):
         self.asking = True
         self._view.ask()
         self.asking = False
-
-    def _symbol_trigger(self, symbol):
-        try:
-            trigger = symbol_trigger(symbol[0], self._current_target,
-                                     self._alphabet)
-        except ValueError:
-            # redundant symbol
-            pass
-        else:
-            self._trigger(trigger)
 
     def _sequence(self, sequence):
         pass
@@ -121,6 +113,7 @@ class Trial(object):
 
     def target(self, target):
         self._current_target = target
+        self._triggerer.target(target)
 
     def evaluate(self, input):
         pass
