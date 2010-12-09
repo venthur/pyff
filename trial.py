@@ -22,6 +22,28 @@ from lib import marker
 from AlphaBurst.burst import BurstConstraints
 from AlphaBurst.util.trigger import *
 
+class Triggerer(object):
+    def __init__(self, alphabet, trigger):
+        self._alphabet = alphabet
+        self._trigger = trigger
+        self._target = ''
+        self.symbol('')
+
+    def symbol(self, symbol):
+        self._symbol = symbol
+
+    def target(self, target):
+        self._target = target
+
+    def __call__(self):
+        try:
+            trigger = symbol_trigger(self._symbol, self._target, self._alphabet)
+        except ValueError:
+            # redundant symbol
+            pass
+        else:
+            self._trigger(trigger)
+
 class Trial(object):
     def __init__(self, view, trigger, iter, seq_fac, config,
                  trial_fix_cross=False, burst_fix_cross=False,
