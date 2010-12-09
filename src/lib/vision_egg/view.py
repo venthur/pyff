@@ -17,12 +17,16 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 import logging, os
 
+import VisionEgg
 from VisionEgg.Core import Screen, Viewport
 from VisionEgg.FlowControl import Presentation
 
 from pygame import Color
 
+from lib import marker
+
 from model.color_word import ColorWord
+from model.color_word import TextList
 from util.switcherator import Flag, Switcherator
 
 class VisionEggView(object):
@@ -40,6 +44,9 @@ class VisionEggView(object):
         self._logger.addHandler(logging.FileHandler('log'))
         self._screen_acquired = False
         self._viewports = []
+
+    def set_trigger_function(self, trigger):
+        self._trigger = trigger
 
     def set_event_handlers(self, event_handlers):
         """ Set pygame/VisionEgg event handler function. """
@@ -65,9 +72,9 @@ class VisionEggView(object):
     def reinit(self):
         """ Initialize VisionEgg objects. """
         self.__init_screen()
-        self.__init_text()
         self.__init_presentation()
         self.__init_viewports()
+        self.__init_text()
         self.init()
 
     def init(self):
@@ -91,24 +98,24 @@ class VisionEggView(object):
         self._set_bg_color()
         self._set_font_color()
 
+    def __init_presentation(self):
+        """ Provide a standard presentation object. """
+        self.presentation = Presentation(handle_event_callbacks=
+                                         self._event_handlers)
+
+    def __init_viewports(self):
+        """ Provide a standard viewport. """
+        self._standard_viewport = Viewport(screen=self.screen)
+        self.add_viewport(self._standard_viewport)
+
     def __init_text(self):
         """ Provide a text in the screen center for standard stimuli and
         fixation cross etc.
         """
         sz = self.screen.size
-        self._center_text = ColorWord((sz[0] / 2., sz[1] / 2.),
-                                      symbol_size=self._font_size)
-
-    def __init_viewports(self):
-        """ Provide a standard viewport. """
-        self._standard_viewport = Viewport(screen=self.screen,
-                                         stimuli=self._center_text)
-        self.add_viewport(self._standard_viewport)
-
-    def __init_presentation(self):
-        """ Provide a standard presentation object. """
-        self.presentation = Presentation(handle_event_callbacks=
-                                         self._event_handlers)
+        self._center_text = self.add_color_word(position=(sz[0] / 2.,
+                                                          sz[1] / 2.),
+                                                font_size=self._font_size)
 
     def add_viewport(self, viewport):
         """ Add an additional custom viewport object to the list of
@@ -117,16 +124,51 @@ class VisionEggView(object):
         self._viewports.append(viewport)
         self.presentation.set(viewports=self._viewports)
 
+    def clear_stimuli(self):
+        """ Remove all existing stimuli in the standard viewport. """
+        self.set_stimuli()
+
     def add_stimuli(self, *stimuli):
         """ Add additional custom stimulus objects to the list of
-        stimuli.
+        stimuli. TextList instances need their own Viewport, as they
+        consist of multiple stimulus objects that are deleted everytime
+        they change, and so the Viewport needs to have a reference to
+        the containing TextList, otherwise they get lost.
         """
+        text_lists = filter(lambda s: isinstance(s, TextList), stimuli)
+        if text_lists:
+            for text in text_lists:
+                self.add_viewport(Viewport(screen=self.screen, stimuli=text))
+            stimuli = filter(lambda s: not isinstance(s, TextList), stimuli)
         stimuli = self._standard_viewport.parameters.stimuli + list(stimuli)
-        self.set_stimuli(*stimuli)
+        if stimuli:
+            self.set_stimuli(*stimuli)
 
     def set_stimuli(self, *stimuli):
         """ Set the list of stimulus objects.  """
         self._standard_viewport.set(stimuli=list(stimuli))
+
+    def add_text(self, text, font_size=None, **kw):
+        if not kw.has_key('anchor'):
+            kw['anchor'] = 'center'
+        font_size = font_size or self._font_size
+        txt = VisionEgg.Text.Text(text=text, font_size=font_size, **kw)
+        self.add_stimuli(txt)
+        return txt
+
+    def add_color_word(self, text='', font_size=None, **kw):
+        font_size = font_size or self._font_size
+        txt = ColorWord(text=text, symbol_size=font_size, **kw)
+        self.add_stimuli(txt)
+        return txt
+
+    def add_image(self, filename, **kw):
+        if not kw.has_key('anchor'):
+            kw['anchor'] = 'center'
+        txtr = VisionEgg.Textures.Texture(filename)
+        img = VisionEgg.Textures.TextureStimulus(texture=txtr, **kw)
+        self.add_stimuli(img)
+        return img
 
     def _set_font_color(self):
         """ Set the standard font color by pygame name. """
@@ -150,12 +192,16 @@ class VisionEggView(object):
         self.presentation.set(go_duration=(num_frames, 'frames'))
         self.presentation.go()
 
+    def present(self, sec):
+        self.presentation.set(go_duration=(sec, 'seconds'))
+        self.presentation.go()
+
     def update(self):
         """ Repaint the canvas for one frame to update changed stimuli.
         """
         self.present_frames(1)
 
-    def _center_word(self, text, color=None):
+    def center_word(self, text, color=None):
         """ Set the standard word in the screen center. """
         self._center_text.set(text=text)
         self._center_text.set(colors=color or (self._font_color for l in
@@ -165,7 +211,7 @@ class VisionEggView(object):
         """ Display a question mark in the center and wait for keyboard
         input. The query is terminated by calling L{answered}.
         """
-        self._center_word('?')
+        self.center_word('?')
         self._asking = True
         self.presentation.run_forever()
         self.presentation.set(quit=False)
@@ -178,25 +224,28 @@ class VisionEggView(object):
         self.clear_symbol()
 
     def show_fixation_cross(self):
-        """ Display a plus sign as fixation cross for the period of time
-        given by pyff parameter 'fixation_cross_time'.
+        """ Display the pyff parameter 'fixation_cross_symbol' for the
+        period of time given by pyff parameter 'fixation_cross_time'.
         """
-        self._center_word('+')
-        self._present(self._fixation_cross_time)
+        self.center_word(self._fixation_cross_symbol)
+        self._trigger(marker.FIXATION_START)
+        self.present(self._fixation_cross_time)
+        self._trigger(marker.FIXATION_END)
 
     def clear_symbol(self):
-        """ Remove the stimulus from the screen. Alternatives welcome.
-        """
-        self._center_word('')
+        """ Remove the center word from the screen. """
+        self.center_word('')
         self.update()
 
-    def count_down(self):
+    def countdown(self):
         """ Display a countdown according to pyff parameters
-        'count_down_start' and 'count_down_symbol_duration'.
+        'countdown_start' and 'countdown_symbol_duration'.
         """
-        for i in self._iter(reversed(xrange(self._count_down_start + 1))):
-            self._center_word(str(i))
-            self._present(self._count_down_symbol_duration)
+        self._trigger(marker.COUNTDOWN_START)
+        for i in self._iter(reversed(xrange(self._countdown_start + 1))):
+            self.center_word(str(i))
+            self.present(self._countdown_symbol_duration)
+        self._trigger(marker.COUNTDOWN_END)
         self.clear_symbol()
 
     def close(self):
@@ -207,3 +256,4 @@ class VisionEggView(object):
     def quit(self):
         """ Stop the presentation. """
         self.presentation.set(quit=True)
+        self.presentation.set(go_duration=(1, 'frames'))

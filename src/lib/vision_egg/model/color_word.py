@@ -21,7 +21,7 @@ from text_list import TextList
 
 class ColorWord(TextList):
     def __init__(self, position=(0, 0), text='', target=None, symbol_size=72,
-                 target_size=96, colors=[]):
+                 target_size=None, colors=[]):
         TextList.__init__(self, position)
         self._target_index = None
         self.set_size(symbol_size, target_size)
@@ -62,9 +62,10 @@ class ColorWord(TextList):
             self._target = None
             self._target_index = None
 
-    def set_size(self, symbol_size=72, target_size=96):
+    def set_size(self, symbol_size=72, target_size=None):
         self._symbol_size = symbol_size
-        self._target_size = target_size
+        self._target_size = (target_size if target_size is not None else
+                             symbol_size)
 
     def shuffle_colors(self):
         colors = ([uniform(0, 1) for i in xrange(3)] for e in self)

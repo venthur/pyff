@@ -55,3 +55,6 @@ class TextList(list):
     def set_all(self, **kwargs):
         for t in self:
             t.set(**kwargs)
+
+    def set_position(self, position):
+        self._position = position
