@@ -16,18 +16,18 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 """
 
 from time import sleep
-import datetime, collections, logging, itertools
+from datetime import datetime, timedelta
+import collections, logging, itertools
 
 import pygame, VisionEgg
 
 from lib.vision_egg.util.frame_counter import FrameCounter
 
-def time():
-    """ Return microsecond-accurate time since last midnight. 
-    Workaround for time() having only 10ms accuracy when VE is running.
-    """
-    n = datetime.datetime.now()
-    return 60. * (60 * n.hour + n.minute) + n.second + n.microsecond / 1000000.
+_refresh_rate = VisionEgg.config.VISIONEGG_MONITOR_REFRESH_HZ
+_frame_duration = 1. / _refresh_rate
+
+def _frames(time):
+    return round(float(time) * _refresh_rate)
 
 class StimulusPainter(object):
     """ Painter for a series of stimuli. """
@@ -43,17 +43,16 @@ class StimulusPainter(object):
         self._suspendable = suspendable
         self._pre_stimulus = pre_stimulus
         self._frame_transition = frame_transition
-        self._wait_time = 0.1
         self._logger = logging.getLogger('StimulusPainter')
         self._frame_counter = FrameCounter(self._flag)
-        self._suspended_time = 0.
+        self._suspended_time = timedelta()
         self._wait = self._frame_wait if frame_transition else self._time_wait
 
     def run(self):
         if self._print_frames:
             self._frame_counter.start()
         if self._prepare():
-            self._last_start = time()
+            self._last_start = datetime.now()
             self._frame_counter.lock()
             self._present()
             while self._prepare():
@@ -66,7 +65,7 @@ class StimulusPainter(object):
                                self._frame_counter.frame)
 
     def _frame_wait(self):
-        next_interval = self._next_wait_time
+        next_interval = self._next_duration
         while self._frame_counter.last_interval < next_interval:
             sleep(0.01)
         if self._print_frames:
@@ -74,19 +73,17 @@ class StimulusPainter(object):
                                self._frame_counter.last_interval)
 
     def _time_wait(self):
-        next_wait_time = self._next_wait_time + self._suspended_time
-        self._suspended_time = 0.
-        wait_time = self._last_start - time() + next_wait_time
+        next_start = self._last_start + self._next_duration
+        wait_time = next_start - datetime.now()
         try:
-            if wait_time > 0:
-                sleep(wait_time)
+            if wait_time:
+                sleep(wait_time.total_seconds())
         except IOError, e:
             self._logger.error('Encountered "%s" with wait_time of %s'
                                % (e, wait_time))
-        if self._wait_style_fixed:
-            self._last_start += next_wait_time
-        else:
-            self._last_start = time()
+        
+        self._last_start = (next_start if self._wait_style_fixed else
+                            datetime.now())
         if self._print_frames:
             self._logger.debug('Frames after waiting: %d' %
                                self._frame_counter.last_interval)
@@ -94,9 +91,9 @@ class StimulusPainter(object):
     def _prepare(self):
         if self._flag:
             if self._suspendable and self._flag.suspended:
-                suspend_start = time()
+                suspend_start = datetime.now()
                 self._flag.wait()
-                self._suspended_time = time() - suspend_start
+                self._suspended_time = datetime.now() - suspend_start
             return self._do_prepare()
 
     def _present(self):
@@ -109,8 +106,15 @@ class StimulusPainter(object):
         self._view.update()
 
     @property
-    def _next_wait_time(self):
-        return self._wait_times.next()
+    def _next_duration(self):
+        nxt = self._wait_times.next() + self._suspended
+        return nxt
+
+    @property
+    def _suspended(self):
+        t = self._suspended_time
+        self._suspended_time = timedelta()
+        return _frames(t.total_seconds()) if self._frame_transition else t
 
 class StimulusSequence(StimulusPainter):
     def _do_prepare(self):
@@ -138,8 +142,6 @@ class StimulusSequenceFactory(object):
         self._print_frames = print_frames
         self._vsync_times = vsync_times
         self._frame_transition = frame_transition
-        self._refresh_rate = VisionEgg.config.VISIONEGG_MONITOR_REFRESH_HZ
-        self._frame_length = 1. / self._refresh_rate
         self._logger = logging.getLogger('StimulusSequenceFactory')
 
     def create(self, prepare, times, wait_style_fixed, suspendable=True,
@@ -155,6 +157,8 @@ class StimulusSequenceFactory(object):
         times = self._adapt_times(times)
         typ = StimulusIterator if hasattr(prepare, '__iter__') else \
                StimulusSequence
+        if not self._frame_transition:
+            times = [timedelta(seconds=t) for t in times]
         return typ(prepare, times, self._view, self._flag,
                    wait_style_fixed=wait_style_fixed,
                    print_frames=self._print_frames, suspendable=suspendable,
@@ -162,8 +166,8 @@ class StimulusSequenceFactory(object):
                    frame_transition=self._frame_transition)
 
     def _adapt_times(self, times):
-        frames = [round(float(time) * self._refresh_rate) for time in times]
-        new_times = [round(t * self._frame_length, 6) for t in frames]
+        frames = [_frames(time) for time in times]
+        new_times = [round(t * _frame_duration, 6) for t in frames]
         if self._frame_transition:
             text = ('Adapted stimulus times %s to %s frames (%s)' %
                     (times, frames, new_times))
