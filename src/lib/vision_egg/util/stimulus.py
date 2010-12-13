@@ -67,7 +67,7 @@ class StimulusPainter(object):
     def _frame_wait(self):
         next_interval = self._next_duration
         while self._frame_counter.last_interval < next_interval:
-            sleep(0.01)
+            sleep(0.001)
         if self._print_frames:
             self._logger.debug('Frames after waiting: %d' %
                                self._frame_counter.last_interval)
