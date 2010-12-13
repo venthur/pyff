@@ -162,8 +162,8 @@ class StimulusSequenceFactory(object):
                    frame_transition=self._frame_transition)
 
     def _adapt_times(self, times):
-        frames = [int(float(time) * self._refresh_rate) for time in times]
-        new_times = [t * self._frame_length for t in frames]
+        frames = [round(float(time) * self._refresh_rate) for time in times]
+        new_times = [round(t * self._frame_length, 6) for t in frames]
         if self._frame_transition:
             text = ('Adapted stimulus times %s to %s frames (%s)' %
                     (times, frames, new_times))
