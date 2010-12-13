@@ -74,10 +74,9 @@ class StimulusPainter(object):
 
     def _time_wait(self):
         next_start = self._last_start + self._next_duration
-        wait_time = next_start - datetime.now()
         try:
-            if wait_time:
-                sleep(wait_time.total_seconds())
+            while next_start - datetime.now() > timedelta():
+                pass
         except IOError, e:
             self._logger.error('Encountered "%s" with wait_time of %s'
                                % (e, wait_time))
