@@ -88,7 +88,7 @@ class VisionEggFeedback(MainloopFeedback):
         self.countdown_start = 1
         self.print_frames = True
         self.adapt_times_to_refresh_rate = True
-        self.framecount_stimulus_transition = True
+        self.framecount_stimulus_transition = False
         self._view_parameters = ['fullscreen', 'geometry', 'bg_color',
                                  'font_color_name', 'font_size',
                                  'fixation_cross_time',
@@ -203,6 +203,7 @@ class VisionEggFeedback(MainloopFeedback):
         self._view.quit()
 
     def post_mainloop(self):
+        self.quit()
         self._view.close()
 
     def add_viewport(self, viewport):

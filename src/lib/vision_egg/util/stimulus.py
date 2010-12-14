@@ -27,7 +27,7 @@ _refresh_rate = VisionEgg.config.VISIONEGG_MONITOR_REFRESH_HZ
 _frame_duration = 1. / _refresh_rate
 
 def _frames(time):
-    return round(float(time) * _refresh_rate)
+    return int(round(float(time) * _refresh_rate))
 
 class StimulusPainter(object):
     """ Painter for a series of stimuli. """
