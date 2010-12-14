@@ -234,22 +234,25 @@ class VisionEggFeedback(MainloopFeedback):
         """
         self._view.set_stimuli(*stimuli)
 
-    def add_text(self, text, font_size=None, **kw):
-        """ Create a text object displaying the given text and add it
-        to the standard viewport. The returned object is an instance of
-        VisionEgg.Text.Text, whose parameters can be changed later using
-        its set() function, which, just as this one, takes arbitrary
-        additional parameters listed at
+    def add_text_stimulus(self, text='', font_size=None, **kw):
+        """ Create a text object displaying the given text (default
+        none) and add it to the standard viewport. The returned object
+        is an instance of VisionEgg.Text.Text, whose parameters can be
+        changed later using its set() function, which, just as this
+        one, takes arbitrary additional parameters listed at
         http://visionegg.org/reference/VisionEgg.Text.Text-class.html
         See also example 1.
         """
-        return self._view.add_text(text=text, font_size=font_size, **kw)
+        return self._view.add_text_stimulus(text=text, font_size=font_size,
+                                            **kw)
 
-    def add_image(self, filename, **kw):
-        """ Load the image file given and return an image object, a
-        VisionEgg.Textures.TextureStimulus instance.
-        Parameters work just as in add_text, see
-        http://visionegg.org/reference/VisionEgg.Textures.TextureStimulus-class.html
+    def add_image_stimulus(self, **kw):
+        """ Return an image object, a VisionEgg.Textures.TextureStimulus
+        instance. calling set_file(filename) on it fills the stimulus
+        with the given image.
+        Parameters work just as in add_text_stimulus, see
+        http://visionegg.org/reference/VisionEgg.Textures.TextureStimul
+        us-class.html
         and example 1.
         """
-        return self._view.add_image(filename, **kw)
+        return self._view.add_image_stimulus(**kw)
