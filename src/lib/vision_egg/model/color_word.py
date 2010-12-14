@@ -23,7 +23,6 @@ class ColorWord(TextList):
     def __init__(self, position=(0, 0), text='', target=None, symbol_size=72,
                  target_size=None, colors=[]):
         TextList.__init__(self, position)
-        self._target_index = None
         self.set_size(symbol_size, target_size)
         self._target = None
         self._target_index = None
