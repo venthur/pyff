@@ -32,8 +32,8 @@ class Config(object):
         self.words = ['LUXUS', 'WINKT', 'FJORD', 'HYBRID', 'SPHINX', 'QUARZ',
                       'VODKA', 'YACHT', 'GEBOT', 'MEMME']
         self.color_groups = ["ABCEQWFGHI", "KLMNOPDRST", "UVXYJZ.,:<"]
-        self.meaningless = '*+&%?;'
-        #self.meaningless = ''
+        #self.meaningless = '*+&%?;'
+        self.meaningless = ''
         self.custom_pre_sequences = []
         self.custom_post_sequences = []
         # The time for that one single letter is displayed
@@ -42,7 +42,7 @@ class Config(object):
         self.inter_burst = 0
         # Pause time directly after one sequence of bursts or the
         # following user input if set
-        self.inter_sequence = .5
+        self.inter_sequence = 0
         # Pause time directly after one set of sequences for one letter
         # or the following user input if set (count, spelling)
         self.inter_trial = .1
