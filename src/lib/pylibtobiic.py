@@ -16,6 +16,8 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 # 	This is a Python port of TOBI "interface C"
+# 	Initially based on v0.0.1
+# 	Updated to 0.0.3 (25/10/2010)
 
 from xml.dom.minidom import Document
 from xml.dom.minidom import parseString
@@ -28,9 +30,10 @@ ICTYPES_ENTRY_RCOE 			= "rcoe"
 
 ICTYPES_LABEL_UNDEF 		= "undef"
 ICTYPES_LABEL_BIOSIG 		= "biosig"
+ICTYPES_LABEL_CLASS 		= "class"
 ICTYPES_LABEL_CUSTOM 		= "custom"
 
-ICMESSAGE_VERSION 			= "0.0.2"
+ICMESSAGE_VERSION 			= "0.0.3.0"
 ICMESSAGE_ROOTNODE 			= "messagec"
 ICMESSAGE_VERSIONNODE		= "version"
 ICMESSAGE_CLASSNODE 		= "class"
@@ -219,6 +222,7 @@ class ICClassifier:
 	LabelUndef 	= -1 		# 	Undefined class label type
 	LabelBiosig = 0 		# 	Biosig hex labels
 	LabelCustom = 1 		# 	Custom labels
+	LabelClass = 2
 
 	def __init__(self, name, desc, vtype, ltype):
 		self._name = name
@@ -251,6 +255,46 @@ class ICClassifier:
 	def GetLabelType(self):
 		return self._ltype
 
+	def SetValueType(self, vtype):
+		if vtype < ICClassifier.ValueUndef or vtype > ICClassifier.ValueRcoe:
+			return False
+		self._vtype = vtype
+		return True
+
+	def SetLabelType(self, ltype):
+		if ltype < ICClassifier.LabelUndef or ltype > ICClassifier.LabelClass:
+			return False
+		self._ltype = ltype
+		return True
+
+	def SetValueTypeString(self, vtypes):
+		if vtypes == "ValueUndef":
+			self._vtype = ICClassifier.ValueUndef
+		elif vtypes == "ValueProb":
+			self._vtype = ICClassifier.ValueProb
+		elif vtypes == "ValueDist":
+			self._vtype = ICClassifier.ValueDist
+		elif vtypes == "ValueCLbl":
+			self._vtype = ICClassifier.ValueCLbl
+		elif vtypes == "ValueRcoe":
+			self._vtype = ICClassifier.ValueRCoe
+		else:
+			return False
+		return True
+
+	def SetLabelTypeString(self, ltypes):
+		if ltypes == "LabelUndef":
+			self._ltype = ICClassifier.LabelUndef
+		elif ltypes == "LabelBiosig":
+			self._ltype = ICClassifier.LabelBiosig
+		elif ltypes == "LabelCustom":
+			self._ltype = ICClassifier.LabelCustom
+		elif ltypes == "LabelClass":
+			self._ltype = ICClassifier.LabelClass
+		else:
+			return False
+		return True
+
 	@staticmethod
 	def ValueType(vtype):
 		cvtype = ICClassifier.ValueUndef
@@ -274,6 +318,8 @@ class ICClassifier:
 			cltype = ICClassifier.LabelCustom
 		elif ltype == ICTYPES_LABEL_BIOSIG:
 			cltype = ICClassifier.LabelBiosig
+		elif ltype == ICTYPES_LABEL_CLASS:
+			cltype = ICClassifier.LabelClass
 
 		return cltype
 
@@ -303,6 +349,8 @@ class ICClassifier:
 			cltype = ICClassifier.LabelCustom
 		elif ltype == ICTYPES_LABEL_BIOSIG:
 			cltype = ICClassifier.LabelBiosig
+		elif type == ICTYPES_LABEL_CLASS:
+			cltype = ICClassifier.LabelClass
 
 		return cltype
 
@@ -362,6 +410,8 @@ class ICSerializer:
 				pltype = ICTYPES_LABEL_UNDEF
 			elif ltype == ICClassifier.LabelBiosig:
 				pltype = ICTYPES_LABEL_BIOSIG
+			elif ltype == ICClassifier.LabelClass:
+				pltype = ICTYPES_LABEL_CLASS
 			elif ltype == ICClassifier.LabelCustom:
 				pltype = ICTYPES_LABEL_CUSTOM
 
@@ -432,4 +482,3 @@ class ICSerializer:
 					cptr.classes.Get(klabel).SetValue(float(tvalue))
 
 		return msg
-
