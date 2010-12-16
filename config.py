@@ -37,7 +37,7 @@ class Config(object):
         self.custom_pre_sequences = []
         self.custom_post_sequences = []
         # The time for that one single letter is displayed
-        self.symbol_duration = .1
+        self.symbol_duration = .09
         # Pause time directly after each burst
         self.inter_burst = 0
         # Pause time directly after one sequence of bursts or the

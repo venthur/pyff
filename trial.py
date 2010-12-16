@@ -76,13 +76,11 @@ class Trial(object):
         self._current_target = ''
 
     def _burst(self, symbols):
-        def gen():
-            for symbol, color in symbols:
-                self._triggerer.symbol(symbol)
-                self._view.symbol(symbol, color)
-                yield
-        self._stimulus_sequence(gen(), self._symbol_duration,
-                                pre_stimulus_function=self._triggerer).run()
+        for symbol, color in symbols:
+            self._view.symbol(symbol, color)
+            self._triggerer.symbol(symbol)
+            self._triggerer()
+            self._view.present(self._symbol_duration)
         self._view.clear_symbol()
 
     def _ask(self):
