@@ -26,11 +26,44 @@ TRIG_TARGET_ABSENT_OFFSET = 11
 TRIG_TARGET_PRESENT_OFFSET = 21
 TRIG_EEG = 131
 
-def symbol_trigger(symbol, target, alphabet, base=TRIG_LETTER):
-    value = base + alphabet.index(symbol)
+def burst_symbol(symbol, target, base=TRIG_LETTER):
+    value = base + ord(symbol.lower()) - ord('a')
     if symbol == target:
         value += TRIG_TARGET_ADD
     return value
 
-def eeg_trigger(symbol, alphabet):
-    return symbol_trigger(symbol, None, alphabet, base=TRIG_EEG)
+def eeg_symbol(symbol):
+    return burst_symbol(symbol, None, base=TRIG_EEG)
+
+class Triggerer(object):
+    def __init__(self, nonalpha_trigger, trigger):
+        self._nonalpha_trigger = dict(nonalpha_trigger)
+        self._trigger = trigger
+        self._target = ''
+        self.symbol('')
+
+    def symbol(self, symbol):
+        self._symbol = symbol
+
+    def target(self, target):
+        self._target = target
+
+    def __call__(self):
+        try:
+            if self._symbol.isalpha():
+                trigger = self._symbol_trigger()
+            else:
+                trigger = self._nonalpha_trigger[self._symbol]
+        except KeyError:
+            # redundant symbol
+            pass
+        else:
+            self._trigger(trigger)
+
+class BurstTriggerer(Triggerer):
+    def _symbol_trigger(self):
+        return burst_symbol(self._symbol, self._target)
+
+class EEGTriggerer(Triggerer):
+    def _symbol_trigger(self):
+        return eeg_symbol(self._symbol)

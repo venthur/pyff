@@ -22,6 +22,7 @@ class InputHandler(object):
     def __init__(self, control):
         self._view = control._view
         self._trigger = control._trigger
+        self._triggerer = EEGTriggerer(control.nonalpha_trigger, self._trigger)
 
     def start_experiment(self, experiment):
         self._experiment = experiment
@@ -112,7 +113,8 @@ class SpellingInputHandler(CountInputHandler):
             return True
 
     def _process_eeg_input(self, symbol):
-        self._trigger(eeg_trigger(symbol, self._alphabet))
+        self._triggerer.symbol(symbol)
+        self._triggerer()
         self._view.eeg_letter(self._input, symbol,
                               update_word=self._update_word)
         self._view.answered()
