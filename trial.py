@@ -57,7 +57,7 @@ class Trial(object):
         self._current_target = ''
 
     def _burst(self, symbols):
-        for symbol, color in symbols:
+        for symbol, color in self._iter(symbols):
             self._view.symbol(symbol, color)
             self._triggerer.symbol(symbol)
             self._triggerer()
