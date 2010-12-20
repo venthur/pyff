@@ -64,7 +64,7 @@ class Control(VisionEggFeedback, Config):
     def _setup_trial(self):
         trial_type = self._trial_name + 'Trial'
         self._trial = eval(trial_type)(self._view, self._trigger, self._iter,
-                                   self.stimulus_sequence, self)
+                                       self.stimulus_sequence, self)
 
     def _setup_input_handler(self):
         input_handler_type = self._trial_name + 'InputHandler'

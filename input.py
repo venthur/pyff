@@ -16,7 +16,11 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 import pygame
 
-from AlphaBurst.util.trigger import *
+from AlphaBurst.util.trigger import (EEGTriggerer, TRIG_TARGET_PRESENT_OFFSET,
+                                     TRIG_TARGET_ABSENT_OFFSET)
+
+__all__ = ['CountInputHandler', 'YesNoInputHandler', 'CalibrationInputHandler',
+           'CopySpellingInputHandler', 'FreeSpellingInputHandler']
 
 class InputHandler(object):
     def __init__(self, control):

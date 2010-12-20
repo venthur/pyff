@@ -20,7 +20,10 @@ from time import sleep
 from lib import marker
 
 from AlphaBurst.burst import BurstConstraints
-from AlphaBurst.util.trigger import *
+from AlphaBurst.util.trigger import BurstTriggerer, TRIG_COUNTED_OFFSET
+
+__all__ = ['YesNoTrial', 'CountTrial', 'CalibrationTrial', 'FreeSpellingTrial',
+          'CopySpellingTrial']
 
 class Trial(object):
     def __init__(self, view, trigger, iter, seq_fac, config,

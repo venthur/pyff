@@ -15,7 +15,7 @@ program; if not, see <http://www.gnu.org/licenses/>.
 
 from time import sleep
 
-from AlphaBurst.util.trigger import *
+from AlphaBurst.util.trigger import TRIG_BURST_START, TRIG_BURST_END
 
 class BurstConstraints(object):
     def __init__(self, fix, ask, view, asker, sleep_interval, trigger):
