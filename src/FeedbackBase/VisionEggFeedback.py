@@ -103,7 +103,6 @@ class VisionEggFeedback(MainloopFeedback):
         self._view.set_trigger_function(self._trigger)
         self._set_iterator_semaphore(Flag())
         self.__setup_events()
-        self.__setup_stim_factory()
 
     def _create_view(self):
         """ Instantiate the view class. Overload this for custom
@@ -196,6 +195,7 @@ class VisionEggFeedback(MainloopFeedback):
         """ Apply new parameters set from pyff. """
         params = dict([[p, getattr(self, p, None)] for p in
                         self._view_parameters])
+        self.__setup_stim_factory()
         self._view.update_parameters(**params)
 
     def quit(self):
