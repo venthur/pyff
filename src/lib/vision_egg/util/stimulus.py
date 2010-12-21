@@ -49,7 +49,7 @@ class StimulusPainter(object):
         self._wait = self._frame_wait if frame_transition else self._time_wait
 
     def run(self):
-        if self._print_frames:
+        if self._print_frames or self._frame_transition:
             self._frame_counter.start()
         if self._prepare():
             self._last_start = datetime.now()
