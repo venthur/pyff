@@ -32,7 +32,7 @@ class Config(object):
         self.words = ['LUXUS', 'WINKT', 'FJORD', 'HYBRID', 'SPHINX', 'QUARZ',
                       'VODKA', 'YACHT', 'GEBOT', 'MEMME']
         self.color_groups = ["ABCEQWFGHI", "KLMNOPDRST", "UVXYJZ.,:<"]
-        self.nonalpha_trigger = [['<', 57], ['.', 58], [',', 59], [':', 60]]
+        self.nonalpha_trigger = [['<', 57], ['.', 58], [',', 59], ['!', 60]]
         #self.meaningless = '*+&%?;'
         self.meaningless = ''
         self.custom_pre_sequences = []
