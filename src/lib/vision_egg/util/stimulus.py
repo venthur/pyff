@@ -27,7 +27,7 @@ _refresh_rate = VisionEgg.config.VISIONEGG_MONITOR_REFRESH_HZ
 _frame_duration = 1. / _refresh_rate
 
 def _frames(time):
-    return round(float(time) * _refresh_rate)
+    return int(round(float(time) * _refresh_rate))
 
 class StimulusPainter(object):
     """ Painter for a series of stimuli. """
@@ -49,7 +49,7 @@ class StimulusPainter(object):
         self._wait = self._frame_wait if frame_transition else self._time_wait
 
     def run(self):
-        if self._print_frames:
+        if self._print_frames or self._frame_transition:
             self._frame_counter.start()
         if self._prepare():
             self._last_start = datetime.now()
@@ -66,7 +66,7 @@ class StimulusPainter(object):
 
     def _frame_wait(self):
         next_interval = self._next_duration
-        while self._frame_counter.last_interval < next_interval:
+        while self._flag and self._frame_counter.last_interval < next_interval:
             sleep(0.001)
         if self._print_frames:
             self._logger.debug('Frames after waiting: %d' %

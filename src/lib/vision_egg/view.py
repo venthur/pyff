@@ -27,6 +27,7 @@ from lib import marker
 
 from model.color_word import ColorWord
 from model.color_word import TextList
+from model.stimulus import TextureStimulus
 from util.switcherator import Flag, Switcherator
 
 class VisionEggView(object):
@@ -148,7 +149,7 @@ class VisionEggView(object):
         """ Set the list of stimulus objects.  """
         self._standard_viewport.set(stimuli=list(stimuli))
 
-    def add_text(self, text, font_size=None, **kw):
+    def add_text_stimulus(self, text, font_size=None, **kw):
         if not kw.has_key('anchor'):
             kw['anchor'] = 'center'
         font_size = font_size or self._font_size
@@ -162,11 +163,10 @@ class VisionEggView(object):
         self.add_stimuli(txt)
         return txt
 
-    def add_image(self, filename, **kw):
+    def add_image_stimulus(self, **kw):
         if not kw.has_key('anchor'):
             kw['anchor'] = 'center'
-        txtr = VisionEgg.Textures.Texture(filename)
-        img = VisionEgg.Textures.TextureStimulus(texture=txtr, **kw)
+        img = TextureStimulus(**kw)
         self.add_stimuli(img)
         return img
 

@@ -31,10 +31,13 @@ class FrameCounter(threading.Thread):
     def run(self):
         try:
             while self._flag:
-                pygame.display.flip()
-                self.frame += 1
+                self.step()
         except pygame.error as e:
             logging.getLogger('FrameCounter').error(unicode(e))
+
+    def step(self):
+        pygame.display.flip()
+        self.frame += 1
 
     def lock(self):
         self._locked_frame = self.frame
