@@ -22,6 +22,7 @@
 
 
 import logging
+import logging.handlers
 from optparse import OptionParser
 from multiprocessing import Process
 import traceback
@@ -57,6 +58,9 @@ the Free Software Foundation; either version 2 of the License, or
                       dest='fbloglevel', 
                       help='Which loglevel to use for the Feedbacks. Valid loglevels are: critical, error, warning, info, debug and notset. [default: warning]', 
                       metavar='LEVEL')
+    parser.add_option('--logserver', dest='logserver',
+                      action='store_true', default=False,
+                      help='Send log output to logserver.')
     parser.add_option('-p', '--plugin', dest='plugin',
                       help="Optional Plugin, the Feedback Controller should inject into the Feedback.",
                       metavar="MODULE")
@@ -84,7 +88,15 @@ the Free Software Foundation; either version 2 of the License, or
     loglevel = str2loglevel.get(options.loglevel, logging.WARNING)
     fbloglevel = str2loglevel.get(options.fbloglevel, logging.WARNING)
 
-    logging.basicConfig(level=loglevel, format='[%(process)-5d:%(threadName)-10s] %(name)-25s: %(levelname)-8s %(message)s')
+    if options.logserver:
+        rootLogger = logging.getLogger('')
+        socketHandler = logging.handlers.SocketHandler('localhost',
+                                                       logging.handlers.DEFAULT_TCP_LOGGING_PORT)
+        rootLogger.addHandler(socketHandler)
+        formatter = logging.Formatter('[%(process)-5d:%(threadName)-10s] %(name)-25s: %(levelname)-8s %(message)s')
+        socketHandler.setFormatter(formatter)
+    else:
+        logging.basicConfig(level=loglevel, format='[%(process)-5d:%(threadName)-10s] %(name)-25s: %(levelname)-8s %(message)s')
     logging.info('Logger initialized with level %s.' % options.loglevel)
     logging.getLogger("FB").setLevel(fbloglevel)
     
