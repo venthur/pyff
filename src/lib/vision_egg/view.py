@@ -170,22 +170,25 @@ class VisionEggView(object):
         self.add_stimuli(img)
         return img
 
+    def _create_color(self, name):
+        try:
+            if isinstance(name, tuple):
+                return Color(*name).normalize()
+            else:
+                return Color(name).normalize()
+        except ValueError:
+            self._logger.warn('No such pygame.Color: %s' % str(name))
+
     def _set_font_color(self):
         """ Set the standard font color by pygame name. """
-        try:
-            self._font_color = Color(self._font_color_name).normalize()
-        except ValueError:
-            self._logger.warn('No such pygame.Color: %s' %
-                              str(self._font_color_name))
-            self._font_color = Color(1, 1, 1, 255).normalize()
+        self._font_color = (self._create_color(self._font_color_name) or
+                            Color(1, 1, 1, 255).normalize())
 
     def _set_bg_color(self):
         """ Set the standard background color by pygame name. """
-        try:
-            self.screen.set(bgcolor=Color(self._bg_color).normalize())
-        except ValueError:
-            self._logger.warn('No such pygame.Color: %s' % str(self._bg_color))
-            self.screen.set(bgcolor=Color(0, 0, 0, 255).normalize())
+        c = (self._create_color(self._bg_color) or
+             Color(0, 0, 0, 255).normalize())
+        self.screen.set(bgcolor=c)
 
     def present_frames(self, num_frames):
         """ Launch the presentation main loop for a given number of
