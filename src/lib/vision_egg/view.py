@@ -177,6 +177,7 @@ class VisionEggView(object):
         except ValueError:
             self._logger.warn('No such pygame.Color: %s' %
                               str(self._font_color_name))
+            self._font_color = Color(1, 1, 1, 255).normalize()
 
     def _set_bg_color(self):
         """ Set the standard background color by pygame name. """
@@ -184,6 +185,7 @@ class VisionEggView(object):
             self.screen.set(bgcolor=Color(self._bg_color).normalize())
         except ValueError:
             self._logger.warn('No such pygame.Color: %s' % str(self._bg_color))
+            self.screen.set(bgcolor=Color(0, 0, 0, 255).normalize())
 
     def present_frames(self, num_frames):
         """ Launch the presentation main loop for a given number of
