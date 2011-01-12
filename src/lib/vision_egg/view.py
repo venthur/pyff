@@ -175,7 +175,7 @@ class VisionEggView(object):
             if isinstance(name, tuple):
                 return Color(*name).normalize()
             else:
-                return Color(name).normalize()
+                return Color(str(name)).normalize()
         except ValueError:
             self._logger.warn('No such pygame.Color: %s' % str(name))
 
