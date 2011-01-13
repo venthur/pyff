@@ -47,6 +47,7 @@ class VisionEggFeedback(MainloopFeedback):
         MainloopFeedback.__init__(self, *args, **kwargs)
         self._view_type = view_type
         self.__init_parameters()
+        self.init_parameters()
         self.__init_attributes()
 
     def __init_parameters(self):
@@ -95,6 +96,9 @@ class VisionEggFeedback(MainloopFeedback):
                                  'fixation_cross_symbol',
                                  'countdown_symbol_duration',
                                  'countdown_start']
+
+    def init_parameters(self):
+        pass
 
     def __init_attributes(self):
         """ Setup internal attributes. """
