@@ -1,4 +1,4 @@
-__copyright__ = """ Copyright (c) 2010 Torsten Schmits
+__copyright__ = """ Copyright (c) 2010-2011 Torsten Schmits
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -28,7 +28,7 @@ from lib import marker
 from model.color_word import ColorWord
 from model.color_word import TextList
 from model.stimulus import TextureStimulus
-from util.switcherator import Flag, Switcherator
+from util.switcherator import Switcherator
 
 class VisionEggView(object):
     """ This class handles VisionEgg internals and the creation of
@@ -212,6 +212,16 @@ class VisionEggView(object):
         self._center_text.set(colors=color or (self._font_color for l in
                                            self._center_text))
 
+    def clear_center_word(self):
+        """ Remove the center word from the screen. """
+        self.center_word('')
+        self.update()
+
+    def present_center_word(self, text, seconds, color=None):
+        self.center_word(text, color)
+        self.present(seconds)
+        self.clear_center_word()
+
     def ask(self):
         """ Display a question mark in the center and wait for keyboard
         input. The query is terminated by calling L{answered}.
@@ -226,7 +236,7 @@ class VisionEggView(object):
         after subject input.
         """
         self.presentation.set(quit=True)
-        self.clear_symbol()
+        self.clear_center_word()
 
     def show_fixation_cross(self):
         """ Display the pyff parameter 'fixation_cross_symbol' for the
@@ -237,11 +247,6 @@ class VisionEggView(object):
         self.present(self._fixation_cross_time)
         self._trigger(marker.FIXATION_END)
 
-    def clear_symbol(self):
-        """ Remove the center word from the screen. """
-        self.center_word('')
-        self.update()
-
     def countdown(self):
         """ Display a countdown according to pyff parameters
         'countdown_start' and 'countdown_symbol_duration'.
@@ -251,7 +256,7 @@ class VisionEggView(object):
             self.center_word(str(i))
             self.present(self._countdown_symbol_duration)
         self._trigger(marker.COUNTDOWN_END)
-        self.clear_symbol()
+        self.clear_center_word()
 
     def close(self):
         """ Shut down the screen. """
