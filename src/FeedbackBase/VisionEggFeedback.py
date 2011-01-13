@@ -87,7 +87,7 @@ class VisionEggFeedback(MainloopFeedback):
         self.fixation_cross_symbol = '+'
         self.countdown_symbol_duration = 0.5
         self.countdown_start = 1
-        self.print_frames = True
+        self.print_frames = False
         self.adapt_times_to_refresh_rate = True
         self.framecount_stimulus_transition = False
         self._view_parameters = ['fullscreen', 'geometry', 'bg_color',
