@@ -1,4 +1,4 @@
-__copyright__ = """ Copyright (c) 2010 Torsten Schmits
+__copyright__ = """ Copyright (c) 2010-2011 Torsten Schmits
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -85,8 +85,8 @@ class VisionEggFeedback(MainloopFeedback):
         self.font_size = 150
         self.fixation_cross_time = .2
         self.fixation_cross_symbol = '+'
-        self.countdown_symbol_duration = 0.5
-        self.countdown_start = 1
+        self.countdown_symbol_duration = 1
+        self.countdown_start = 5
         self.print_frames = False
         self.adapt_times_to_refresh_rate = True
         self.framecount_stimulus_transition = False
