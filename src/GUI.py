@@ -56,6 +56,8 @@ class BciGui(QtGui.QMainWindow, Ui_MainWindow):
         self.toolButton_clearFilter.setDefaultAction(self.actionClearFilter)
         # put the combobox into the toolbar before the sendinit action
         self.comboBox_feedback = QtGui.QComboBox(self.toolBar)
+        self.comboBox_feedback.setSizePolicy(QtGui.QSizePolicy.Expanding,
+                                             QtGui.QSizePolicy.Preferred)
         self.toolBar.insertWidget(self.actionSendInit, self.comboBox_feedback)
 
         # connect actions to methods
