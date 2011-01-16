@@ -28,6 +28,7 @@ class Speller(object):
         self.__init_attributes()
 
     def __init_attributes(self):
+        self._trial_types = ['Calibration', 'FreeSpelling', 'CopySpelling']
         # 1: Calibration 2: FreeSpelling 3: CopySpelling
         self.trial_type = 3
         self.phrases = ['BBCI_MATRIX']
@@ -43,6 +44,12 @@ class Speller(object):
         self.countdown_start = 1
         # allow classifier input to be simulated by keyboard
         self.allow_keyboard_input = True
+
+    def update_parameters(self):
+        super(Speller, self).update_parameters()
+        self._trial_name = self._trial_types[self.trial_type - 1]
+        self.setup()
+
 
     @classmethod
     def stimulus(self, f):
@@ -89,3 +96,12 @@ class Speller(object):
 
     def current_target(self):
         return self._trial.current_target
+
+    def run(self):
+        self._experiment.run()
+
+    def on_control_event(self, data):
+        """ Classifier input. """
+        cls = data.get('cl_output', None)
+        if cls is not None:
+            self._input_handler.eeg_select(cls)
