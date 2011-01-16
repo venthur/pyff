@@ -183,6 +183,7 @@ class VisionEggFeedback(MainloopFeedback):
         self.run()
         self._trigger(marker.RUN_END)
         self._running = False
+        self.quit()
 
     def on_pause(self):
         self._flag.toggle_suspension()
