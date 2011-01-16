@@ -20,7 +20,7 @@ from AlphaBurst.util.trigger import TRIG_BURST_START, TRIG_BURST_END
 class BurstConstraints(object):
     def __init__(self, fix, ask, view, asker, sleep_interval, trigger):
         dummy = lambda: None
-        self._clear_symbol = view.clear_symbol
+        self._clear_symbol = view.clear_center_word
         self._fixation_cross = view.show_fixation_cross if fix else dummy
         self._ask = asker if ask else dummy
         self._sleep_interval = sleep_interval

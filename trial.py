@@ -62,7 +62,7 @@ class Trial(object):
             self._triggerer.symbol(symbol)
             self._triggerer()
             self._view.present(self._symbol_duration)
-        self._view.clear_symbol()
+        self._view.clear_center_word()
 
     def _ask(self):
         self.asking = True
