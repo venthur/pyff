@@ -75,8 +75,8 @@ class VisionEggView(object):
         self.__init_screen()
         self.__init_presentation()
         self.__init_viewports()
-        self.__init_text()
         self.init()
+        self.__init_text()
 
     def init(self):
         """ Overload this for additional custom VisionEgg
@@ -222,12 +222,12 @@ class VisionEggView(object):
         self.present(seconds)
         self.clear_center_word()
 
-    def ask(self):
-        """ Display a question mark in the center and wait for keyboard
-        input. The query is terminated by calling L{answered}.
+    def ask(self, question=True):
+        """ Loop indefinitely until answered() is called. If question is
+        True, a question mark is shown in the center.
         """
-        self.center_word('?')
-        self._asking = True
+        if question:
+            self.center_word('?')
         self.presentation.run_forever()
         self.presentation.set(quit=False)
 
