@@ -1,4 +1,4 @@
-__copyright__ = """ Copyright (c) 2010 Torsten Schmits
+__copyright__ = """ Copyright (c) 2010-2011 Torsten Schmits
 
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -17,11 +17,8 @@ import logging
 
 from VisionEgg.Core import *
 
-from pygame import Color
-
 from lib import marker
 from lib.vision_egg import VisionEggView
-from lib.vision_egg.model.color_word import ColorWord
 
 from AlphaBurst.model.target_word import TargetWord
 
@@ -35,6 +32,11 @@ class View(VisionEggView):
         self._logger = logging.getLogger('View')
         self._symbol_duration = 0.05
         self._font_size = 150
+
+    def reinit(self):
+        VisionEggView.reinit(self)
+        sz = self.screen.size
+        self._center_text.set_position((sz[0] / 2., sz[1] - self._symbol_vpos))
 
     def init(self):
         self.__init_text()
@@ -52,7 +54,6 @@ class View(VisionEggView):
                                     target_frame_width=self._target_frame_width,
                                     center_at_target=True)
         self.add_stimuli(self._word)
-        self._center_text.set_position((sz[0] / 2., sz[1] - self._symbol_vpos))
         if self._show_alphabet:
             self._alphabet = self.add_color_word(position=(sz[0] / 2., sz[1] -
                                                            self._alphabet_vpos),
