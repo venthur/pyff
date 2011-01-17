@@ -1,4 +1,4 @@
-__copyright__ = """ Copyright (c) 2010 Torsten Schmits
+__copyright__ = """ Copyright (c) 2010-2011 Torsten Schmits
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -28,7 +28,7 @@ from lib import marker
 from model.color_word import ColorWord
 from model.color_word import TextList
 from model.stimulus import TextureStimulus
-from util.switcherator import Flag, Switcherator
+from util.switcherator import Switcherator
 
 class VisionEggView(object):
     """ This class handles VisionEgg internals and the creation of
@@ -75,8 +75,8 @@ class VisionEggView(object):
         self.__init_screen()
         self.__init_presentation()
         self.__init_viewports()
-        self.__init_text()
         self.init()
+        self.__init_text()
 
     def init(self):
         """ Overload this for additional custom VisionEgg
@@ -170,20 +170,25 @@ class VisionEggView(object):
         self.add_stimuli(img)
         return img
 
+    def _create_color(self, name):
+        try:
+            if isinstance(name, tuple):
+                return Color(*name).normalize()
+            else:
+                return Color(str(name)).normalize()
+        except ValueError:
+            self._logger.warn('No such pygame.Color: %s' % str(name))
+
     def _set_font_color(self):
         """ Set the standard font color by pygame name. """
-        try:
-            self._font_color = Color(self._font_color_name).normalize()
-        except ValueError:
-            self._logger.warn('No such pygame.Color: %s' %
-                              str(self._font_color_name))
+        self._font_color = (self._create_color(self._font_color_name) or
+                            Color(1, 1, 1, 255).normalize())
 
     def _set_bg_color(self):
         """ Set the standard background color by pygame name. """
-        try:
-            self.screen.set(bgcolor=Color(self._bg_color).normalize())
-        except ValueError:
-            self._logger.warn('No such pygame.Color: %s' % str(self._bg_color))
+        c = (self._create_color(self._bg_color) or
+             Color(0, 0, 0, 255).normalize())
+        self.screen.set(bgcolor=c)
 
     def present_frames(self, num_frames):
         """ Launch the presentation main loop for a given number of
@@ -207,12 +212,22 @@ class VisionEggView(object):
         self._center_text.set(colors=color or (self._font_color for l in
                                            self._center_text))
 
-    def ask(self):
-        """ Display a question mark in the center and wait for keyboard
-        input. The query is terminated by calling L{answered}.
+    def clear_center_word(self):
+        """ Remove the center word from the screen. """
+        self.center_word('')
+        self.update()
+
+    def present_center_word(self, text, seconds, color=None):
+        self.center_word(text, color)
+        self.present(seconds)
+        self.clear_center_word()
+
+    def ask(self, question=True):
+        """ Loop indefinitely until answered() is called. If question is
+        True, a question mark is shown in the center.
         """
-        self.center_word('?')
-        self._asking = True
+        if question:
+            self.center_word('?')
         self.presentation.run_forever()
         self.presentation.set(quit=False)
 
@@ -221,7 +236,7 @@ class VisionEggView(object):
         after subject input.
         """
         self.presentation.set(quit=True)
-        self.clear_symbol()
+        self.clear_center_word()
 
     def show_fixation_cross(self):
         """ Display the pyff parameter 'fixation_cross_symbol' for the
@@ -232,11 +247,6 @@ class VisionEggView(object):
         self.present(self._fixation_cross_time)
         self._trigger(marker.FIXATION_END)
 
-    def clear_symbol(self):
-        """ Remove the center word from the screen. """
-        self.center_word('')
-        self.update()
-
     def countdown(self):
         """ Display a countdown according to pyff parameters
         'countdown_start' and 'countdown_symbol_duration'.
@@ -246,7 +256,7 @@ class VisionEggView(object):
             self.center_word(str(i))
             self.present(self._countdown_symbol_duration)
         self._trigger(marker.COUNTDOWN_END)
-        self.clear_symbol()
+        self.clear_center_word()
 
     def close(self):
         """ Shut down the screen. """

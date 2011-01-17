@@ -1,4 +1,4 @@
-__copyright__ = """ Copyright (c) 2010 Torsten Schmits
+__copyright__ = """ Copyright (c) 2010-2011 Torsten Schmits
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -47,6 +47,7 @@ class VisionEggFeedback(MainloopFeedback):
         MainloopFeedback.__init__(self, *args, **kwargs)
         self._view_type = view_type
         self.__init_parameters()
+        self.init_parameters()
         self.__init_attributes()
 
     def __init_parameters(self):
@@ -84,9 +85,9 @@ class VisionEggFeedback(MainloopFeedback):
         self.font_size = 150
         self.fixation_cross_time = .2
         self.fixation_cross_symbol = '+'
-        self.countdown_symbol_duration = 0.5
-        self.countdown_start = 1
-        self.print_frames = True
+        self.countdown_symbol_duration = 1
+        self.countdown_start = 5
+        self.print_frames = False
         self.adapt_times_to_refresh_rate = True
         self.framecount_stimulus_transition = False
         self._view_parameters = ['fullscreen', 'geometry', 'bg_color',
@@ -95,6 +96,9 @@ class VisionEggFeedback(MainloopFeedback):
                                  'fixation_cross_symbol',
                                  'countdown_symbol_duration',
                                  'countdown_start']
+
+    def init_parameters(self):
+        pass
 
     def __init_attributes(self):
         """ Setup internal attributes. """
@@ -179,6 +183,7 @@ class VisionEggFeedback(MainloopFeedback):
         self.run()
         self._trigger(marker.RUN_END)
         self._running = False
+        self.quit()
 
     def on_pause(self):
         self._flag.toggle_suspension()
