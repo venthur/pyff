@@ -68,7 +68,6 @@ class Speller(object):
 
     def _setup_trial(self):
         trial_type = self._trial_name + 'Trial'
-        self._matrix = self._view.matrix
         self._trial = eval(trial_type)(self._view, self._trigger, self._iter,
                                        self)
         if self.__stimulus:
