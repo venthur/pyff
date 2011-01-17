@@ -50,7 +50,6 @@ class Speller(object):
         self._trial_name = self._trial_types[self.trial_type - 1]
         self.setup()
 
-
     @classmethod
     def stimulus(self, f):
         self.__stimulus = f

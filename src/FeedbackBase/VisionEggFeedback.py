@@ -106,6 +106,7 @@ class VisionEggFeedback(MainloopFeedback):
         self._view = self._create_view()
         self._view.set_trigger_function(self._trigger)
         self._set_iterator_semaphore(Flag())
+        self._running = False
         self.__setup_events()
 
     def _create_view(self):
