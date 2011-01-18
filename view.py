@@ -66,7 +66,6 @@ class View(VisionEggView):
 
     def alphabet(self, alphabet):
         if self._show_alphabet:
-            alphabet = sorted(alphabet, key=lambda s: s.lower())
             colors = map(self._symbol_color, alphabet)
             self._alphabet.set(text=alphabet, colors=colors)
 

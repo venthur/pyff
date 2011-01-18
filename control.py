@@ -56,6 +56,10 @@ class Control(VisionEggFeedback, Config):
         VisionEggFeedback.update_parameters(self)
         self._palette.set(self.symbol_colors, self.color_groups)
         self.alphabet = ''.join(self.color_groups)
+        self._sorted_alphabet = sorted(self.alphabet, key=lambda s: s.lower())
+        self.eeg_alphabet = ''.join(filter(lambda c: c.isalpha(),
+                                           self._sorted_alphabet)
+                                    + [e[0] for e in self.nonalpha_trigger])
         self._trial_name = self._trial_types[self.trial_type - 1]
         self._setup_trial()
         self._setup_input_handler()
@@ -79,7 +83,7 @@ class Control(VisionEggFeedback, Config):
 
     def run(self):
         try:
-            self._view.alphabet(self.alphabet)
+            self._view.alphabet(self.eeg_alphabet)
             self._experiment.run()
         except AlphaBurstException as e:
             self.logger.error(e)

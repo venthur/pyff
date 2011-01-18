@@ -1,4 +1,4 @@
-__copyright__ = """ Copyright (c) 2010 Torsten Schmits
+__copyright__ = """ Copyright (c) 2010-2011 Torsten Schmits
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -92,7 +92,7 @@ class SpellingInputHandler(CountInputHandler):
     def __init__(self, control, update_word=False, *a, **kw):
         self._input = ''
         self._delete_symbol = control.delete_symbol
-        self._alphabet = list(control.alphabet)
+        self._alphabet = list(control.eeg_alphabet)
         self._update_word = update_word
         self._allow_keyboard = control.allow_keyboard_input
         CountInputHandler.__init__(self, control, *a, **kw)

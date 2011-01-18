@@ -1,4 +1,4 @@
-__copyright__ = """ Copyright (c) 2010 Torsten Schmits
+__copyright__ = """ Copyright (c) 2010-2011 Torsten Schmits
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -43,7 +43,6 @@ class Trial(object):
     def __init_parameters(self, config):
         self._inter_burst = config.inter_burst
         self._inter_sequence = config.inter_sequence
-        self._color_groups = config.color_groups
         self._symbol_duration = config.symbol_duration
         self._max_diff = config.max_diff
         self._trial_countdown = config.show_trial_countdown
@@ -53,7 +52,6 @@ class Trial(object):
     def __init_attributes(self):
         self._logger = logging.getLogger('Trial')
         self.asking = False
-        self._alphabet = ''.join(self._color_groups)
         self._current_target = ''
 
     def _burst(self, symbols):
