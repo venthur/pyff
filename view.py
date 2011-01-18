@@ -66,6 +66,7 @@ class View(VisionEggView):
 
     def alphabet(self, alphabet):
         if self._show_alphabet:
+            alphabet = sorted(alphabet, key=lambda s: s.lower())
             colors = map(self._symbol_color, alphabet)
             self._alphabet.set(text=alphabet, colors=colors)
 
@@ -88,7 +89,7 @@ class View(VisionEggView):
         self._center_text.set_all(on=True)
 
     def eeg_letter(self, text, symbol, update_word=True):
-        self._trigger(marker.FEEDBACK_START)
+        #self._trigger(marker.FEEDBACK_START)
         colors = map(self._symbol_color, text)
         self.symbol(symbol, self._symbol_color(symbol))
         self.present(self._present_eeg_input_time)

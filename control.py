@@ -1,6 +1,6 @@
 from __future__ import with_statement
 
-__copyright__ = """ Copyright (c) 2010 Torsten Schmits
+__copyright__ = """ Copyright (c) 2010-2011 Torsten Schmits
 
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -55,7 +55,7 @@ class Control(VisionEggFeedback, Config):
     def update_parameters(self):
         VisionEggFeedback.update_parameters(self)
         self._palette.set(self.symbol_colors, self.color_groups)
-        self.alphabet = sorted(''.join(self.color_groups))
+        self.alphabet = ''.join(self.color_groups)
         self._trial_name = self._trial_types[self.trial_type - 1]
         self._setup_trial()
         self._setup_input_handler()
@@ -97,8 +97,7 @@ class Control(VisionEggFeedback, Config):
     def on_control_event(self, data):
         cls = data.get('cl_output', None)
         if cls is not None:
-            #self._eeg_select(cls)
-            self._input_handler.classifier(class_no)
+            self._input_handler.eeg_select(class_no)
 
 class AlphaBurst(Control):
     pass
