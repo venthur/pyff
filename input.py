@@ -109,19 +109,23 @@ class SpellingInputHandler(CountInputHandler):
     def eeg_select(self, cls):
         if 0 <= cls < len(self._alphabet):
             symbol = self._alphabet[cls]
+            print "Received control signal: %s -> %s" % (str(cls), symbol)
             if symbol == self._delete_symbol:
                 self._delete()
             else:
                 self._input += symbol
-            self._process_eeg_input(symbol)
+            self._set_eeg_input(symbol)
             return True
 
-    def _process_eeg_input(self, symbol):
-        self._triggerer.symbol(symbol)
-        self._triggerer()
-        self._view.eeg_letter(self._input, symbol,
-                              update_word=self._update_word)
+    def _set_eeg_input(self, symbol):
+        self._symbol = symbol
         self._view.answered()
+
+    def process_eeg_input(self):
+        self._triggerer.symbol(self._symbol)
+        self._triggerer()
+        self._view.eeg_letter(self._input, self._symbol,
+                              update_word=self._update_word)
 
     def _delete(self):
         self._input += self._delete_symbol

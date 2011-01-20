@@ -88,12 +88,12 @@ class View(VisionEggView):
         self._center_text.set_all(on=True)
 
     def eeg_letter(self, text, symbol, update_word=True):
-        #self._trigger(marker.FEEDBACK_START)
+        self._trigger(marker.FEEDBACK_START, wait=True)
         colors = map(self._symbol_color, text)
         self.symbol(symbol, self._symbol_color(symbol))
         self.present(self._present_eeg_input_time)
         self._center_text.set_all(on=False)
-        self._trigger(marker.FEEDBACK_END)
+        self._trigger(marker.FEEDBACK_END, wait=True)
         if update_word:
             self._word.set(text=text, target=len(text)-1, colors=colors)
 

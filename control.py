@@ -61,8 +61,8 @@ class Control(VisionEggFeedback, Config):
                                            self._sorted_alphabet)
                                     + [e[0] for e in self.nonalpha_trigger])
         self._trial_name = self._trial_types[self.trial_type - 1]
-        self._setup_trial()
         self._setup_input_handler()
+        self._setup_trial()
         self._setup_experiment()
 
     def _setup_trial(self):
@@ -101,7 +101,7 @@ class Control(VisionEggFeedback, Config):
     def on_control_event(self, data):
         cls = data.get('cl_output', None)
         if cls is not None:
-            self._input_handler.eeg_select(class_no)
+            self._input_handler.eeg_select(cls)
 
 class AlphaBurst(Control):
     pass

@@ -13,6 +13,8 @@ program; if not, see <http://www.gnu.org/licenses/>.
 
 """
 
+import time
+
 TRIG_RUN_START = 252
 TRIG_RUN_END = 253
 TRIG_COUNTDOWN_START = 200
@@ -36,9 +38,10 @@ def eeg_symbol(symbol):
     return burst_symbol(symbol, None, base=TRIG_EEG)
 
 class Triggerer(object):
-    def __init__(self, nonalpha_trigger, trigger):
+    def __init__(self, nonalpha_trigger, trigger, wait=False):
         self._nonalpha_trigger = dict(nonalpha_trigger)
         self._trigger = trigger
+        self._wait = wait
         self._target = ''
         self.symbol('')
 
@@ -59,11 +62,16 @@ class Triggerer(object):
             pass
         else:
             self._trigger(trigger)
+            if self._wait:
+               time.sleep(0.02)
 
 class BurstTriggerer(Triggerer):
     def _symbol_trigger(self):
         return burst_symbol(self._symbol, self._target)
 
 class EEGTriggerer(Triggerer):
+    def __init__(self, nonalpha_trigger, trigger):
+        Triggerer.__init__(self, nonalpha_trigger, trigger, wait=True)
+
     def _symbol_trigger(self):
         return eeg_symbol(self._symbol)

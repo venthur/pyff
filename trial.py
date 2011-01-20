@@ -71,9 +71,9 @@ class Trial(object):
         pass
 
     def run(self, sequences):
-        self._trigger(marker.TRIAL_START)
+        self._trigger(marker.TRIAL_START, wait=True)
         self._run(sequences)
-        self._trigger(marker.TRIAL_END)
+        self._trigger(marker.TRIAL_END, wait=True)
 
     def _run(self, sequences):
         if self._trial_countdown:
@@ -92,7 +92,7 @@ class Trial(object):
         self._current_target = target
         self._triggerer.target(target)
 
-    def evaluate(self, input):
+    def evaluate(self, input_handler):
         pass
 
 class OfflineTrial(Trial):
@@ -137,16 +137,13 @@ class OnlineTrial(Trial):
     def _sequence(self, sequence):
         self._burst(sequence)
 
-class CalibrationTrial(OnlineTrial):
-    pass
-
-class FreeSpellingTrial(OnlineTrial):
+class SpellingTrial(OnlineTrial):
     def __init__(self, *a, **kw):
         OnlineTrial.__init__(self, trial_input=True, *a, **kw)
 
-    def evaluate(self, input):
-        print input._input
+    def evaluate(self, input_handler):
+        input_handler.process_eeg_input()
 
-class CopySpellingTrial(OnlineTrial):
-    def __init__(self, *a, **kw):
-        OnlineTrial.__init__(self, trial_input=True, *a, **kw)
+CalibrationTrial = OnlineTrial
+FreeSpellingTrial = SpellingTrial
+CopySpellingTrial = SpellingTrial
