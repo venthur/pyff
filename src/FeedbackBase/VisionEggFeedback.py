@@ -15,7 +15,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import logging
+import logging, time
 
 import VisionEgg
 import pygame
@@ -102,7 +102,6 @@ class VisionEggFeedback(MainloopFeedback):
 
     def __init_attributes(self):
         """ Setup internal attributes. """
-        self._trigger = self.send_parallel
         self._view = self._create_view()
         self._view.set_trigger_function(self._trigger)
         self._set_iterator_semaphore(Flag())
@@ -133,6 +132,11 @@ class VisionEggFeedback(MainloopFeedback):
                                                      self.print_frames,
                                             self.adapt_times_to_refresh_rate,
                                             self.framecount_stimulus_transition)
+
+    def _trigger(self, trigger, wait=False):
+        self.send_parallel(trigger)
+        if wait:
+            time.sleep(0.03)
 
     def stimulus_sequence(self, prepare, presentation_time, suspendable=True,
                           pre_stimulus_function=None):

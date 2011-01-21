@@ -14,8 +14,6 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, see <http://www.gnu.org/licenses/>.
 """
 
-import logging
-
 from lib import marker
 
 __all__ = ['CalibrationTrial', 'FreeSpellingTrial', 'CopySpellingTrial']
@@ -42,9 +40,9 @@ class Trial(object):
         pass
 
     def run(self, sequences):
-        self._trigger(marker.TRIAL_START)
+        self._trigger(marker.TRIAL_START, wait=True)
         self._run(sequences)
-        self._trigger(marker.TRIAL_END)
+        self._trigger(marker.TRIAL_END, wait=True)
 
     def _run(self, sequences):
         if self._countdown:
@@ -57,18 +55,16 @@ class Trial(object):
     def target(self, target):
         self.current_target = target
 
-    def evaluate(self, input):
+    def evaluate(self, input_handler):
         pass
 
+class SpellingTrial(Trial):
+    def __init__(self, *a, **kw):
+        Trial.__init__(self, trial_input=True, *a, **kw)
+
+    def evaluate(self, input_handler):
+        input_handler.process_eeg_input()
+
 CalibrationTrial = Trial
-
-class FreeSpellingTrial(Trial):
-    def __init__(self, *a, **kw):
-        Trial.__init__(self, trial_input=True, *a, **kw)
-
-    def evaluate(self, input):
-        print input._input
-
-class CopySpellingTrial(Trial):
-    def __init__(self, *a, **kw):
-        Trial.__init__(self, trial_input=True, *a, **kw)
+FreeSpellingTrial = SpellingTrial
+CopySpellingTrial = SpellingTrial

@@ -230,32 +230,33 @@ class VisionEggView(object):
             self.center_word('?')
         self.presentation.run_forever()
         self.presentation.set(quit=False)
+        self.clear_center_word()
 
     def answered(self):
         """ Abort the current presentation (usually the question mark)
-        after subject input.
+        after subject input. For thread safety, the screen shouldn't be
+        changed here.
         """
         self.presentation.set(quit=True)
-        self.clear_center_word()
 
     def show_fixation_cross(self):
         """ Display the pyff parameter 'fixation_cross_symbol' for the
         period of time given by pyff parameter 'fixation_cross_time'.
         """
         self.center_word(self._fixation_cross_symbol)
-        self._trigger(marker.FIXATION_START)
+        self._trigger(marker.FIXATION_START, wait=True)
         self.present(self._fixation_cross_time)
-        self._trigger(marker.FIXATION_END)
+        self._trigger(marker.FIXATION_END, wait=True)
 
     def countdown(self):
         """ Display a countdown according to pyff parameters
         'countdown_start' and 'countdown_symbol_duration'.
         """
-        self._trigger(marker.COUNTDOWN_START)
+        self._trigger(marker.COUNTDOWN_START, wait=True)
         for i in self._iter(reversed(xrange(self._countdown_start + 1))):
             self.center_word(str(i))
             self.present(self._countdown_symbol_duration)
-        self._trigger(marker.COUNTDOWN_END)
+        self._trigger(marker.COUNTDOWN_END, wait=True)
         self.clear_center_word()
 
     def close(self):
