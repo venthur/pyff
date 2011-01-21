@@ -15,7 +15,6 @@ program; if not, see <http://www.gnu.org/licenses/>.
 
 """
 
-from time import sleep
 from os import path
 
 import pygame
@@ -24,8 +23,6 @@ from FeedbackBase.VisionEggFeedback import VisionEggFeedback
 
 from AlphaBurst.config import Config
 from AlphaBurst.view import View
-from AlphaBurst.burst import BurstConstraints
-from AlphaBurst.model.character_sequence import CharacterSequenceFactory
 from AlphaBurst.model.palette import Palette
 from AlphaBurst.util.metadata import datadir
 from AlphaBurst.trial import *
