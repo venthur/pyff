@@ -1,4 +1,4 @@
-__copyright__ = """ Copyright (c) 2010 Torsten Schmits
+__copyright__ = """ Copyright (c) 2010-2011 Torsten Schmits
 
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -28,11 +28,11 @@ class BurstConstraints(object):
 
     def __enter__(self):
         self._fixation_cross()
-        self._trigger(TRIG_BURST_START)
+        self._trigger(TRIG_BURST_START, wait=True)
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self._clear_symbol()
-        self._trigger(TRIG_BURST_END)
+        self._trigger(TRIG_BURST_END, wait=True)
         self._ask()
         sleep(self._sleep_interval)
         return False

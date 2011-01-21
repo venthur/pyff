@@ -90,11 +90,13 @@ CalibrationInputHandler = InputHandler
 
 class SpellingInputHandler(CountInputHandler):
     def __init__(self, control, update_word=False, *a, **kw):
-        self._input = ''
+        self._update_word = update_word
         self._delete_symbol = control.delete_symbol
         self._alphabet = list(control.eeg_alphabet)
-        self._update_word = update_word
         self._allow_keyboard = control.allow_keyboard_input
+        self._input = ''
+        self._symbol = ''
+        self._eeg_input_processed = True
         CountInputHandler.__init__(self, control, *a, **kw)
 
     def keyboard(self, event):
@@ -119,13 +121,16 @@ class SpellingInputHandler(CountInputHandler):
 
     def _set_eeg_input(self, symbol):
         self._symbol = symbol
+        self._eeg_input_processed = False
         self._view.answered()
 
     def process_eeg_input(self):
-        self._triggerer.symbol(self._symbol)
-        self._triggerer()
-        self._view.eeg_letter(self._input, self._symbol,
-                              update_word=self._update_word)
+        if not self._eeg_input_processed:
+            self._triggerer.symbol(self._symbol)
+            self._triggerer()
+            self._view.eeg_letter(self._input, self._symbol,
+                                  update_word=self._update_word)
+            self._eeg_input_processed = True
 
     def _delete(self):
         self._input += self._delete_symbol
