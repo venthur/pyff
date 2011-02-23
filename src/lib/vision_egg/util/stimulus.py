@@ -1,4 +1,4 @@
-__copyright__ = """ Copyright (c) 2010 Torsten Schmits
+__copyright__ = """ Copyright (c) 2010-2011 Torsten Schmits
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -17,9 +17,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 from time import sleep
 from datetime import datetime, timedelta
-import collections, logging, itertools
+import collections, logging, itertools, random
 
-import pygame, VisionEgg
+import VisionEgg
 
 from lib.vision_egg.util.frame_counter import FrameCounter
 
@@ -28,6 +28,59 @@ _frame_duration = 1. / _refresh_rate
 
 def _frames(time):
     return int(round(float(time) * _refresh_rate))
+
+def _is_seq(l):
+    return isinstance(l, collections.Sequence)
+
+class StimulusTime(object):
+    def __init__(self, time, vsync=True):
+        self._vsync = vsync
+        self.set(time)
+
+    def set(self, time):
+        self._time = time
+        self._frames = _frames(self._time)
+        self._adapted = (round(self._frames * _frame_duration, 6) if self._vsync
+                         else self._time)
+
+    @property
+    def time(self):
+        return timedelta(seconds=self._adapted)
+
+    @property
+    def original(self):
+        return self._time
+
+    @property
+    def adapted(self):
+        return self._adapted
+
+    @property
+    def frames(self):
+        return self._frames
+
+    def __call__(self, frames):
+        return self.frames if frames else self.time
+
+class RandomStimulusTime(StimulusTime):
+    def __init__(self, interval, *a, **kw):
+        self._interval = interval
+        StimulusTime.__init__(self, 0, *a, **kw)
+
+    def _resample(self):
+        self.set(random.uniform(*self._interval))
+
+    @property
+    def original(self):
+        return 'random(%s, %s)' % tuple(self._interval)
+
+    @property
+    def adapted(self):
+        return self.original
+
+    def __call__(self, frames):
+        self._resample()
+        return StimulusTime.__call__(self, frames)
 
 class StimulusPainter(object):
     """ Painter for a series of stimuli. """
@@ -101,8 +154,8 @@ class StimulusPainter(object):
 
     @property
     def _next_duration(self):
-        nxt = self._wait_times.next() + self._suspended
-        return nxt
+        nxt = self._wait_times.next()
+        return nxt(self._frame_transition) + self._suspended
 
     @property
     def _suspended(self):
@@ -146,29 +199,30 @@ class StimulusSequenceFactory(object):
         pressed.
         Global parameters from pyff are used as given in __init__.
         """
-        if not isinstance(times, collections.Sequence):
-            times = [times]
-        times = self._adapt_times(times)
-        typ = StimulusIterator if hasattr(prepare, '__iter__') else \
-               StimulusSequence
-        if not self._frame_transition:
-            times = [timedelta(seconds=t) for t in times]
+        times = self._times(times)
+        self._debug_times(times)
+        typ = (StimulusIterator if hasattr(prepare, '__iter__') else
+               StimulusSequence)
         return typ(prepare, times, self._view, self._flag,
                    wait_style_fixed=wait_style_fixed,
                    print_frames=self._print_frames, suspendable=suspendable,
                    pre_stimulus=pre_stimulus,
                    frame_transition=self._frame_transition)
 
-    def _adapt_times(self, times):
-        frames = [_frames(time) for time in times]
-        new_times = [round(t * _frame_duration, 6) for t in frames]
+    def _times(self, times):
+        if not _is_seq(times):
+            times = [times]
+        typ = lambda t: RandomStimulusTime if _is_seq(t) else StimulusTime
+        return [typ(t)(t, vsync=self._vsync_times) for t in times]
+
+    def _debug_times(self, times):
+        original = [t.original for t in times]
+        adapted = [t.adapted for t in times]
+        frames = [t.frames for t in times]
         if self._frame_transition:
             text = ('Adapted stimulus times %s to %s frames (%s)' %
-                    (times, frames, new_times))
-            times = frames
+                    (original, frames, adapted))
             self._logger.debug(text)
         elif self._vsync_times:
-            text = 'Adapted stimulus times %s to %s' % (times, new_times)
-            times = new_times
+            text = 'Adapted stimulus times %s to %s' % (original, adapted)
             self._logger.debug(text)
-        return times

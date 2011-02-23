@@ -151,6 +151,8 @@ class VisionEggFeedback(MainloopFeedback):
         single stimulus, in seconds. Can also be a sequence of values.
         If the prepare function doesn't terminate when the sequence is
         exhausted, it is restarted.
+        If the argument is a sequence, any element that is a sequence
+        again is used as an interval for random duration selection.
         @param suspendable: Whether the sequence should halt when pause
         is pressed.
         @param pre_stimulus_function: If given, it is called exactly
