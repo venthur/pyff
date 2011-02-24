@@ -138,8 +138,8 @@ class VisionEggFeedback(MainloopFeedback):
         if wait:
             time.sleep(0.03)
 
-    def stimulus_sequence(self, prepare, presentation_time, suspendable=True,
-                          pre_stimulus_function=None):
+    def stimulus_sequence(self, prepare, presentation_time=None,
+                          suspendable=True, pre_stimulus_function=None):
         """ Returns an object presenting a series of stimuli.
         @param prepare: This is the core connection between the sequence
         handler and user code. It can either be a generator (so

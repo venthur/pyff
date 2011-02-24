@@ -35,13 +35,15 @@ def _is_seq(l):
 class StimulusTime(object):
     def __init__(self, time, vsync=True):
         self._vsync = vsync
+        self._frames = None
         self.set(time)
 
     def set(self, time):
-        self._time = time
-        self._frames = _frames(self._time)
-        self._adapted = (round(self._frames * _frame_duration, 6) if self._vsync
-                         else self._time)
+        self._adapted = self._time = time
+        if self:
+            self._frames = _frames(self._time)
+            if self._vsync:
+                self._adapted = round(self._frames * _frame_duration, 6)
 
     @property
     def time(self):
@@ -61,6 +63,9 @@ class StimulusTime(object):
 
     def __call__(self, frames):
         return self.frames if frames else self.time
+
+    def __nonzero__(self):
+        return self._time is not None
 
 class RandomStimulusTime(StimulusTime):
     def __init__(self, interval, *a, **kw):
@@ -82,11 +87,15 @@ class RandomStimulusTime(StimulusTime):
         self._resample()
         return StimulusTime.__call__(self, frames)
 
+def _stimulus_time(time, vsync):
+    typ = lambda t: RandomStimulusTime if _is_seq(t) else StimulusTime
+    return typ(time)(time, vsync=vsync)
+
 class StimulusPainter(object):
     """ Painter for a series of stimuli. """
     def __init__(self, prepare, wait, view, flag, wait_style_fixed=False,
                  print_frames=False, suspendable=True, pre_stimulus=None,
-                 frame_transition=False):
+                 frame_transition=False, vsync=True):
         self._prepare_func = prepare
         self._wait_times = itertools.cycle(wait)
         self._view = view
@@ -96,10 +105,12 @@ class StimulusPainter(object):
         self._suspendable = suspendable
         self._pre_stimulus = pre_stimulus
         self._frame_transition = frame_transition
+        self._vsync = vsync
         self._logger = logging.getLogger('StimulusPainter')
         self._frame_counter = FrameCounter(self._flag)
         self._suspended_time = timedelta()
         self._wait = self._frame_wait if frame_transition else self._time_wait
+        self._online_times = []
 
     def run(self):
         if self._print_frames or self._frame_transition:
@@ -154,7 +165,10 @@ class StimulusPainter(object):
 
     @property
     def _next_duration(self):
-        nxt = self._wait_times.next()
+        try:
+            nxt = self._online_times.pop(0) or self._wait_times.next()
+        except StopIteration:
+            raise Exception('No specified stimulus times available!')
         return nxt(self._frame_transition) + self._suspended
 
     @property
@@ -169,9 +183,13 @@ class StimulusSequence(StimulusPainter):
 
 class StimulusIterator(StimulusPainter):
     """ Painter using an iterator. """
+    def __init__(self, *a, **kw):
+        StimulusPainter.__init__(self, *a, **kw)
+
     def _do_prepare(self):
         try:
-            self._prepare_func.next()
+            nxt = self._prepare_func.next()
+            self._online_times.append(_stimulus_time(nxt, self._vsync))
             return True
         except StopIteration:
             return False
@@ -191,29 +209,32 @@ class StimulusSequenceFactory(object):
         self._frame_transition = frame_transition
         self._logger = logging.getLogger('StimulusSequenceFactory')
 
-    def create(self, prepare, times, wait_style_fixed, suspendable=True,
-               pre_stimulus=None):
+    def create(self, prepare, times=None, wait_style_fixed=True,
+               suspendable=True, pre_stimulus=None):
         """ Create a StimulusPainter using the preparation object
         prepare, with given presentation times and wait style.
         If suspendable is True, the sequence halts when on_pause is
         pressed.
         Global parameters from pyff are used as given in __init__.
         """
-        times = self._times(times)
-        self._debug_times(times)
+        if times is None:
+            times = []
+        else:
+            times = self._times(times)
+            self._debug_times(times)
         typ = (StimulusIterator if hasattr(prepare, '__iter__') else
                StimulusSequence)
         return typ(prepare, times, self._view, self._flag,
                    wait_style_fixed=wait_style_fixed,
                    print_frames=self._print_frames, suspendable=suspendable,
                    pre_stimulus=pre_stimulus,
-                   frame_transition=self._frame_transition)
+                   frame_transition=self._frame_transition,
+                   vsync=self._vsync_times)
 
     def _times(self, times):
         if not _is_seq(times):
             times = [times]
-        typ = lambda t: RandomStimulusTime if _is_seq(t) else StimulusTime
-        return [typ(t)(t, vsync=self._vsync_times) for t in times]
+        return [_stimulus_time(t, vsync=self._vsync_times) for t in times]
 
     def _debug_times(self, times):
         original = [t.original for t in times]
