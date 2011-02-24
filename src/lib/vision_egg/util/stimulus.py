@@ -131,7 +131,7 @@ class StimulusPainter(object):
     def _frame_wait(self):
         next_interval = self._next_duration
         while self._flag and self._frame_counter.last_interval < next_interval:
-            sleep(0.001)
+            self._frame_counter.sync()
         if self._print_frames:
             self._logger.debug('Frames after waiting: %d' %
                                self._frame_counter.last_interval)
@@ -158,9 +158,9 @@ class StimulusPainter(object):
         if self._print_frames:
             self._logger.debug('Frames before stimulus change: %d' %
                                self._frame_counter.last_interval)
-            self._frame_counter.lock()
         if self._pre_stimulus is not None:
             self._pre_stimulus()
+        self._frame_counter.lock()
         self._view.update()
 
     @property
