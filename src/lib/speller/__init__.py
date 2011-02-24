@@ -44,6 +44,7 @@ class Speller(object):
         self.countdown_start = 1
         # allow classifier input to be simulated by keyboard
         self.allow_keyboard_input = True
+        self.target_present_time = .1
 
     def update_parameters(self):
         super(Speller, self).update_parameters()

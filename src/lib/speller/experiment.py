@@ -35,6 +35,7 @@ class Experiment(object):
         self._nr_sequences = config.nr_sequences
         self._countdown = config.phrase_countdown
         self._min_dist = config.min_dist
+        self._target_present_time = config.target_present_time
 
     def run(self):
         self._input_handler.start_experiment(self)
@@ -65,6 +66,7 @@ class GuidedExperiment(Experiment):
 
     def trial(self, index, target):
         self._trial.target(target)
+        self._view.present(self._target_present_time)
         Experiment.trial(self)
         if self._flag:
             self._view.next_target()
