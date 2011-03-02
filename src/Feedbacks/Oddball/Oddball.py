@@ -1,9 +1,5 @@
 #!/usr/bin/env python
 
-# Q: - several standards and/or deviants (probabilities? e.g. std_prob = [0.2 0.5 0.3])
-#    - option give several markers
-#    - constraints (min. x standards between deviants)
-
 
 # ODDBALL BASE CLASS from which all the subclasses inherit.
 #
@@ -53,23 +49,22 @@ from scipy import *
 import pygame
 
 from FeedbackBase.MainloopFeedback import MainloopFeedback
+from lib import marker
 
 class Oddball(MainloopFeedback):
     
-    RUN_START, RUN_END = 252,253
-    COUNTDOWN_START, COUNTDOWN_END = 40,41
     STANDARD, DEVIANT = list(),list()    
     # standards have markers 10,11,12,... ; deviants 30,31,32,... (cf. get_stimuli())
     # if self.group_stim_markers==True, then there exist only two markers, one for
     # group standard (10), and one for group deviant (20)
     RESP_STD, RESP_DEV = 1,2
-    SHORTPAUSE_START, SHORTPAUSE_END = 249, 250
     
     def init(self):        
         self.screen_pos = [100, 100, 640, 480]
+        self.fullscreen = False
         self.FPS = 40
-        self.nStim = 100
-        self.nStim_per_block = 50        
+        self.nStim = 10
+        self.nStim_per_block = 5        
         self.dev_perc = 0.1        
         self.countdown_from = 2
         self.show_standards = True
@@ -196,7 +191,7 @@ class Oddball(MainloopFeedback):
         Sets up all the necessary components (e.g. pygame, stimuli, graphics) 
         to run the experiment.
         """
-        self.send_parallel(self.RUN_START)
+        self.send_parallel(marker.RUN_START)
         self.init_pygame()
         self.get_stimuli()
         self.error_checking()
@@ -209,7 +204,7 @@ class Oddball(MainloopFeedback):
         """
         Sends end marker to parallel port and quits pygame.
         """
-        self.send_parallel(self.RUN_END)
+        self.send_parallel(marker.RUN_END)
         pygame.quit()        
 
 
@@ -376,7 +371,7 @@ class Oddball(MainloopFeedback):
         One tick of the short pause loop.
         """
         if self.shortpauseElapsed == 0:
-            self.send_parallel(self.SHORTPAUSE_START)
+            self.send_parallel(marker.PAUSE_START)
         
         self.shortpauseElapsed += self.elapsed
         
@@ -384,7 +379,7 @@ class Oddball(MainloopFeedback):
             self.shortpause = False
             self.shortpauseElapsed = 0
             self.countdown = True
-            self.send_parallel(self.SHORTPAUSE_END)
+            self.send_parallel(marker.PAUSE_END)
             return
         
         self.do_print("Short Break...", self.fontColor, self.size / 10)
@@ -396,7 +391,7 @@ class Oddball(MainloopFeedback):
         """        
         # start countdown
         if self.countdownElapsed == 0:
-            self.send_parallel(self.COUNTDOWN_START)
+            self.send_parallel(marker.COUNTDOWN_START)
             self.draw_initial()
             # initialize stimulus sequence for the next block according to the deviant probability
             n = min(self.nStim_per_block,self.nStim)
@@ -406,7 +401,7 @@ class Oddball(MainloopFeedback):
                
         # stop countdown
         if self.countdownElapsed >= (self.countdown_from) * 1000:
-            self.send_parallel(self.COUNTDOWN_END)
+            self.send_parallel(marker.COUNTDOWN_END)
             self.countdown = False
             self.countdownElapsed = 0
             self.beforestim = True               
@@ -515,7 +510,10 @@ class Oddball(MainloopFeedback):
         os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (self.screen_pos[0], self.screen_pos[1])        
         pygame.init()
         pygame.display.set_caption('Oddball')
-        self.screen = pygame.display.set_mode((self.screen_pos[2], self.screen_pos[3]), pygame.RESIZABLE)
+        if self.fullscreen:
+            self.screen = pygame.display.set_mode((self.screen_pos[2], self.screen_pos[3]), pygame.FULLSCREEN)
+        else:
+            self.screen = pygame.display.set_mode((self.screen_pos[2], self.screen_pos[3]), pygame.RESIZABLE)
         self.clock = pygame.time.Clock()
 
     def contrained_oddball_sequence(self, N, dev_perc, dd_dist=0):    
