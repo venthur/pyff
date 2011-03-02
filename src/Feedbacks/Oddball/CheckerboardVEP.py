@@ -31,7 +31,7 @@ class CheckerboardVEP(VisualOddball.VisualOddball):
         super(CheckerboardVEP,self).init()
         self.dev_perc = 0.5
         self.nStim = 40
-        self.nStim_per_block = 100   # number of stimuli until a pause
+        self.nStim_per_block = 20   # number of stimuli until a pause
         self.dd_dist = 1
         self.squaresPerSide = 6
         self.response = 'none'
