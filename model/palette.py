@@ -1,4 +1,4 @@
-__copyright__ = """ Copyright (c) 2010 Torsten Schmits
+__copyright__ = """ Copyright (c) 2010-2011 Torsten Schmits
 
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -44,7 +44,7 @@ class Palette(object):
         """
         if isinstance(color, list):
             return map(self, color)
-        elif isinstance(color, (str, unicode)):
+        elif isinstance(color, basestring):
             return self.symbol_color(color) if len(color) == 1 else \
                    Color(color).normalize()
         elif isinstance(color, int):
