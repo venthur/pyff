@@ -68,32 +68,30 @@ class VisualOddballVE(VisionEggFeedback):
     
     
     def init_parameters(self):
-        print "in init"
         
-        #self.geometry = [100, 100, 800, 550]
-        self.center = [self.geometry[2]/2, self.geometry[3]/2]        
+        #self.geometry = [100, 100, 800, 550]      
         self.nTrials = 16
         self.nTrials_per_block = 8   
         self.dev_perc = 0.25        
         self.countdown_start = 2
         self.show_standards = True
-        self.show_fixation_cross = False
+        self.show_fixation_cross = True
         self.give_feedback = True   # will be ignored if self.response=='none'
         self.group_stim_markers = False
         self.dd_dist = 0    # no constraint if deviant-deviant distance is 0 (cf. constraint_stim_sequence() )            
         
         self.DIR_DEV = 'C:\img_oddball\dev'
         self.DIR_STD= 'C:\img_oddball\std'
-        self.logfilename = 'C:\img_oddball\log.txt'
+        self.logfilename = ''
 #        stimuli_opts = ['load', 'predefined']
 #        self.stimuli = stimuli_opts[1]
         
         # response options        
-        self.eob_response = True     # type in e.g. number of deviants after each block?   
+        self.eob_response = False     # type in e.g. number of deviants after each block?   
         response_opts = ['none', 'dev_only', 'both'] # none: subject should not press a key
                                                      # dev_only: subject should press only for deviants
                                                      # both: subject response for both stds and devs
-        self.response = response_opts[0]
+        self.response = response_opts[2]
         self.rsp_key_dev = 'f'
         self.rsp_key_std = 'j'        
         self.hitstr = 'Hit'
@@ -105,17 +103,15 @@ class VisualOddballVE(VisionEggFeedback):
         self.prestim_ival = 1.
         #self.fixation_cross_time = self.prestim_ival
         self.stim_duration = 1.
-        self.responsetime_duration = 0 # 2.
+        self.responsetime_duration = 2.
         self.feedback_duration = 2.      
-        
-        #self.gameover_duration = 3000
-        #self.shortpauseDuration = 10000        
+   
         
         self.VEstimuli = True
         if self.VEstimuli:
             self.std, self.dev = self.define_stimuli() 
         else:
-            self.std, self.dev = self.load_stimuli()   
+            self.std, self.dev = self.load_stimuli()           
             
         self.bg_color = 'grey'
         
@@ -124,7 +120,7 @@ class VisualOddballVE(VisionEggFeedback):
         
         
     def run(self):
-        
+
         nBlocks = int(ceil(1.0*self.nTrials/self.nTrials_per_block))
         self.create_log() 
          
@@ -137,10 +133,8 @@ class VisualOddballVE(VisionEggFeedback):
                 self.create_stim_seq()
                 
             # Init image and text object            
-            self.image = self.add_image_stimulus(position=self.center)
-            self.text = self.add_text_stimulus(position=(self.geometry[2]/2,self.geometry[3]/2),on=False) #self.center)
-            #self.im = self.add_image('C:\img_oddball\dev\deviant.jpg',anchor='center',position=self.center)
-            #self.text = self.add_text('',position=self.center,on=False)
+            self.image = self.add_image_stimulus(position=[self.geometry[2]/2, self.geometry[3]/2])
+            self.text = self.add_text_stimulus(position=(self.geometry[2]/2,self.geometry[3]/2),on=False) #[self.geometry[2]/2, self.geometry[3]/2])
     
             # This feedback uses a generator function for controlling the stimulus
             # transition. Note that the function has to be called before passing
@@ -149,13 +143,11 @@ class VisualOddballVE(VisionEggFeedback):
             # Pass the transition function and the pre-stimulus display durations
             # to the stimulus sequence factory. 
             if self.give_feedback:
-                s = self.stimulus_sequence(generator, [self.prestim_ival, 0.001, self.stim_duration, self.responsetime_duration, 0.01, self.feedback_duration])  
+                s = self.stimulus_sequence(generator, [self.prestim_ival, self.stim_duration, self.responsetime_duration, 0.01, self.feedback_duration])  
             else:
-                s = self.stimulus_sequence(generator, [self.prestim_ival, 0.001, self.stim_duration, self.responsetime_duration, 0.01])
+                s = self.stimulus_sequence(generator, [self.prestim_ival, self.stim_duration, self.responsetime_duration, 0.01])
             
             self._view.countdown()
-            
-            #self._view.present_center_word('test',1)
             
             # Start the stimulus sequence
             s.run()
@@ -189,28 +181,27 @@ class VisualOddballVE(VisionEggFeedback):
         for n, stim in enumerate(self.stim_pres_seq):                      
             
             # Init Trial
-            #self.send_parallel(marker.TRIAL_START)
             self.responded = False
             if self.stim_seq[n] == 1:
                 self.isdeviant = True
             else:
                 self.isdeviant = False            
                 
-            # Prestimulus interval            
+            # Prestimulus interval           
             if self.show_fixation_cross:
-                self._trigger(marker.FIXATION_START)
+                self._trigger(marker.FIXATION_START, wait=True)
                 self.text.set(text='+',on=True)            
             yield
             if self.show_fixation_cross:
-                self.text.set(text='',on=False)            
-                # self._trigger(marker.FIXATION_END)
-            yield
+                self.text.set(text='',on=False)  
+                self._view.update()          
+
             # Present Stimulus            
             self.response = True
             if self.isdeviant:
-                self._trigger(self.DEVIANT)
+                self._trigger(self.DEVIANT, wait=False)
             else:
-                self._trigger(self.STANDARD)
+                self._trigger(self.STANDARD, wait=False)
             if self.show_standards or self.isdeviant: 
                 if self.VEstimuli:       
                     self.set_stimuli(stim)
@@ -226,19 +217,18 @@ class VisualOddballVE(VisionEggFeedback):
                 self.image.set(on=False)
             yield            
             yield
+            
             self.response = False
             
-            # Give Feedback            
+            # Give Feedback about Response            
             if self.give_feedback:
-                self._trigger(marker.FEEDBACK_START)
                 if not self.responded:
                     self.text.set(text=self.norespstr,on=True)
                 else:
                     self.text.set(on=True)
                 yield
-                self._trigger(marker.FEEDBACK_END)
-            self.text.set(on=False)
-            #self.send_parallel(marker.TRIAL_END)
+                self.text.set(on=False)
+            self._view.update()   
     
     
     def create_stim_seq(self,nTrials=None):
@@ -321,9 +311,9 @@ class VisualOddballVE(VisionEggFeedback):
         Creates standard and deviant stimuli.          
         """        
         # The stimului. This can be anything compatible with VisionEgg
-        dev = FilledCircle(color=(0,1.0,0), position=self.center, radius=100)
-        std1 = Target2D(color=(0,0,1.0), position=self.center, size=(200,200))
-        std2=std1
+        dev = FilledCircle(color=(0,1.0,0), position=[self.geometry[2]/2, self.geometry[3]/2], radius=100)
+        std1 = Target2D(color=(0,0,1.0), position=[self.geometry[2]/2, self.geometry[3]/2], size=(200,200))
+        std2= Target2D(color=(1.0,0,0), position=[self.geometry[2]/2, self.geometry[3]/2], size=(200,200))
         #dev = Text(text='Deviant', font_size=72, position=(300, 200), anchor='center')
         #std1 = Text(text='Standard I', font_size=72, position=(300, 200), anchor='center')
         #std2 = Text(text='Standard II', font_size=72, position=(300, 200), anchor='center')        

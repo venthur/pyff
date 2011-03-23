@@ -46,7 +46,8 @@ class VisualOddballVE_CNV(VisualOddballVE.VisualOddballVE):
     
     #RUN_START, RUN_END = 252,253
     #COUNTDOWN_START, COUNTDOWN_END = 40,41
-    STANDARD, DEVIANT = list(),list()    
+    S1, S2 = 10, 11
+    IVAL_S1_S2, IVAL_S2_S1 = 20, 21 
     # standards have markers 10,11,12,... ; deviants 30,31,32,... (cf. get_stimuli())
     # if self.group_stim_markers==True, then there exist only two markers, one for
     # group standard (10), and one for group deviant (20)
@@ -128,7 +129,7 @@ class VisualOddballVE_CNV(VisualOddballVE.VisualOddballVE):
             
             # User Input
             self.eob_responded = False
-            self.text.set(text='Type in #Watermarks',on=True)
+            self.text.set(text='Type in #Deviants',on=True)
             while not self.eob_responded:
                 self._view.update()           
             self.text.set(text='',on=False)
@@ -138,7 +139,9 @@ class VisualOddballVE_CNV(VisualOddballVE.VisualOddballVE):
             if n == nBlocks-1:
                 self._view.present_center_word('End of Session', 10)
             else:
+                self._trigger(marker.PAUSE_START, wait=True)
                 self._view.present_center_word('Short Break', 10)
+                self._trigger(marker.PAUSE_END, wait=True)
         
         # Close logfile and exit the feedback main loop
         self.close_log()
@@ -155,17 +158,21 @@ class VisualOddballVE_CNV(VisualOddballVE.VisualOddballVE):
         for n in range(0,len(self.stim_pres_seq),2):                      
             # s1-stimulus presentation                          
             self.image.set_file(self.stim_pres_seq[n])#, texture=VisionEgg.Textures.Texture(stim))
+            self._trigger(self.S1, wait=True)
             self.image.set(on=True)
             yield 
             # s1-s2 interstimulus interval
             self.image.set(on=False)
+            self._trigger(self.IVAL_S1_S2, wait=True)
             yield 
             # s2-stimulus presentation              
             self.image.set_file(self.stim_pres_seq[n+1])
             self.image.set(on=True)
+            self._trigger(self.S2, wait=True)
             yield 
             # s2-s1 interstimulus interval
             self.image.set(on=False)
+            self._trigger(self.IVAL_S2_S1, wait=True)
             yield 
     
     
