@@ -1,4 +1,4 @@
-__copyright__ = """ Copyright (c) 2010 Torsten Schmits
+__copyright__ = """ Copyright (c) 2010-2011 Torsten Schmits
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -36,8 +36,11 @@ class FrameCounter(threading.Thread):
             logging.getLogger('FrameCounter').error(unicode(e))
 
     def step(self):
-        pygame.display.flip()
+        self.sync()
         self.frame += 1
+
+    def sync(self):
+        pygame.display.flip()
 
     def lock(self):
         self._locked_frame = self.frame

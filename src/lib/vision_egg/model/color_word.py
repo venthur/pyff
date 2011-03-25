@@ -1,4 +1,4 @@
-__copyright__ = """ Copyright (c) 2010 Torsten Schmits
+__copyright__ = """ Copyright (c) 2010-2011 Torsten Schmits
 
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -54,7 +54,7 @@ class ColorWord(TextList):
         if isinstance(target, int) and 0 <= target <= len(self.text):
             self._target = self.text[target]
             self._target_index = target
-        elif isinstance(target, (str, unicode)) and target in self.text:
+        elif isinstance(target, basestring) and target in self.text:
             self._target = target
             self._target_index = self.text.index(target)
         else:

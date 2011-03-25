@@ -23,6 +23,7 @@ from lib.speller.experiment import *
 class Speller(object):
     __stimulus = None
     __sequences = None
+    __stim_gen = None
 
     def __init__(self):
         self.__init_attributes()
@@ -44,6 +45,7 @@ class Speller(object):
         self.countdown_start = 1
         # allow classifier input to be simulated by keyboard
         self.allow_keyboard_input = True
+        self.target_present_time = .1
 
     def update_parameters(self):
         super(Speller, self).update_parameters()
@@ -54,6 +56,14 @@ class Speller(object):
     def stimulus(self, f):
         self.__stimulus = f
         return f
+
+    @classmethod
+    def stimulus_generator(self, **kw):
+        def decorate(f):
+            self.__stim_gen = f
+            return f
+        self.__stim_gen_kw = kw
+        return decorate
 
     @classmethod
     def sequences(self, f):
@@ -71,6 +81,9 @@ class Speller(object):
                                        self)
         if self.__stimulus:
             self._trial._sequence = getattr(self, self.__stimulus.__name__)
+        elif self.__stim_gen:
+            self._trial._sequence = self._stimulus_generator
+            self.__stimulus_generator = getattr(self, self.__stim_gen.__name__)
 
     def _setup_input_handler(self):
         input_handler_type = self._trial_name + 'InputHandler'
@@ -103,3 +116,7 @@ class Speller(object):
         cls = data.get('cl_output', None)
         if cls is not None:
             self._input_handler.eeg_select(cls)
+
+    def _stimulus_generator(self, *a, **kw):
+        self.stimulus_sequence(self.__stimulus_generator(*a, **kw),
+                               **self.__stim_gen_kw).run()
