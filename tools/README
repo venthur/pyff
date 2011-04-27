@@ -1,10 +1,20 @@
-inpout32.dll
-============
+
+Windows 32 Bit (inpout32.dll)
+=============================
 
 Use this file to use the parallel port on Windows. Copy this file to
 Windows\System, a restart is not needed.
 
-Sources and Binaries are from
+Sources and Binaries are from:
 http://logix4u.net/Legacy_Ports/Parallel_Port/Inpout32.dll_for_Windows_98/2000/NT/XP.html
 
+
+Windows 64 Bit (x64)
+====================
+
+Apparently you have to execute the installer in x64/Win32/InstallDriver.exe
+with administrator rights and that's it.
+
+Binaries are from:
+http://www.highrez.co.uk/Downloads/InpOut32/default.htm
 
