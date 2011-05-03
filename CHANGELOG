@@ -1,3 +1,17 @@
+Changes in 2011.4
+=================
+
+  * Support for VisionEgg feedbacks
+  * Added TOBI interface
+  * Added support for commands in the XML protocol
+  * Added support for Unicode in the XML protocol
+  * Added support for load/save of feedback variables
+  * Major GUI overhaul
+  * Added Pyff logo
+  * Added support for logging server
+  * Added parallel port driver for Windows 64 Bit
+
+
 Changes in 2010.7
 =================
 
