@@ -34,60 +34,66 @@ class CheckerboardVEP(VisualOddball.VisualOddball):
         self.nStim_per_block = 20   # number of stimuli until a pause
         self.dd_dist = 1
         self.squaresPerSide = 6
+        self.squaresize = 20
+        self.fixdotsize = 10
         self.response = 'none'
         self.give_feedback = False
         self.feedback_duration, self.responsetime_duration = 0,0
         self.stim_duration = 1500      
         self.beforestim_ival = [0,0]
         self.backgroundColor = (50,50,50)
-    
+        self.offset = (50,-50)
+
     def load_stimulus(self,filename):
         """
         Loads a stimulus from a file.
         """
         raise Exception('Not implemented yet')
-        
-        
+
+
     def define_stimuli(self):
         """
-        Creates standard and deviant stimuli.          
-        """        
-        size = (self.screen_pos[-1]*2/3,self.screen_pos[-1]*2/3)
+        Creates standard and deviant stimuli.
+        """
+        #size = (self.screen_pos[-1]*2/3,self.screen_pos[-1]*2/3)
+        size = (self.squaresPerSide*self.squaresize,self.squaresPerSide*self.squaresize)
         cb1 = pygame.Surface(size)
         cb2 = pygame.Surface(size)
         white = (255,255,255)
         black = (1,1,1)
         red = (200,0,0)
         colors = [white,black]
-        squaresize = size[1]*1.0/self.squaresPerSide
+        #squaresize = size[1]*1.0/self.squaresPerSide
         sign = 1
         for y in range(self.squaresPerSide):
             for x in range(self.squaresPerSide):
-                rect = (x*squaresize,y*squaresize,squaresize,squaresize)
+                rect = (x*self.squaresize,y*self.squaresize,self.squaresize,self.squaresize)
                 if not(self.squaresPerSide%2==0 and x==0):
                     sign = -sign
                 pygame.draw.rect(cb1, colors[(sign*1+1)/2], rect)
                 pygame.draw.rect(cb2, colors[(sign*-1+1)/2], rect)                
-        pygame.draw.circle(cb1, red, (size[0]/2, size[0]/2), size[0]/40)
-        pygame.draw.circle(cb2, red, (size[0]/2, size[0]/2), size[0]/40)
+        pygame.draw.circle(cb1, red, (size[0]/2, size[0]/2), self.fixdotsize)
+        pygame.draw.circle(cb2, red, (size[0]/2, size[0]/2), self.fixdotsize)
         return [cb1], [cb2]
-        
+
     def start_stimulus(self, stim):
         """
         Draw the stimulus onto the screen.
-        """           
-        stimRect = stim.get_rect(center=self.screen.get_rect().center)     
+        """
+        middle = self.screen.get_rect().center
+        c = (self.offset[0]+middle[0],self.offset[1]+middle[1])
+        stimRect = stim.get_rect(center=c)
         self.screen.blit(stim, stimRect)
         pygame.display.update()
 
     def stop_stimulus(self, stim):
         """
         Remove the stimulus from the screen.
-        """           
+        """
         self.draw_initial()
-                      
+
 if __name__ == '__main__':
     cbvep = CheckerboardVEP()
     cbvep.on_init()
     cbvep.on_play()
-            
+
