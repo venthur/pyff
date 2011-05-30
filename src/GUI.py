@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # GUI.py -
-# Copyright (C) 2007-2009  Bastian Venthur
+# Copyright (C) 2007-2011  Bastian Venthur
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
