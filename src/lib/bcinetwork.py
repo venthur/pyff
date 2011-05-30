@@ -91,6 +91,11 @@ class BciNetwork(object):
         signal = bcixml.BciSignal(None, [(bcixml.CMD_QUIT, dict())], bcixml.INTERACTION_SIGNAL)
         self.send_signal(signal)
 
+    def quit_feedback_controller(self):
+        """Send 'quit_feedback_controller' to Feedback Controller."""
+        signal = bcixml.BciSignal(None, [(bcixml.CMD_QUIT_FEEDBACK_CONTROLLER, dict())], bcixml.INTERACTION_SIGNAL)
+        self.send_signal(signal)
+
     def get_variables(self):
         """Get variables (name, type and value) from currently running Feedback."""
         signal = bcixml.BciSignal(None, [(bcixml.CMD_GET_VARIABLES, dict())], bcixml.INTERACTION_SIGNAL)

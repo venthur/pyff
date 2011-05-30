@@ -1,6 +1,8 @@
 Changes in ???
 ==============
 
+  * Added CMD_QUIT_FEEDBACK_CONTROLLER to bcixml to allow remote killing of the
+    Feedback Controller
   * Automatic Subclass finding finally removed
   * Replaced all print-stacktraces with logging.exception
   * Shutdown logger properly to flush all buffers before exiting

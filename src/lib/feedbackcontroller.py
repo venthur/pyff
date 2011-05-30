@@ -104,6 +104,8 @@ class FeedbackController(object):
             # Put it in the pipe and hope that the reply will appear on our end.
             self.send_to_feedback(signal)
             return
+        elif cmd == bcixml.CMD_QUIT_FEEDBACK_CONTROLLER:
+            self.stop()
 
         if cmd == bcixml.CMD_QUIT:
             self.send_to_feedback(signal)
