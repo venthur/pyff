@@ -112,6 +112,10 @@ the Free Software Foundation; either version 2 of the License, or
         port = int(options.port, 16)
     try:
         fc = FeedbackController(plugin, fbpath, port, options.protocol)
+    except:
+        logging.exception("Could not start Feedback Controller, is another instance already running?")
+        return
+    try:
         fc.start()
     except (KeyboardInterrupt, SystemExit):
         logging.debug("Caught keyboard interrupt or system exit; quitting")
