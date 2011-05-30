@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # FeedbackController.py -
-# Copyright (C) 2007-2010  Bastian Venthur
+# Copyright (C) 2007-2011  Bastian Venthur
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -37,7 +37,7 @@ def main():
     description = """Feedback Controller"""
     usage = "%prog [Options]"
     version = """
-Copyright (C) 2007-2010 Bastian Venthur <venthur at cs tu-berlin de>
+Copyright (C) 2007-2011 Bastian Venthur <bastian.venthur at tu-berlin de>
 
 Homepage: http://bbci.de/pyff
 
