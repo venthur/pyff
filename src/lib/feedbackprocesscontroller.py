@@ -63,8 +63,8 @@ class FeedbackProcess(Process):
                 feedback.inject(self.fbplugin)
             except:
                 feedback.logger.exception("Injecting FB-Plugin caused an exception:")
-        
-        
+
+
         # Start the Feedbacks IPC Channel
         asyncore.socket_map.clear()
         conn = ipc.get_feedbackcontroller_connection()
@@ -84,7 +84,7 @@ class FeedbackProcess(Process):
 
 class FeedbackProcessController(object):
     """Takes care of starting and stopping of Feedback Processes."""
-    
+
     def __init__(self, plugindirs, baseclass, timeout):
         """Initialize the Feedback Process Controller."""
         # Where are we: 
@@ -96,8 +96,8 @@ class FeedbackProcessController(object):
 
         self.pluginController.find_plugins()
         self.pluginController.unload_plugin()
-        
-    
+
+
     def start_feedback(self, name, port, fbplugin):
         """Starts the given Feedback in a new process."""
         self.logger.debug("Starting new Process...",)
@@ -114,10 +114,10 @@ class FeedbackProcessController(object):
         self.logger.debug("IPC channel ready.")
         self.logger.debug("Done starting process.")
 
-    
+
     def stop_feedback(self):
         """Stops the current Process.
-        
+
         First it tries to join the process with the given timeout, if that fails
         it terminates the process the hard way.
         """
@@ -125,7 +125,7 @@ class FeedbackProcessController(object):
         if not self.currentProc:
             self.logger.debug("No process running, nothing to do.")
             return
-        
+
         self.currentProc.join(self.timeout)
         if self.currentProc.is_alive():
             self.logger.warning("Process still alive, terminating it...",)
@@ -133,12 +133,12 @@ class FeedbackProcessController(object):
             self.currentProc.join(self.timeout)
             if self.currentProc.is_alive():
                 self.logger.error("Process still alive, giving up.")
-        
+
         del(self.currentProc)
         self.currentProc = None
         self.logger.debug("Done stopping process.")
-        
-    
+
+
     def get_feedbacks(self):
         """Return a list of available Feedbacks."""
         return self.pluginController.availablePlugins.keys()
