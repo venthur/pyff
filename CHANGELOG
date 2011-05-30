@@ -1,6 +1,7 @@
 Changes in ???
 ==============
 
+  * Replaced all print-stacktraces with logging.exception
   * Shutdown logger properly to flush all buffers before exiting
 
 Changes in 2011.5

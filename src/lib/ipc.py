@@ -27,7 +27,6 @@ import asyncore
 import asynchat
 import socket
 import cPickle as pickle
-import traceback
 import logging
 
 import bcixml
@@ -135,9 +134,8 @@ class IPCChannel(asynchat.async_chat):
         try:
             self.handle_message(ipcmessage)
         except:
-            print traceback.print_exc()
-            
-        
+            self.logger.exception("Handling an ICP message caused an exception:")
+
     def send_message(self, message):
         """Send message to peer."""
         dump = pickle.dumps(message, protocol=pickle.HIGHEST_PROTOCOL)

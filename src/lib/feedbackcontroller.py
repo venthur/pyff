@@ -18,7 +18,6 @@
 
 import socket
 import logging
-import traceback
 import sys
 import asyncore
 
@@ -79,8 +78,7 @@ class FeedbackController(object):
             else:
                 self.logger.warning("Unknown signal type, ignoring it. (%s)" % str(signal.type))
         except:
-            self.logger.error("Handling is or cs caused an exception.")
-            self.logger.error(traceback.format_exc())
+            self.logger.exception("Handling IS or CS caused an exception.")
 
 
     def _handle_cs(self, signal):
@@ -123,8 +121,7 @@ class FeedbackController(object):
         try:
             self.ipcchannel.send_message(signal)
         except:
-            self.logger.warning("Couldn't send data to Feedback.")
-            self.logger.warning(traceback.format_exc())
+            self.logger.exception("Couldn't send data to Feedback.")
 
         
     def send_to_peer(self, signal):
@@ -168,5 +165,5 @@ class UDPDispatcher(asyncore.dispatcher):
             signal.peeraddr = address
             self.fc.handle_signal(signal)
         except:
-            self.fc.logger.warning(traceback.format_exc())
+            self.fc.logger.exception("Handling incoming signal caused an exception:")
         
