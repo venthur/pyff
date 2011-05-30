@@ -46,7 +46,7 @@ class FeedbackController(object):
         self.fbplugin = plugin
         fbdirs = ["Feedbacks"]
         if fbpath:
-            fbdirs.append(fbpath)
+            fbdirs.extend(fbpath)
         self.fbProcCtrl = FeedbackProcessController(fbdirs, Feedback, 1)
         self.fc_data = {}
 

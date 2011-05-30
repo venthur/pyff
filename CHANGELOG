@@ -1,6 +1,8 @@
 Changes in ???
 ==============
 
+  * -a/--addition-feedback-path can be used several times to add more than one 
+    extra path
   * Added CMD_QUIT_FEEDBACK_CONTROLLER to bcixml to allow remote killing of the
     Feedback Controller
   * Closing the GUI also closes the Feedback Controller now
