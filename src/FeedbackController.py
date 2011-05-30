@@ -120,12 +120,17 @@ the Free Software Foundation; either version 2 of the License, or
         logging.error("Caught an exception, quitting FeedbackController.")
         print traceback.format_exc()
     finally:
+        print
         print "Stopping FeedbackController...",
         fc.stop()
-        if guiproc:
-            guiproc.terminate()
         print "Done."
-
+        if guiproc:
+            print "Stopping GUI...",
+            guiproc.terminate()
+            print "Done."
+        print "Stopping logging facilities...",
+        logging.shutdown()
+        print "Done."
 
 
 if __name__ == '__main__':

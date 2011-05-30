@@ -1,3 +1,8 @@
+Changes in ???
+==============
+
+  * Shutdown logger properly to flush all buffers before exiting
+
 Changes in 2011.5
 =================
 
