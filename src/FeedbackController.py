@@ -25,7 +25,6 @@ import logging
 import logging.handlers
 from optparse import OptionParser
 from multiprocessing import Process
-import traceback
 
 import GUI
 from lib.feedbackcontroller import FeedbackController
@@ -117,8 +116,7 @@ the Free Software Foundation; either version 2 of the License, or
     except (KeyboardInterrupt, SystemExit):
         logging.debug("Caught keyboard interrupt or system exit; quitting")
     except:
-        logging.error("Caught an exception, quitting FeedbackController.")
-        print traceback.format_exc()
+        logging.exception("Caught an exception, quitting FeedbackController.")
     finally:
         print
         print "Stopping FeedbackController...",

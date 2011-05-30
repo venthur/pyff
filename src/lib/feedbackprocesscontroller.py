@@ -19,7 +19,6 @@
 from threading import Thread
 import logging
 import asyncore
-import traceback
 from multiprocessing import Process, Event
 
 from lib.PluginController import PluginController
@@ -50,6 +49,7 @@ class FeedbackProcess(Process):
             fbClass = lib.PluginController.import_module_and_get_class(self.modname, self.classname)
         except:
             # Loading the class somehow failed.
+            logging.exception("Loading the module/class failed, this might help to track down the problem:")
             self.ipcReady.set()
             return
         # Re-initialize logger for this process
@@ -62,7 +62,7 @@ class FeedbackProcess(Process):
             try:
                 feedback.inject(self.fbplugin)
             except:
-                feedback.logger.error(str(traceback.format_exc()))
+                feedback.logger.exception("Injecting FB-Plugin caused an exception:")
         
         
         # Start the Feedbacks IPC Channel

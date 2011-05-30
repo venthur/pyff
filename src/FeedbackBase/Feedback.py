@@ -27,7 +27,6 @@ import datetime
 import sys
 import cPickle as pickle
 from threading import Event, Timer
-import traceback
 import socket
 import json
 
@@ -414,8 +413,7 @@ class Feedback(object):
                 # that the pipe does not run full, otherwise the feedback
                 # controller freezes on the last pipe[foo].send()
                 # So let's just terminate the feedback process.
-                self.logger.error("on_play threw an exception:")
-                self.logger.error(traceback.format_exc())
+                self.logger.exception("on_play threw an exception:")
                 return
             self._playEvent.clear()
             self.logger.debug("on_play terminated.")

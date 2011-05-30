@@ -18,21 +18,13 @@
 
 import sys
 import os
-import traceback
 import logging
 
 
 def import_module_and_get_class(modname, classname):
     """Import the module and return modname.classname."""
-    try:
-        mod = __import__(modname, fromlist=[None])
-        return getattr(mod, classname)
-    # FIXME: is this exception usefull? it is at least wrong since it does
-    # throws and import error even if import succeeded
-    except:
-        print traceback.format_exc()
-        raise ImportError("Unable to load class %s from module %s" % (str(classname), str(modname)))
-
+    mod = __import__(modname, fromlist=[None])
+    return getattr(mod, classname)
 
 
 class PluginController(object):
@@ -78,7 +70,7 @@ class PluginController(object):
             self.logger.debug("... is subclass: %s." % str(name))
             return name, module
         except:
-            self.logger.debug(traceback.format_exc())
+            self.logger.exception("Couldn't load Module or Class, maybe this info helps to track down the problem:")
             raise ImportError("Invalid Plugin")
 
 
@@ -135,7 +127,8 @@ class PluginController(object):
             fbdict[full_path_to_class[-1]] = ".".join(full_path_to_class[:-1])
         return fbdict
 
-        
+
+    # FIXME: this method is not called from anywhere!
     def load_plugin(self, name):
         """Loads the given plugin and unloads possibly sooner loaded plugins."""
         if self.oldModules:
