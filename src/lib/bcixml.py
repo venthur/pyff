@@ -67,6 +67,7 @@ CMD_SEND_INIT = 'sendinit'
 CMD_GET_VARIABLES = 'getvariables'
 CMD_SAVE_VARIABLES = 'savevariables'
 CMD_LOAD_VARIABLES = 'loadvariables'
+CMD_QUIT_FEEDBACK_CONTROLLER = 'quitfeedbackcontroller'
 
 
 class XmlDecoder(object):
