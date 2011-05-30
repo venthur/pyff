@@ -64,7 +64,8 @@ the Free Software Foundation; either version 2 of the License, or
                       help="Optional Plugin, the Feedback Controller should inject into the Feedback.",
                       metavar="MODULE")
     parser.add_option('-a', '--additional-feedback-path', dest='fbpath',
-                      help="Additional path to search for Feedbacks.",
+                      action='append',
+                      help="Additional path to search for Feedbacks. Use this option several times if you want to add more than one path.",
                       metavar="DIR")
     parser.add_option('--port', dest='port',
                       help="Set the Parallel port address to use. Windows only. Should be in Hex (eg: 0x378)",
