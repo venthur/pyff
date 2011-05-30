@@ -1,6 +1,7 @@
 Changes in ???
 ==============
 
+  * Automatic Subclass finding finally removed
   * Replaced all print-stacktraces with logging.exception
   * Shutdown logger properly to flush all buffers before exiting
 

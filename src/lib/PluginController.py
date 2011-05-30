@@ -45,35 +45,6 @@ class PluginController(object):
                 self.logger.warning("Path %s does not exist, ignoring it" % str(dir))
 
 
-    def test_plugin(self, root, filename):
-        """Test if given module contains a valid plugin instance.
-        
-        Returns None if not or (name, modulename) otherwise."""
-        module = root + os.sep + filename
-        if module.lower().endswith(".py"):
-            module = module[:-3]
-        module = os.path.normpath(module)
-        module = module.replace(os.sep, ".")
-        while module.startswith("."):
-            module = module[1:]
-        
-        # try to import
-        self.logger.debug("Testing plugin: %s" % str(module))
-        try:
-            name = module.split(".")[-1]
-            mod = __import__(module, fromlist=[None])
-            self.logger.debug("... loaded module: %s." % str(module))
-            plugin = getattr(mod, name)
-            self.logger.debug("... loaded plugin: %s." % str(name))
-            if not issubclass(plugin, self.baseclass):
-                raise ImportError("Invalid Subclass")
-            self.logger.debug("... is subclass: %s." % str(name))
-            return name, module
-        except:
-            self.logger.exception("Couldn't load Module or Class, maybe this info helps to track down the problem:")
-            raise ImportError("Invalid Plugin")
-
-
     def find_plugins(self):
         """Returns a list of available plugins."""
         for plugindir in self.plugindirs:
@@ -85,19 +56,6 @@ class PluginController(object):
                     for fb, module in fbdict.iteritems():
                         self.availablePlugins[fb] = module
                     continue
-                for filename in files:
-                    if filename.lower().endswith(".py"):
-                        # ok we found a candidate, check if it's a valid feedback
-                        try:
-                            if root.startswith(plugindir):
-                                root = root.replace(plugindir, "", 1)
-                            name, module = self.test_plugin(root, filename)
-                            self.availablePlugins[name] = module
-                            # Show depreciation warning
-                            self.logger.error("Found %s via automatic subclass finding" % module+"."+name)
-                            self.logger.warning("Automatic subclass finding is depreciated. Please create a 'feedbacks.list' in your Feedback's directory and add the absolute import path until the class name.")
-                        except ImportError:
-                            pass
 
 
     def load_feedback_list(self, filename, plugindir):
@@ -128,18 +86,6 @@ class PluginController(object):
         return fbdict
 
 
-    # FIXME: this method is not called from anywhere!
-    def load_plugin(self, name):
-        """Loads the given plugin and unloads possibly sooner loaded plugins."""
-        if self.oldModules:
-            self.unload_plugin()
-        self.oldModules = sys.modules.copy()
-        if not self.availablePlugins.has_key(name):
-            raise ImportError("Plugin %s not available" % str(name))
-        myclass = import_module_and_get_class(self.availablePlugins[name], name)
-        return myclass
-
-    
     def unload_plugin(self):
         """Unload currently loaded plugin."""
         if self.oldModules:
