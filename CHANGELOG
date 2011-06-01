@@ -1,6 +1,7 @@
 Changes in ???
 ==============
 
+  * Replaced prints in Feedback base class with logger messages
   * -a/--addition-feedback-path can be used several times to add more than one 
     extra path
   * Added CMD_QUIT_FEEDBACK_CONTROLLER to bcixml to allow remote killing of the
