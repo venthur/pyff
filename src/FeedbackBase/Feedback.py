@@ -189,7 +189,7 @@ class Feedback(object):
         """
         if self.udp_markers_enable:
             self._udp_markers_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            print "Sending markers via UDP enabled"
+            self.logger.info("Sending markers via UDP enabled.")
         self.pre_play()
         self.on_play()
         self.post_play()
@@ -320,8 +320,7 @@ class Feedback(object):
     #
     def send_parallel(self, data, reset=True):
         """Sends the data to the parallel port."""
-        # FIXME: use logger instead
-        print "TRIGGER %s: %s" % (str(datetime.datetime.now()), str(data))
+        self.logger.info("Trigger: %s :%s" % (str(datetime.datetime.now()), str(data)))
         if reset == True:
             # A new trigger arrived before we could reset the old one
             self._triggerResetTimer.cancel()
