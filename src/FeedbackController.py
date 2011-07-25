@@ -32,7 +32,7 @@ from lib.feedbackcontroller import FeedbackController
 
 def main():
     """Start the Feedback Controller."""
-    
+
     # Get Options
     description = """Feedback Controller"""
     usage = "%prog [Options]"
@@ -47,22 +47,19 @@ the Free Software Foundation; either version 2 of the License, or
 (at your option) any later version.
 """
     parser = OptionParser(usage=usage, version=version, description=description)
-    parser.add_option('-l', '--loglevel', type='choice', 
-                      choices=['critical', 'error', 'warning', 'info', 'debug', 'notset'], 
-                      dest='loglevel', 
-                      help='Which loglevel to use for everything but the Feedbacks. Valid loglevels are: critical, error, warning, info, debug and notset. [default: warning]', 
+    parser.add_option('-l', '--loglevel', type='choice',
+                      choices=['critical', 'error', 'warning', 'info', 'debug', 'notset'],
+                      dest='loglevel',
+                      help='Which loglevel to use for everything but the Feedbacks. Valid loglevels are: critical, error, warning, info, debug and notset. [default: warning]',
                       metavar='LEVEL')
-    parser.add_option('--fb-loglevel', type='choice', 
-                      choices=['critical', 'error', 'warning', 'info', 'debug', 'notset'], 
-                      dest='fbloglevel', 
-                      help='Which loglevel to use for the Feedbacks. Valid loglevels are: critical, error, warning, info, debug and notset. [default: warning]', 
+    parser.add_option('--fb-loglevel', type='choice',
+                      choices=['critical', 'error', 'warning', 'info', 'debug', 'notset'],
+                      dest='fbloglevel',
+                      help='Which loglevel to use for the Feedbacks. Valid loglevels are: critical, error, warning, info, debug and notset. [default: warning]',
                       metavar='LEVEL')
     parser.add_option('--logserver', dest='logserver',
                       action='store_true', default=False,
                       help='Send log output to logserver.')
-    parser.add_option('-p', '--plugin', dest='plugin',
-                      help="Optional Plugin, the Feedback Controller should inject into the Feedback.",
-                      metavar="MODULE")
     parser.add_option('-a', '--additional-feedback-path', dest='fbpath',
                       action='append',
                       help="Additional path to search for Feedbacks. Use this option several times if you want to add more than one path.",
@@ -70,7 +67,7 @@ the Free Software Foundation; either version 2 of the License, or
     parser.add_option('--port', dest='port',
                       help="Set the Parallel port address to use. Windows only. Should be in Hex (eg: 0x378)",
                       metavar="PORTNUM")
-    parser.add_option("--nogui", action="store_true", default=False, 
+    parser.add_option("--nogui", action="store_true", default=False,
                       help="Start without GUI.")
     parser.add_option("--protocol", dest='protocol', type='choice',
                         choices=['bcixml', 'tobixml'], default='bcixml')
@@ -84,7 +81,7 @@ the Free Software Foundation; either version 2 of the License, or
                     'info'     : logging.INFO,
                     'debug'    : logging.DEBUG,
                     'notset'   : logging.NOTSET}
-    
+
     loglevel = str2loglevel.get(options.loglevel, logging.WARNING)
     fbloglevel = str2loglevel.get(options.fbloglevel, logging.WARNING)
 
@@ -99,20 +96,19 @@ the Free Software Foundation; either version 2 of the License, or
         logging.basicConfig(level=loglevel, format='[%(process)-5d:%(threadName)-10s] %(name)-25s: %(levelname)-8s %(message)s')
     logging.info('Logger initialized with level %s.' % options.loglevel)
     logging.getLogger("FB").setLevel(fbloglevel)
-    
+
     # get the rest
-    plugin = options.plugin
     fbpath = options.fbpath
     guiproc = None
     if not options.nogui:
         guiproc = Process(target=GUI.main)
-        guiproc.start() 
-        
+        guiproc.start()
+
     port = None
     if options.port != None:
         port = int(options.port, 16)
     try:
-        fc = FeedbackController(plugin, fbpath, port, options.protocol)
+        fc = FeedbackController(fbpath, port, options.protocol)
     except:
         logging.exception("Could not start Feedback Controller, is another instance already running?")
         return

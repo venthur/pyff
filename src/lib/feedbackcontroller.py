@@ -30,12 +30,12 @@ import ipc
 
 class FeedbackController(object):
     """Feedback Controller.
-    
-    Controlls the loading, unloading, starting, pausing and stopping of the 
-    Feedbacks. Can query the Feedback for it's variables and can as well set 
+
+    Controlls the loading, unloading, starting, pausing and stopping of the
+    Feedbacks. Can query the Feedback for it's variables and can as well set
     them.
     """
-    def __init__(self, plugin=None, fbpath=None, port=None, protocol='bcixml'):
+    def __init__(self, fbpath=None, port=None, protocol='bcixml'):
         # Setup my stuff:
         self.logger = logging.getLogger("FeedbackController")
         # Set up the socket
@@ -43,7 +43,6 @@ class FeedbackController(object):
         self.udpconnectionhandler = UDPDispatcher(self, protocol)
         # Windows only, set the parallel port port
         self.ppport = port
-        self.fbplugin = plugin
         fbdirs = ["Feedbacks"]
         if fbpath:
             fbdirs.extend(fbpath)
@@ -56,14 +55,14 @@ class FeedbackController(object):
         self.logger.debug("Started mainloop.")
         ipc.ipcloop()
         self.logger.debug("Left mainloop.")
-        
-    
+
+
     def stop(self):
         """Stop the Feedback Controller's activities."""
         self.fbProcCtrl.stop_feedback()
         asyncore.close_all()
 
-    
+
     def handle_signal(self, signal):
         """Handle incoming signal."""
         # check our signal if it contains anything useful, if not drop it and
@@ -86,16 +85,16 @@ class FeedbackController(object):
         # We don't care about control signals, send it to the feedback
         self.send_to_feedback(signal)
 
-    
+
     def _handle_is(self, signal):
         """Handle Interaction Signal."""
         self.logger.info("Got interaction signal: %s" % str(signal))
         cmd = signal.commands[0][0] if len(signal.commands) > 0 else None
-        
+
         # A few commands need to be handled by the Feedback Controller, the
         # rest goes to the Feedback
         if cmd == bcixml.CMD_GET_FEEDBACKS:
-            reply = bcixml.BciSignal({"feedbacks" : self.fbProcCtrl.get_feedbacks()}, 
+            reply = bcixml.BciSignal({"feedbacks" : self.fbProcCtrl.get_feedbacks()},
                                      None, bcixml.REPLY_SIGNAL)
             reply.peeraddr = signal.peeraddr
             self.send_to_peer(reply)
@@ -113,10 +112,10 @@ class FeedbackController(object):
             self.fbProcCtrl.stop_feedback()
         elif cmd == bcixml.CMD_SEND_INIT:
             name = signal.data["_feedback"]
-            self.fbProcCtrl.start_feedback(name, port=self.ppport, fbplugin=self.fbplugin)
+            self.fbProcCtrl.start_feedback(name, port=self.ppport)
         else:
             self.send_to_feedback(signal)
-    
+
 
     def send_to_feedback(self, signal):
         """Send data to the feedback."""
@@ -125,7 +124,7 @@ class FeedbackController(object):
         except:
             self.logger.exception("Couldn't send data to Feedback.")
 
-        
+
     def send_to_peer(self, signal):
         """Send signal to peer."""
         self.udpconnectionhandler.send_signal(signal)
@@ -133,7 +132,7 @@ class FeedbackController(object):
 
 class UDPDispatcher(asyncore.dispatcher):
     """UDP Message Hanldeer of the Feedback Controller."""
-    
+
     def __init__(self, fc, protocol):
         asyncore.dispatcher.__init__(self)
         self.fc = fc
@@ -151,14 +150,14 @@ class UDPDispatcher(asyncore.dispatcher):
         self.socket.sendto(data, (signal.peeraddr[0], bcinetwork.GUI_PORT))
 
     def handle_connect(self): pass
-    
+
     def writable(self):
         return False
-        
+
     def handle_read(self):
         """Handle incoming signals.
-        
-        Takes incoming signals, decodes them and forwards them to the 
+
+        Takes incoming signals, decodes them and forwards them to the
         Feedback Controller.
         """
         try:
@@ -168,4 +167,4 @@ class UDPDispatcher(asyncore.dispatcher):
             self.fc.handle_signal(signal)
         except:
             self.fc.logger.exception("Handling incoming signal caused an exception:")
-        
+

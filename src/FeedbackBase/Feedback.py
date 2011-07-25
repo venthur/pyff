@@ -34,77 +34,33 @@ import json
 class Feedback(object):
     """
     Base class for all feedbacks.
-    
+
     This class provides methods which are called by the FeedbackController on
     certain events. Override the methods as needed.
-    
+
     As a bare minimum you should override the on_play method in your derived
     class to do anything useful.
-    
+
     To get the data from control signals, you can use the "_data" variable
     in your feedback which will always hold the latest control signal.
-    
-    To get the data from the interaction signals, you can use the variable names 
+
+    To get the data from the interaction signals, you can use the variable names
     just as sent by the GUI.
-    
-    This class provides the send_parallel method which you can use to send 
-    arbitrary data to the parallel port. You don't have to override this 
+
+    This class provides the send_parallel method which you can use to send
+    arbitrary data to the parallel port. You don't have to override this
     method in your feedback.
     """
-
-
-#
-# Feedback Plugin-Methods
-#    
-    def pre_init(self): pass
-    def post_init(self): pass
-    def pre_play(self): pass
-    def post_play(self): pass
-    def pre_pause(self): pass
-    def post_pause(self): pass
-    def pre_stop(self): pass
-    def post_stop(self): pass
-    def pre_quit(self): pass
-    def post_quit(self): pass
-#
-# /Feedback Plugin-Methods
-#    
-
-    SUPPORTED_PLUGIN_METHODS = ["pre_init", "post_init",
-                                "pre_play", "post_play",
-                                "pre_pause", "post_pause",
-                                "pre_stop", "post_stop",
-                                "pre_quit", "post_quit"]
-    
-    def inject(self, module):
-        """Inject methods from module to Feedback Controller."""
-        try:
-            m = __import__(module, fromlist=[None])
-        except ImportError:
-            self.logger.info("Unable to import module %s, aborting injection." % str(module))
-        else:
-            for meth in Feedback.SUPPORTED_PLUGIN_METHODS:
-                if hasattr(m, meth) and callable(getattr(m, meth)):
-                    setattr(Feedback, meth, getattr(m, meth))
-                    self.logger.info("Sucessfully injected: %s" % meth)
-                else:
-                    self.logger.debug("Unable to inject %s" % meth)
-                    has = hasattr(m, meth)
-                    call = False
-                    if has:
-                        call = callable(getattr(m, meth))
-                    self.logger.debug("hassattr/callable: %s/%s" % (str(has), str(call)))
-
 
     def __init__(self, port_num=None):
         """
         Initializes the feedback.
-        
+
         You should not override this method, override on_init instead. If you
-        must override this method, make sure to call Feedback.__init__(self, pp) 
+        must override this method, make sure to call Feedback.__init__(self, pp)
         before anything else in your overridden __init__ method.
         """
-     
+
         self._data = None
         self.logger = logging.getLogger("FB." + self.__class__.__name__)
         self.logger.debug("Loaded my logger.")
@@ -132,28 +88,28 @@ class Feedback(object):
         # Initialize with dummy values so we cann call safely .cancel
         self._triggerResetTimer = Timer(0, None)
         self._triggerResetTime = 0.01
-        
+
         self.udp_markers_enable = False
         self.udp_markers_host = '127.0.0.1'
         self.udp_markers_port = 1206
- 
+
     #
     # Internal routines not inteded for overwriting
     #
     def _on_control_event(self, data):
         """
         Store the data in the feedback and call on_control_event.
-        
+
         You should not override this method, use on_control_event instead.
         """
         self._data = data
         self.on_control_event(data)
-    
+
     def _on_interaction_event(self, data):
         """
-        Store the variable-value pairs in the feedback and call 
+        Store the variable-value pairs in the feedback and call
         on_interaction_event.
-        
+
         You should not override this method, use on_interaction_event instead.
         """
         data2 = dict()
@@ -168,63 +124,53 @@ class Feedback(object):
             #self.__setattr__(self.PREFIX+key2, data[key])
             self.__setattr__(key2, data[key])
             data2[key2] = data[key]
-        
+
         self.on_interaction_event(data2)
-    
+
     def _on_init(self):
         """
         Calls on_init.
-        
+
         You should not override this method, use on_init instead.
         """
-        self.pre_init()
         self.on_init()
-        self.post_init()
-    
+
     def _on_play(self):
         """
         Calls on_play.
-        
+
         You should not override this method, use on_play instead.
         """
         if self.udp_markers_enable:
             self._udp_markers_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             self.logger.info("Sending markers via UDP enabled.")
-        self.pre_play()
         self.on_play()
-        self.post_play()
-    
+
     def _on_pause(self):
         """
         Calls on_pause.
-        
+
         You should not override this method, use on_pause instead.
         """
-        self.pre_pause()
         self.on_pause()
-        self.post_pause()
-        
+
     def _on_stop(self):
         """
         Calls on_stop.
-        
+
         You should not override this method, use on_stop instead.
         """
-        self.pre_stop()
         self.on_stop()
-        self.post_stop()
-    
+
     def _on_quit(self):
         """
         Calls on_quit.
-        
+
         You should not override this method, use on_quit instead.
         """
-        self.pre_quit()
         self._shouldQuit = True
         self._playEvent.set()
         self.on_quit()
-        self.post_quit()
 
 
     #
@@ -234,38 +180,38 @@ class Feedback(object):
         """
         This method is called right after the feedback object was loaded by the
         FeedbackController.
-        
-        Override this method to initialize everything you need before the 
+
+        Override this method to initialize everything you need before the
         feedback starts.
         """
         self.logger.debug("on_init not implemented yet!")
-        
-    
+
+
     def on_play(self):
         """
-        This method is called by the FeedbackController when it received a 
+        This method is called by the FeedbackController when it received a
         "Play" event via interaction signal.
-        
+
         Override this method to actually start your feedback.
         """
         self.logger.debug("on_play not implemented yet!")
 
-    
+
     def on_pause(self):
         """
         This method is called by the FeedbackController when it received a
         "Pause" event via interaction signal.
-        
+
         Override this method to pause your feedback.
         """
         self.logger.debug("on_pause not implemented yet!")
-        
-    
+
+
     def on_stop(self):
         """
         This method is called by the FeedbackController when it received a
         "Stop" event.
-        
+
         Override this method to stop your feedback. It should be possible to
         start again when receiving the on_start event.
         """
@@ -274,30 +220,30 @@ class Feedback(object):
 
     def on_quit(self):
         """
-        This Method is called just before the FeedbackController will destroy 
-        the feedback object. The FeedbackController will not destroy the 
+        This Method is called just before the FeedbackController will destroy
+        the feedback object. The FeedbackController will not destroy the
         feedback object until this method has returned.
-        
+
         Override this method to cleanup everything as needed or save information
         before the object gets destroyed.
         """
         self.logger.debug("on_quit not implemented yet!")
 
-    
+
     def on_interaction_event(self, data):
         """
-        This method is called after the FeedbackController received a 
+        This method is called after the FeedbackController received a
         interaction signal. The FeedbackController parses the signal, extracts
         the variable-value pairs, stores them as object-variables in your
         feedback and calls this method.
-        
+
         If the FeedbackController detects a "play", "pause" or "quit"
         signal, it calls the appropriate on_-method after this method has
         returned.
-        
+
         If the FeedbackController detects an "init" signal, it calls "on_init"
         before "on_interaction_event"!
-        
+
         Override this method if you want to react on interaction events.
         """
         self.logger.debug("on_interaction_event not implemented yet!")
@@ -309,7 +255,7 @@ class Feedback(object):
         signal. The FeedbackController parses the signal, extracts the values
         stores the resulting tuple in the object-variable "data" and calls this
         method.
-        
+
         Override this method if you want to react on control events.
         """
         self.logger.debug("on_control_event not implemented yet!")
@@ -334,13 +280,13 @@ class Feedback(object):
             if reset:
                 self._triggerResetTimer = threading.Timer(self._triggerResetTime, self.send_parallel, (0x0, False))
                 self._triggerResetTimer.start()
-                
-                
+
+
     def send_udp(self, data):
         """Sends the data to UDP"""
-        self._udp_markers_socket.sendto("S%3d" % data, 
+        self._udp_markers_socket.sendto("S%3d" % data,
                                         (self.udp_markers_host, self.udp_markers_port) )
-                
+
     def _get_variables(self):
         """Return a dictionary of variables and their values."""
         # try everything from self.__dict__:
@@ -396,7 +342,7 @@ class Feedback(object):
 
     def _playloop(self):
         """Loop which ensures that on_play always runs in main thread.
-        
+
         Do not overwrite in derived classes unless you know what you're doing.
         """
         self._shouldQuit = False
