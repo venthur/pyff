@@ -179,6 +179,7 @@ class StimulusPainter(object):
 
 class StimulusSequence(StimulusPainter):
     def _do_prepare(self):
+        self._online_times.append(_stimulus_time(None, self._vsync))
         return self._prepare_func()
 
 class StimulusIterator(StimulusPainter):
