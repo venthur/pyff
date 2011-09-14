@@ -1,4 +1,4 @@
-__copyright__ = """ Copyright (c) 2010 Torsten Schmits
+__copyright__ = """ Copyright (c) 2010-2011 Torsten Schmits
 
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -28,11 +28,14 @@ TRIG_TARGET_ABSENT_OFFSET = 11
 TRIG_TARGET_PRESENT_OFFSET = 21
 TRIG_EEG = 131
 
-def burst_symbol(symbol, target, base=TRIG_LETTER):
-    value = base + ord(symbol.lower()) - ord('a')
+def add_target_offset_if(value, symbol, target):
     if symbol == target:
         value += TRIG_TARGET_ADD
     return value
+
+def burst_symbol(symbol, target, base=TRIG_LETTER):
+    value = base + ord(symbol.lower()) - ord('a')
+    return add_target_offset_if(value, symbol, target)
 
 def eeg_symbol(symbol):
     return burst_symbol(symbol, None, base=TRIG_EEG)
@@ -56,7 +59,9 @@ class Triggerer(object):
             if self._symbol.isalpha():
                 trigger = self._symbol_trigger()
             else:
-                trigger = self._nonalpha_trigger[self._symbol]
+                value = self._nonalpha_trigger[self._symbol]
+                trigger = add_target_offset_if(value, self._symbol,
+                                               self._target)
         except KeyError:
             # redundant symbol
             pass
