@@ -19,7 +19,7 @@ class Config(object):
         self.trial_type = 5
         self.alternating_colors = True
         self.sequences_per_trial = 10
-        self.geometry = [0, 0, 2560, 1600]
+        self.geometry = [0, 0, 1280, 1024]
         self.word_font_size = 300
         self.alphabet_font_size = 200
         self.word_target_font_size = 252
@@ -41,7 +41,7 @@ class Config(object):
         self.inter_burst = 0
         # Pause time directly after one sequence of bursts or the
         # following user input if set
-        self.inter_sequence = .3
+        self.inter_sequence = 0
         # Pause time directly after one set of sequences for one letter
         # or the following user input if set (count, spelling)
         self.inter_trial = 1
