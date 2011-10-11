@@ -21,14 +21,14 @@ import pygame
 
 from FeedbackBase.VisionEggFeedback import VisionEggFeedback
 
-from AlphaBurst.config import Config
-from AlphaBurst.view import View
-from AlphaBurst.model.palette import Palette
-from AlphaBurst.util.metadata import datadir
-from AlphaBurst.trial import *
-from AlphaBurst.input import *
-from AlphaBurst.experiment import *
-from AlphaBurst.util.error import AlphaBurstException
+from RSVPSpeller.config import Config
+from RSVPSpeller.view import View
+from RSVPSpeller.model.palette import Palette
+from RSVPSpeller.util.metadata import datadir
+from RSVPSpeller.trial import *
+from RSVPSpeller.input import *
+from RSVPSpeller.experiment import *
+from RSVPSpeller.util.error import RSVPSpellerException
 
 class Control(VisionEggFeedback, Config):
     def __init__(self, *args, **kwargs):
@@ -82,7 +82,7 @@ class Control(VisionEggFeedback, Config):
         try:
             self._view.alphabet(self.eeg_alphabet)
             self._experiment.run()
-        except AlphaBurstException as e:
+        except RSVPSpellerException as e:
             self.logger.error(e)
         self.quit()
 
@@ -100,5 +100,5 @@ class Control(VisionEggFeedback, Config):
         if cls is not None:
             self._input_handler.eeg_select(cls)
 
-class AlphaBurst(Control):
+class RSVPSpeller(Control):
     pass

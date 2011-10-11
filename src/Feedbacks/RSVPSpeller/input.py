@@ -16,7 +16,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 import pygame
 
-from AlphaBurst.util.trigger import (EEGTriggerer, TRIG_TARGET_PRESENT_OFFSET,
+from RSVPSpeller.util.trigger import (EEGTriggerer, TRIG_TARGET_PRESENT_OFFSET,
                                      TRIG_TARGET_ABSENT_OFFSET)
 
 __all__ = ['CountInputHandler', 'YesNoInputHandler', 'CalibrationInputHandler',

@@ -19,8 +19,8 @@ from time import sleep
 
 from lib import marker
 
-from AlphaBurst.burst import BurstConstraints
-from AlphaBurst.util.trigger import BurstTriggerer, TRIG_COUNTED_OFFSET
+from RSVPSpeller.burst import BurstConstraints
+from RSVPSpeller.util.trigger import BurstTriggerer, TRIG_COUNTED_OFFSET
 
 __all__ = ['YesNoTrial', 'CountTrial', 'CalibrationTrial', 'FreeSpellingTrial',
           'CopySpellingTrial']

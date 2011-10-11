@@ -20,7 +20,7 @@ Place, Suite 330, Boston, MA  02111-1307  USA
 from unittest import main
 import logging
 
-from Feedbacks.AlphaBurst.test import *
+from Feedbacks.RSVPSpeller.test import *
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)

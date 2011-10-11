@@ -15,9 +15,9 @@ program; if not, see <http://www.gnu.org/licenses/>.
 
 from pygame import Color
 
-from AlphaBurst.util.error import AlphaBurstException
+from RSVPSpeller.util.error import RSVPSpellerException
 
-class NoMatchingSymbolColor(AlphaBurstException):
+class NoMatchingSymbolColor(RSVPSpellerException):
     """ The color for a symbol has been queried that does not exist
     in a present color group. """
     def __init__(self, symbol):

@@ -18,8 +18,8 @@ from copy import copy
 from itertools import chain
 import logging
 
-from AlphaBurst.util.list import slices, remove_all
-from AlphaBurst.sequence_algorithm import RSVP
+from RSVPSpeller.util.list import slices, remove_all
+from RSVPSpeller.sequence_algorithm import RSVP
 
 class CharacterSequence(list):
     def __init__(self, sequence, redundance, burst_count=3, alt_color=False,

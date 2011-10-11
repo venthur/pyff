@@ -18,7 +18,7 @@ import random
 
 from unittest import TestCase
 
-from Feedbacks.AlphaBurst.sequence_algorithm import RSVP
+from Feedbacks.RSVPSpeller.sequence_algorithm import RSVP
 
 class OriginalSequenceAlgorithm(object):
     def color_alg2(self,n_seq,n_col):

@@ -16,8 +16,8 @@ program; if not, see <http://www.gnu.org/licenses/>.
 from string import ascii_uppercase
 from unittest import TestCase
 
-from Feedbacks.AlphaBurst.model.character_sequence import CharacterSequenceFactory
-from Feedbacks.AlphaBurst.model.palette import Palette
+from Feedbacks.RSVPSpeller.model.character_sequence import CharacterSequenceFactory
+from Feedbacks.RSVPSpeller.model.palette import Palette
 
 class CharacterSequenceTest(TestCase):
     def test_color(self):

@@ -20,7 +20,7 @@ from VisionEgg.Core import *
 from lib import marker
 from lib.vision_egg import VisionEggView
 
-from AlphaBurst.model.target_word import TargetWord
+from RSVPSpeller.model.target_word import TargetWord
 
 class View(VisionEggView):
     def __init__(self, palette):

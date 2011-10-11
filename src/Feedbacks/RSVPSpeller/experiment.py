@@ -17,7 +17,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 from time import sleep
 from itertools import count
 
-from AlphaBurst.model.character_sequence import CharacterSequenceFactory
+from RSVPSpeller.model.character_sequence import CharacterSequenceFactory
 
 __all__ = ['CountExperiment', 'YesNoExperiment', 'CopySpellingExperiment',
            'CalibrationExperiment', 'FreeSpellingExperiment']

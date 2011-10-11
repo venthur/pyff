@@ -19,7 +19,7 @@ Place, Suite 330, Boston, MA  02111-1307  USA
 
 import logging
 
-from Feedbacks.AlphaBurst.control import Control
+from Feedbacks.RSVPSpeller.control import Control
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)
