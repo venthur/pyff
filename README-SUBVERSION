@@ -5,7 +5,7 @@ The old googlecode repository is no longer in use. The new repository is
 
   http://github.com/venthur/pyff
 
-You can still use SVN in read-only mode with the git repositoryh if you must,
+You can still use SVN in read-only mode with the git repository if you must,
 but I encourage you to use git instead!
 
   http://bbci.de/pyff
@@ -14,9 +14,13 @@ but I encourage you to use git instead!
 How to use SVN with the git repository:
 =======================================
 
+Github also support limited support for accessing the GIT repository with SVN:
+
+  https://github.com/blog/966-improved-subversion-client-support
+
 Do the initial checkout:
 
-  svn checkout https://svn.github.com/venthur/pyff
+  svn checkout https://github.com/venthur/pyff/trunk pyff
 
 Basic work cycle:
 
@@ -38,9 +42,9 @@ Basic work cycle:
   # create a patch and send it to me
   svn diff > my-changes.patch
 
-The last step is necessary since you cannot commit changes with SVN into the
-git repository. So you collect all the changes in one file and send it to me.
+The last step is necessary since you cannot commit changes into the git
+repository. So you collect all the changes in one file and send it to me.
 
 
--- 2010-07-20 Bastian Venthur <bastian.venthur@tu-berlin.de>
+-- 2011-11-17 Bastian Venthur <bastian.venthur@tu-berlin.de>
 
