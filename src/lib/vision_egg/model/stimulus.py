@@ -1,4 +1,4 @@
-__copyright__ = """ Copyright (c) 2010 Torsten Schmits
+__copyright__ = """ Copyright (c) 2010-2011 Torsten Schmits
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -29,3 +29,7 @@ class TextureStimulus(Stimulus, Textures.TextureStimulus):
     def set_file(self, name):
         texture = Textures.Texture(name)
         Textures.TextureStimulus.set(self, texture=texture)
+
+    def set_height(self, height):
+        width, old = self.parameters.texture.size
+        self.set(size=(height * width / old, height))

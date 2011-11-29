@@ -1,4 +1,4 @@
-__copyright__ = """ Copyright (c) 2010 Torsten Schmits
+__copyright__ = """ Copyright (c) 2010-2011 Torsten Schmits
 
 This program is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -18,9 +18,10 @@ from copy import copy
 from VisionEgg.Text import Text
 
 class TextList(list):
-    def __init__(self, position):
+    def __init__(self, position, spacing=0.):
         list.__init__([])
         self._position = position
+        self._spacing = spacing
 
     def add(self, text, size):
         new = Text(font_size=size, text=text, anchor='bottom')
@@ -38,7 +39,7 @@ class TextList(list):
             w = s[0] / 2.
             pos[0] += w
             t.set(position=copy(pos))
-            pos[0] += w
+            pos[0] += w + self._spacing
 
     @property
     def _max_height(self):
@@ -47,7 +48,8 @@ class TextList(list):
 
     @property
     def _width(self):
-        return reduce(lambda l, t: l + t.parameters.size[0], self, 0)
+        spacings = self._spacing * (len(self) - 1)
+        return reduce(lambda l, t: l + t.parameters.size[0], self, spacings)
 
     def clear(self):
         del self[:]
