@@ -53,6 +53,9 @@ class VisionEggView(object):
         """ Set pygame/VisionEgg event handler function. """
         self._event_handlers = event_handlers
 
+    def add_event_handlers(self, event_handlers):
+        self._event_handlers.extend(event_handlers)
+
     def set_iterator_semaphore(self, flag):
         """ Specify the object to be used as semaphore for iterators.
         See L{Switcherator} for more.
