@@ -215,6 +215,18 @@ class VisionEggView(object):
         self._center_text.set(colors=color or (self._font_color for l in
                                            self._center_text))
 
+    def word(self, word):
+        pass
+
+    def eeg_letter(self, *a, **kw):
+        pass
+
+    def next_target(self):
+        pass
+
+    def previous_target(self):
+        pass
+
     def clear_center_word(self):
         """ Remove the center word from the screen. """
         self.center_word('')
