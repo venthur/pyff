@@ -20,6 +20,8 @@ from lib.speller.trial import *
 from lib.speller.input import *
 from lib.speller.experiment import *
 
+__all__ = ['Speller']
+
 class Speller(object):
     __stimulus = None
     __sequences = None
@@ -50,7 +52,7 @@ class Speller(object):
     def update_parameters(self):
         super(Speller, self).update_parameters()
         self._trial_name = self._trial_types[self.trial_type - 1]
-        self.setup()
+        self.setup_speller()
 
     @classmethod
     def stimulus(self, f):
@@ -70,7 +72,7 @@ class Speller(object):
         self.__sequences = f
         return f
 
-    def setup(self):
+    def setup_speller(self):
         self._setup_trial()
         self._setup_input_handler()
         self._setup_experiment()

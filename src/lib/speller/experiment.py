@@ -32,10 +32,9 @@ class Experiment(object):
         self._current_target = ''
         self._inter_trial = config.inter_trial
         self._inter_phrase = config.inter_phrase
-        self._nr_sequences = config.nr_sequences
         self._countdown = config.phrase_countdown
-        self._min_dist = config.min_dist
         self._target_present_time = config.target_present_time
+        self._sequences = lambda: []
 
     def run(self):
         self._input_handler.start_experiment(self)
