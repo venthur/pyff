@@ -277,3 +277,10 @@ class VisionEggFeedback(MainloopFeedback):
         and example 1.
         """
         return self._view.add_image_stimulus(**kw)
+
+    @property
+    def screen_size(self):
+        """ Convenience property for obtaining the effective size of the
+        VisionEgg window.
+        """
+        return self._view.screen.size
