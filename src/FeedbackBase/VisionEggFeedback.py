@@ -80,6 +80,7 @@ class VisionEggFeedback(MainloopFeedback):
         self.wait_style_fixed = True
         self.fullscreen = False
         self.geometry = [100, 100, 640, 480]
+        self.fullscreen_resolution = [1024, 768]
         self.bg_color = 'grey'
         self.font_color_name = 'black'
         self.font_size = 150
@@ -95,7 +96,7 @@ class VisionEggFeedback(MainloopFeedback):
                                  'fixation_cross_time',
                                  'fixation_cross_symbol',
                                  'countdown_symbol_duration',
-                                 'countdown_start']
+                                 'countdown_start', 'fullscreen_resolution']
 
     def init_parameters(self):
         pass
