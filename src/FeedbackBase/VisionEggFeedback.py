@@ -181,13 +181,13 @@ class VisionEggFeedback(MainloopFeedback):
         self._flag.reset()
         try:
             self._view.acquire()
-            self.update_parameters()
+            self._update_parameters()
         except pygame.error, e:
             self.logger.error(e)
 
     def on_interaction_event(self, data):
         if not self._running:
-            self.update_parameters()
+            self._update_parameters()
 
     def _mainloop(self):
         self._running = True
@@ -208,12 +208,16 @@ class VisionEggFeedback(MainloopFeedback):
     def on_quit(self):
         self.quit()
 
-    def update_parameters(self):
+    def _update_parameters(self):
+        self.update_parameters()
         """ Apply new parameters set from pyff. """
         params = dict([[p, getattr(self, p, None)] for p in
                         self._view_parameters])
         self.__setup_stim_factory()
         self._view.update_parameters(**params)
+
+    def update_parameters(self):
+        pass
 
     def quit(self):
         self._flag.off()
