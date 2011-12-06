@@ -124,7 +124,8 @@ class VisionEggFeedback(MainloopFeedback):
         
     def __setup_events(self):
         """ Set L{keyboard_input} to serve as keyboard handler. """
-        handlers = [(pygame.KEYDOWN, self.keyboard_input)]
+        handlers = [(pygame.KEYDOWN, self.keyboard_input),
+                    (pygame.KEYUP, self.keyboard_input_up)]
         self._view.set_event_handlers(handlers)
 
     def __setup_stim_factory(self):
@@ -171,6 +172,9 @@ class VisionEggFeedback(MainloopFeedback):
         quit_keys = [pygame.K_q, pygame.K_ESCAPE]
         if event.key in quit_keys or event.type == pygame.QUIT:
             self.quit()
+
+    def keyboard_input_up(self, event):
+        pass
 
     def pre_mainloop(self):
         """ Reset the iterator semaphore and initialize the screen. """
