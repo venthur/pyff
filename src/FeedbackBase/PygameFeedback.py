@@ -57,6 +57,7 @@ class PygameFeedback(MainloopFeedback):
 
     def init(self):
         """Set some PygameFeedback variables to default values."""
+        self.FPS = 30
         self.geometry = [0,0,800,600]  # screen position and size
         self.fullscreen = False
         self.centerScreen = False
