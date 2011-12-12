@@ -63,7 +63,6 @@ class PygameFeedback(MainloopFeedback):
         self.centerScreen = False
         self.caption = "PygameFeedback"
         self.pygame_display_flags = pygame.DOUBLEBUF
-        self.videodriver = 'directx'
         self.elapsed = 0
         self.backgroundColor = [0, 0, 0]
         # For keys
@@ -103,7 +102,9 @@ class PygameFeedback(MainloopFeedback):
         """
         os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (self.geometry[0],
                                                         self.geometry[1])
-        os.environ['SDL_VIDEODRIVER'] = self.videodriver
+        # set directx driver only on windows systems
+        if os.name == 'nt':
+            os.environ['SDL_VIDEODRIVER'] = 'directx'
         if self.centerScreen:
             os.environ['SDL_VIDEO_CENTERED'] = '1'
 
