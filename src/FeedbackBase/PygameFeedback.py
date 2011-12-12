@@ -41,11 +41,12 @@ class PygameFeedback(MainloopFeedback):
     
     * FPS: (frames per second) influencees how much the Feedback advances in \
             time during a tick call.
-    * screenPos: List of integers holding the initial position of the pygame \
+    * geometry: List of integers holding the initial position and size of the pygame \
             window.
-    * screenSize: List of intigers holding the initial size of the pygame \
-            window.
+    * pygame_display_flags: flags specifying display pygame display options
+    * videodriver: videodriver to be used
     * fullscreen: Boolean
+    * centerWindow: Boolean. Centers the pygame window on the screen
     * caption: String holding the initial value of the window caption.
     * elapsed: Fload holding the elapsed second since the last tick
     * backgroundColor: List of three integers holding the initial background \
@@ -56,11 +57,12 @@ class PygameFeedback(MainloopFeedback):
 
     def init(self):
         """Set some PygameFeedback variables to default values."""
-        self.FPS = 30
-        self.screenPos = [0, 0]
-        self.screenSize = [800, 600]
+        self.geometry = [0,0,800,600]  # screen position and size
         self.fullscreen = False
+        self.centerScreen = False
         self.caption = "PygameFeedback"
+        self.pygame_display_flags = pygame.DOUBLEBUF
+        self.videodriver = 'directx'
         self.elapsed = 0
         self.backgroundColor = [0, 0, 0]
         # For keys
@@ -84,6 +86,7 @@ class PygameFeedback(MainloopFeedback):
         self.process_pygame_events()
         self.elapsed = self.clock.tick(self.FPS)
 
+        
 
     def pause_tick(self):
         pass
@@ -97,20 +100,23 @@ class PygameFeedback(MainloopFeedback):
         """
         Set up pygame and the screen and the clock.
         """
-        os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (self.screenPos[0],
-                                                        self.screenPos[1])
+        os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (self.geometry[0],
+                                                        self.geometry[1])
+        os.environ['SDL_VIDEODRIVER'] = self.videodriver
+        if self.centerScreen:
+            os.environ['SDL_VIDEO_CENTERED'] = '1'
+
         pygame.init()
         pygame.display.set_caption(self.caption)
         if self.fullscreen:
-            self.screen = pygame.display.set_mode((self.screenSize[0],
-                                                   self.screenSize[1]),
-                                                   pygame.FULLSCREEN)
+            self.screen = pygame.display.set_mode((self.geometry[2],
+                                                   self.geometry[3]),
+                                                   pygame.FULLSCREEN|self.pygame_display_flags)
         else:
-            self.screen = pygame.display.set_mode((self.screenSize[0],
-                                                   self.screenSize[1]),
-                                                   pygame.RESIZABLE)
+            self.screen = pygame.display.set_mode((self.geometry[2],
+                                                   self.geometry[3]),
+                                                   pygame.RESIZABLE|self.pygame_display_flags)
         self.clock = pygame.time.Clock()
-
 
     def quit_pygame(self):
         pygame.quit()
@@ -137,9 +143,9 @@ class PygameFeedback(MainloopFeedback):
         """Process a signle pygame event."""
         if event.type == pygame.VIDEORESIZE:
             e = max(event.w, int(round(event.h * 0.9)))
-            self.screen = pygame.display.set_mode((e, event.h), pygame.RESIZABLE)
+            self.screen = pygame.display.set_mode((e, event.h), pygame.RESIZABLE|self.display_opts)
             self.resized = True
-            self.screenSize = [self.screen.get_width(), self.screen.get_height()]
+            self.geometry[2:] = [self.screen.get_width(), self.screen.get_height()]
             self.init_graphics()
         elif event.type == pygame.QUIT:
             self.on_stop()
