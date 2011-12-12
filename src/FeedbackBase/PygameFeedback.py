@@ -1,21 +1,23 @@
 # PygameFeedback.py -
-# Copyright (C) 2009  Bastian Venthur
+# Copyright (C) 2009-2011  Bastian Venthur
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or
-# (at your option) any later version.
+# the Free Software Foundation; either version 2 of the License, or (at
+# your option) any later version.
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
 #
-# You should have received a copy of the GNU General Public License along
-# with this program; if not, write to the Free Software Foundation, Inc.,
-# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+# 02110-1301 USA.
 
 """This module contains the PygameFeedback baseclass."""
+
 
 import os
 
@@ -26,29 +28,29 @@ from MainloopFeedback import MainloopFeedback
 
 class PygameFeedback(MainloopFeedback):
     """Baseclass for Pygame based Feedbacks.
-    
-    This class is derived from MainloopFeedback and brings some common 
+
+    This class is derived from MainloopFeedback and brings some common
     functinality shared by most Feedbacks using Pygame.
 
-    Upon start it initializes pygame and calls initialize_graphics which can be
-    overwritten by derived classes.
+    Upon start it initializes pygame and calls initialize_graphics which
+    can be overwritten by derived classes.
 
-    It also takes care of shutting down pygame automatically upon stop, quit or 
-    crash of the feedback.
+    It also takes care of shutting down pygame automatically upon stop,
+    quit or crash of the feedback.
 
-    After initialization of the feedback, it has some object variables which 
-    influence the Feedback's behaviour:
-    
-    * FPS: (frames per second) influencees how much the Feedback advances in \
-            time during a tick call.
-    * geometry: List of integers holding the initial position and size of the pygame \
-            window.
+    After initialization of the feedback, it has some object variables
+    which influence the Feedback's behaviour:
+
+    * FPS: (frames per second) influencees how much the Feedback
+      advances in time during a tick call.
+    * geometry: List of integers holding the initial position and size
+      of the pygame window.
     * fullscreen: Boolean
     * centerWindow: Boolean. Centers the pygame window on the screen
     * caption: String holding the initial value of the window caption.
     * elapsed: Fload holding the elapsed second since the last tick
-    * backgroundColor: List of three integers holding the initial background \
-            colour
+    * backgroundColor: List of three integers holding the initial
+      background colour
     * keypressed: Boolean holding if a key was pressed
     * lastkey: Last key
     """
@@ -83,7 +85,6 @@ class PygameFeedback(MainloopFeedback):
         self.process_pygame_events()
         self.elapsed = self.clock.tick(self.FPS)
 
-        
 
     def pause_tick(self):
         pass
@@ -94,9 +95,7 @@ class PygameFeedback(MainloopFeedback):
 
 
     def init_pygame(self):
-        """
-        Set up pygame and the screen and the clock.
-        """
+        """Set up pygame and the screen and the clock."""
         os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (self.geometry[0],
                                                         self.geometry[1])
         # set directx driver only on windows systems
@@ -117,13 +116,13 @@ class PygameFeedback(MainloopFeedback):
                                                    pygame.RESIZABLE | pygame.DOUBLEBUF)
         self.clock = pygame.time.Clock()
 
+
     def quit_pygame(self):
         pygame.quit()
 
 
     def init_graphics(self):
-        """
-        Called after init_pygame.
+        """Called after init_pygame.
 
         Derived Classes overwrite this method.
         """
@@ -131,13 +130,11 @@ class PygameFeedback(MainloopFeedback):
 
 
     def process_pygame_events(self):
-        """
-        Process the the pygame event queue and react on VIDEORESIZE.
-        """
+        """Process the the pygame event queue and react on VIDEORESIZE."""
         for event in pygame.event.get():
             self.process_pygame_event(event)
 
-            
+
     def process_pygame_event(self, event):
         """Process a signle pygame event."""
         if event.type == pygame.VIDEORESIZE:
@@ -152,8 +149,8 @@ class PygameFeedback(MainloopFeedback):
             self.keypressed = True
             self.lastkey = event.key
             self.lastkey_unicode = event.unicode
-                
-    
+
+
     def wait_for_pygame_event(self):
         """Wait until a pygame event orcurs and process it."""
         event = pygame.event.wait()
