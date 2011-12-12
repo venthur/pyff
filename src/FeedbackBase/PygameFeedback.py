@@ -44,7 +44,6 @@ class PygameFeedback(MainloopFeedback):
     * geometry: List of integers holding the initial position and size of the pygame \
             window.
     * pygame_display_flags: flags specifying display pygame display options
-    * videodriver: videodriver to be used
     * fullscreen: Boolean
     * centerWindow: Boolean. Centers the pygame window on the screen
     * caption: String holding the initial value of the window caption.
