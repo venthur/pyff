@@ -43,7 +43,6 @@ class PygameFeedback(MainloopFeedback):
             time during a tick call.
     * geometry: List of integers holding the initial position and size of the pygame \
             window.
-    * pygame_display_flags: flags specifying display pygame display options
     * fullscreen: Boolean
     * centerWindow: Boolean. Centers the pygame window on the screen
     * caption: String holding the initial value of the window caption.
@@ -61,7 +60,6 @@ class PygameFeedback(MainloopFeedback):
         self.fullscreen = False
         self.centerWindow = False
         self.caption = "PygameFeedback"
-        self.pygame_display_flags = pygame.DOUBLEBUF
         self.elapsed = 0
         self.backgroundColor = [0, 0, 0]
         # For keys
@@ -112,11 +110,11 @@ class PygameFeedback(MainloopFeedback):
         if self.fullscreen:
             self.screen = pygame.display.set_mode((self.geometry[2],
                                                    self.geometry[3]),
-                                                   pygame.FULLSCREEN|self.pygame_display_flags)
+                                                   pygame.FULLSCREEN | pygame.DOUBLEBUF)
         else:
             self.screen = pygame.display.set_mode((self.geometry[2],
                                                    self.geometry[3]),
-                                                   pygame.RESIZABLE|self.pygame_display_flags)
+                                                   pygame.RESIZABLE | pygame.DOUBLEBUF)
         self.clock = pygame.time.Clock()
 
     def quit_pygame(self):
@@ -144,7 +142,7 @@ class PygameFeedback(MainloopFeedback):
         """Process a signle pygame event."""
         if event.type == pygame.VIDEORESIZE:
             e = max(event.w, int(round(event.h * 0.9)))
-            self.screen = pygame.display.set_mode((e, event.h), pygame.RESIZABLE|self.display_opts)
+            self.screen = pygame.display.set_mode((e, event.h), pygame.RESIZABLE | pygame.DOUBLEBUF)
             self.resized = True
             self.geometry[2:] = [self.screen.get_width(), self.screen.get_height()]
             self.init_graphics()
