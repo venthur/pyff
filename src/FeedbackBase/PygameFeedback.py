@@ -59,7 +59,7 @@ class PygameFeedback(MainloopFeedback):
         self.FPS = 30
         self.geometry = [0,0,800,600]  # screen position and size
         self.fullscreen = False
-        self.centerScreen = False
+        self.centerWindow = False
         self.caption = "PygameFeedback"
         self.pygame_display_flags = pygame.DOUBLEBUF
         self.elapsed = 0
@@ -104,7 +104,7 @@ class PygameFeedback(MainloopFeedback):
         # set directx driver only on windows systems
         if os.name == 'nt':
             os.environ['SDL_VIDEODRIVER'] = 'directx'
-        if self.centerScreen:
+        if self.centerWindow:
             os.environ['SDL_VIDEO_CENTERED'] = '1'
 
         pygame.init()
