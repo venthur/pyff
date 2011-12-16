@@ -4,6 +4,7 @@
 
 # BrainPong.py -
 # Copyright (C) 2008-2009  Simon Scholler
+#                    2011  Bastian Venthur
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,15 +24,14 @@
 
 
 import random
-import sys
 import os
 
 import pygame
 
-from FeedbackBase.MainloopFeedback import MainloopFeedback
+from FeedbackBase.PygameFeedback import PygameFeedback
 
 
-class BrainPong(MainloopFeedback):
+class BrainPong(PygameFeedback):
 
     # TRIGGER VALUES FOR THE PARALLELPORT (MARKERS)
     START_EXP, END_EXP = 100, 101
@@ -45,6 +45,8 @@ class BrainPong(MainloopFeedback):
         """
         Initializes variables etc., but not pygame itself.
         """
+        PygameFeedback.init(self)
+        self.caption = 'Brain Pong'
         self.send_parallel(self.START_EXP)
         #self.logger.debug("on_init")
         
@@ -55,8 +57,8 @@ class BrainPong(MainloopFeedback):
         self.availableDirections = ['left', 'right']
         self.FPS = 60
         self.fullscreen = False
-        self.screenWidth = 1200
-        self.screenHeight = 700
+        self.screenSize[0] = 1200
+        self.screenSize[1] = 700
         self.countdownFrom = 3
         self.hitMissDuration = 1500
         self.timeUntilNextTrial = 500
@@ -94,30 +96,34 @@ class BrainPong(MainloopFeedback):
         self.down = True
         
         # HitMissCounter
-        self.counterSize = self.screenHeight/15
+        self.counterSize = self.screenSize[1]/15
         self.hitmissCounterColor = (100, 100, 200) #(120, 120, 255)
         self.missstr = " Miss: "
         self.hitstr = "Hit: "
         self.x_transl = 0.8
 
 
-    def pre_mainloop(self):
-        """
-        Initialize pygame, the graphics and start the game.
-        """
-        #self.logger.debug("on_play")
-        self.init_pygame()
-        self.init_graphics()
-
-
     def post_mainloop(self):
         #self.logger.debug("Quitting pygame.")
         self.send_parallel(self.END_EXP)
-        pygame.quit()
+        PygameFeedback.post_mainloop(self)
 
 
     def tick(self):
         self.process_pygame_events()
+        if self.keypressed:
+            step = 0
+            if self.lastkey_unicode == u"a":
+                step = -0.1
+            elif self.lastkey_unicode == u"d":
+                step = 0.1
+            self.f += step
+            if self.f < -1:
+                self.f = -1
+            if self.f > 1:
+                self.f = 1
+            self.keypressed = False
+        # FIXME: is this line needed?
         pygame.time.wait(10)
         self.elapsed = self.clock.tick(self.FPS)
 
@@ -164,7 +170,7 @@ class BrainPong(MainloopFeedback):
         # Check, if trial is over (if y-pos of bowl is on bottom of the screen)
         # or if the trial time is over
         (bowlPosX, bowlPosY) = self.bowlMoveRect.midbottom
-        if bowlPosY >= self.screenHeight:
+        if bowlPosY >= self.screenSize[1]:
             self.send_parallel(self.MISS)
             self.miss = True; return
         if self.trialElapsed > self.durationPerTrial and self.durationPerTrial != 0:
@@ -201,7 +207,7 @@ class BrainPong(MainloopFeedback):
         # if bowl is hitting the side of the screen
         border1 = bowlPosX+stepX-(self.bowlMoveRect.width/2+self.wallW)
         border2 = bowlPosX+stepX+self.bowlMoveRect.width/2+self.wallW
-        if border1 < 0 or border2 > self.screenWidth:
+        if border1 < 0 or border2 > self.screenSize[0]:
             self.left = not self.left
             stepX = -stepX
                 
@@ -212,14 +218,14 @@ class BrainPong(MainloopFeedback):
         # Move bar according to classifier output
         if self.control == "absolute":
             class_out = self.f
-            moveLength = (self.screenWidth-2*self.wallW-self.barRect.width) / 2
+            moveLength = (self.screenSize[0]-2*self.wallW-self.barRect.width) / 2
             self.barMoveRect = self.barRect.move(max(min(moveLength, class_out*moveLength*self.g_abs), -moveLength),0)
         elif self.control == "relative":
             class_out = self.f
             newBarX = class_out*self.playWidth*self.g_rel*0.1+self.BarX
-            barLeft = self.screenWidth/2+newBarX-self.barRect.width/2
-            barRight = self.screenWidth/2+newBarX+self.barRect.width/2
-            if barLeft > self.wallW and barRight < self.screenWidth - self.wallW:
+            barLeft = self.screenSize[0]/2+newBarX-self.barRect.width/2
+            barRight = self.screenSize[0]/2+newBarX+self.barRect.width/2
+            if barLeft > self.wallW and barRight < self.screenSize[0] - self.wallW:
                 self.barMoveRect = self.barRect.move(newBarX,0)
             else: # if bar would move into the wall
                 if newBarX < 0:
@@ -349,34 +355,39 @@ class BrainPong(MainloopFeedback):
         """
         self.screen = pygame.display.get_surface()
         self.size = min(self.screen.get_height(), self.screen.get_width())
-        barHeight = self.screenHeight/15
-        self.barSurface = self.screenHeight-barHeight * 3/2
+        barHeight = self.screenSize[1]/15
+        try:
+            self.oldPlayWidth = self.playWidth
+            self.oldBarSurface = self.barSurface
+        except:
+            pass
+        self.barSurface = self.screenSize[1]-barHeight * 3/2
         
         path = os.path.dirname( globals()["__file__"] )
         
         # init background
         img = pygame.image.load(os.path.join(path, 'bg.png')).convert()
-        self.background = pygame.Surface((self.screenWidth, self.screenHeight))
-        self.background = pygame.transform.scale(img, (self.screenWidth, self.screenHeight))
+        self.background = pygame.Surface((self.screenSize[0], self.screenSize[1]))
+        self.background = pygame.transform.scale(img, (self.screenSize[0], self.screenSize[1]))
         self.backgroundRect = self.background.get_rect(center=self.screen.get_rect().center)
                 
         # init walls
-        self.wallSize = (max(0,(self.screenWidth-self.barSurface)/2),self.screenHeight)
+        self.wallSize = (max(0,(self.screenSize[0]-self.barSurface)/2),self.screenSize[1])
         self.wallW = self.wallSize[0] # width of wall
         img = pygame.image.load(os.path.join(path, 'wall_metal_blue.png')).convert()
         self.wall = pygame.Surface(self.wallSize)
         self.wall = pygame.transform.scale(img, self.wallSize)
         self.wallRect1 = self.wall.get_rect(topleft=(0,0), size=self.wallSize)
-        self.wallRect2 = self.wall.get_rect(topleft=(self.screenWidth-self.wallW,0))   
+        self.wallRect2 = self.wall.get_rect(topleft=(self.screenSize[0]-self.wallW,0))   
         self.fontsize_target = self.size/16
         
         # init bar
-        barWidth = int((self.screenWidth-2*self.wallW) * (self.barWidth/100.0))
+        barWidth = int((self.screenSize[0]-2*self.wallW) * (self.barWidth/100.0))
         barSize = (barWidth, barHeight)
         img = pygame.image.load(os.path.join(path, 'bar_metallic3.png')).convert()
         self.bar = pygame.Surface(barSize)
         self.bar = pygame.transform.scale(img, barSize)
-        self.barMB = (self.screenWidth/2, self.barSurface+barHeight)
+        self.barMB = (self.screenSize[0]/2, self.barSurface+barHeight)
         self.barRect = self.bar.get_rect(midbottom=self.barMB)
         
         # init bowl
@@ -385,19 +396,19 @@ class BrainPong(MainloopFeedback):
         img = pygame.image.load(os.path.join(path, 'bowl_metallic_blue.png')).convert()
         self.bowl = pygame.Surface(bowlSize)
         self.bowl = pygame.transform.scale(img, bowlSize)
-        self.bowlRect = self.bowl.get_rect(center=((self.screenWidth-2*self.wallW)/3+self.wallW, diameter/2))
+        self.bowlRect = self.bowl.get_rect(center=((self.screenSize[0]-2*self.wallW)/3+self.wallW, diameter/2))
         self.bowl.set_colorkey((168,180,255))
         
         # calculate width of playing area
-        self.playWidth = self.screenWidth-2*self.wallW
-        
+        self.playWidth = self.screenSize[0]-2*self.wallW
+       
         if not self.resized:
             # init helper rectangle for bar and bowl (deep copy)
             self.barMoveRect = self.barRect.move(0,0)
             self.bowlMoveRect = self.bowlRect.move(0,0)
         else:
             self.resized = False
-            self.counterSize = self.screenHeight/20
+            self.counterSize = self.screenSize[1]/20
             # update position of bar and bowl
             self.bowlY_float = (1.0*self.barSurface / self.oldBarSurface) * self.bowlY_float
             self.bowlX_float = (1.0* self.playWidth / self.oldPlayWidth) * self.bowlX_float
@@ -420,43 +431,6 @@ class BrainPong(MainloopFeedback):
         if draw:
             pygame.display.flip()
 
-
-    def init_pygame(self):
-        """
-        Set up pygame and the screen and the clock.
-        """
-        pygame.init()
-        pygame.display.set_caption('Brain Pong')
-        self.screenWidth = max(self.screenWidth, int(self.screenHeight*0.9))
-        if self.fullscreen:
-            self.screen = pygame.display.set_mode((self.screenWidth, self.screenHeight), pygame.FULLSCREEN)
-        else:
-            self.screen = pygame.display.set_mode((self.screenWidth, self.screenHeight), pygame.RESIZABLE)
-        self.clock = pygame.time.Clock()
-
-
-    def process_pygame_events(self):
-        """
-        Process the the pygame event queue and react on VIDEORESIZE.
-        """
-        for event in pygame.event.get():
-            if event.type == pygame.VIDEORESIZE:
-                e = max(event.w, int(round(event.h*0.9)))
-                self.screen = pygame.display.set_mode((e, event.h), pygame.RESIZABLE)
-                self.resized = True
-                self.oldPlayWidth = self.playWidth
-                self.oldBarSurface = self.barSurface
-                (self.screenHeight, self.screenWidth) = (self.screen.get_height(), self.screen.get_width())
-                self.init_graphics()
-            elif event.type == pygame.QUIT:
-                sys.exit()
-            elif event.type == pygame.KEYDOWN:
-                step = 0
-                if event.unicode == u"a": step = -0.1
-                elif event.unicode == u"d" : step = 0.1
-                self.f += step
-                if self.f < -1: self.f = -1
-                if self.f > 1: self.f = 1
 
 
 if __name__ == '__main__':
