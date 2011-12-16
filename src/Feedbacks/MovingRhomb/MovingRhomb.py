@@ -25,46 +25,43 @@ import random
 
 import pygame
 
-from FeedbackBase.MainloopFeedback import MainloopFeedback
+from FeedbackBase.PygameFeedback import PygameFeedback
 
 
-class MovingRhomb(MainloopFeedback):
+class MovingRhomb(PygameFeedback):
 
     LEFT, RIGHT, TOP, BOTTOM = 1, 2, 3, 4
 
 # From Feedback ################################################################
 
     def init(self):
+        PygameFeedback.init(self)
         self.transparent = (0, 0, 0)
         self.rhomb_bg_color = (255, 255, 255)
         self.rhomb_fg_color = (255, 0, 0)
 
         self.w, self.h = 800, 600
         self.FPS = 30
-        
+
         self.angle = 173
         self.duration = 1000.0 # 3s from left to right
 
         self.random_angle = 5 # degrees
 
-        # TODO: move this to init_graphics 
+        # TODO: move this to init_graphics
         self.v = (self.w * 1000) / (self.duration * self.FPS)
-        
+
     def pre_mainloop(self):
-        self.init_pygame()
-        self.init_graphics()
+        PygameFeedback.pre_mainloop(self)
         self.stopping, self.stop = False, False
         # for now...
         self.rhomb = self.rhomb_left
-    
-    def post_mainloop(self):
-        pygame.quit()
-        
+
     def tick(self):
         self.process_pygame_events()
         pygame.time.wait(10)
         self.elapsed = self.clock.tick(self.FPS)
-            
+
     def play_tick(self):
         self.screen.blit(self.background, self.background.get_rect()) #, self.rhomb_rect)
         # calculate the new position
@@ -81,13 +78,13 @@ class MovingRhomb(MainloopFeedback):
         # for hwsurfaces and doublebuf
         pygame.display.flip()
 
-    
+
 # /From Feedback ###############################################################
 
 
     def calc_speed_vector(self, v, angle):
         return [v * math.cos(math.radians(angle)), v * math.sin(math.radians(angle))]
-    
+
     def calc_reflection(self, angle, where):
         rad = math.radians(angle)
         x = math.cos(rad)
@@ -100,28 +97,15 @@ class MovingRhomb(MainloopFeedback):
 
 
 # Pygame Stuff #################################################################
-    def init_pygame(self):
-        """
-        Set up pygame and the screen and the clock.
-        """
-        pygame.init()
-        size = (self.w, self.h)
-        #size = pygame.display.list_modes()[0]
-        self.screen = pygame.display.set_mode(size, pygame.HWSURFACE | pygame.DOUBLEBUF) #pygame.HWSURFACE | pygame.FULLSCREEN | pygame.DOUBLEBUF) # 
-        self.clock = pygame.time.Clock()
-        #print pygame.display.get_driver()
-        #print pygame.display.Info()
-        #print pygame.display.list_modes()
-        
     def init_graphics(self):
         """
         Initialize the surfaces and fonts depending on the screen size.
         """
-        
+
         # Initialize some usefull variables
         #self.w = self.screen.get_width()
         #self.h = self.screen.get_height()
-    
+
         # Scale some stuff
         rhomb_w = self.w / 20
         rhomb_h = self.h / 20
@@ -132,50 +116,40 @@ class MovingRhomb(MainloopFeedback):
         self.rhomb_right = pygame.Surface((rhomb_w, rhomb_h)).convert()
         self.rhomb_up = pygame.Surface((rhomb_w, rhomb_h)).convert()
         self.rhomb_down = pygame.Surface((rhomb_w, rhomb_h)).convert()
-        
+
         top = (rhomb_w/2, 0)
         left = (rhomb_w, rhomb_h/2)
         bottom = (rhomb_w/2, rhomb_h)
         right = (0, rhomb_h/2)
-        
+
         rhomb_points = (top, left, bottom, right)
         left_points = (top, bottom, left)
         right_points = (top, right, bottom)
         up_points = (top, right, left)
         down_points = (right, bottom, left)
-        
+
         self.rhomb_left.set_colorkey(self.transparent)
         pygame.draw.polygon(self.rhomb_left, self.rhomb_bg_color, rhomb_points)
         pygame.draw.polygon(self.rhomb_left, self.rhomb_fg_color, left_points)
-        
+
         self.rhomb_right.set_colorkey(self.transparent)
         pygame.draw.polygon(self.rhomb_right, self.rhomb_bg_color, rhomb_points)
         pygame.draw.polygon(self.rhomb_right, self.rhomb_fg_color, right_points)
-        
+
         self.rhomb_up.set_colorkey(self.transparent)
         pygame.draw.polygon(self.rhomb_up, self.rhomb_bg_color, rhomb_points)
         pygame.draw.polygon(self.rhomb_up, self.rhomb_fg_color, up_points)
-        
+
         self.rhomb_down.set_colorkey(self.transparent)
         pygame.draw.polygon(self.rhomb_down, self.rhomb_bg_color, rhomb_points)
         pygame.draw.polygon(self.rhomb_down, self.rhomb_fg_color, down_points)
-        
+
         self.rhomb_rect = self.rhomb_left.get_rect(center=self.screen.get_rect().center)
 
-        
-    def process_pygame_events(self):
-        """
-        Process the the pygame event queue and react on VIDEORESIZE.
-        """
-        for event in pygame.event.get():
-            if event.type == pygame.VIDEORESIZE:
-                self.screen = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
-                self.init_graphics()
 
-                
 if __name__ == '__main__':
     import logging
-    logging.basicConfig(level=logging.DEBUG)    
+    logging.basicConfig(level=logging.DEBUG)
     mr = MovingRhomb()
     mr.on_init()
     mr.on_play()
