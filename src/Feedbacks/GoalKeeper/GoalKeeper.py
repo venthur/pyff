@@ -23,12 +23,9 @@
 
 
 import random
-import sys
 import math
-import random
 import os
 import time
-from PIL import Image
 
 import pygame
 
@@ -103,8 +100,7 @@ class GoalKeeper(PygameFeedback):
         self.pauseDuration = 15000
         self.FPS = 40
         self.fullscreen = False
-        self.screenPos = [100, 100]
-        self.screenSize = [640, 480]
+        self.geometry = [100, 100, 640, 480]
         self.countdownFrom = 2  # should be 7
         self.hitMissDuration = 1000
         self.timeUntilNextTrial = [500, 1000]  # randomly between the two values
@@ -673,20 +669,20 @@ class GoalKeeper(PygameFeedback):
         self.load_images() #sadly, this has to be done everytime, otherwise the images look crappy when resizing
         self.screen = pygame.display.get_surface()
         self.size = min(self.screen.get_height(), self.screen.get_width())
-        #barWidth = int(self.screenSize[0] * 0.7)
-        barHeight = int(self.screenSize[1] * 0.08)
+        #barWidth = int(self.geometry[2] * 0.7)
+        barHeight = int(self.geometry[3] * 0.08)
 
         # init background
-        self.background = pygame.Surface((self.screenSize[0], self.screenSize[1]))
+        self.background = pygame.Surface((self.geometry[2], self.geometry[3]))
         self.background = self.background.convert()
         self.backgroundRect = self.background.get_rect(center=self.screen.get_rect().center)
         self.background.fill(self.backgroundColor)
 
         # init keeper
-        self.keeperSize = (self.screenSize[0] / 5, self.screenSize[0] / 30)
-        self.offsetGap = self.screenSize[0] / 4
-        gap = (self.screenSize[0] - 3 * self.keeperSize[0] - 2 * self.offsetGap) / 4
-        self.keeperY = int((6.0 / 7) * self.screenSize[1])
+        self.keeperSize = (self.geometry[2] / 5, self.geometry[2] / 30)
+        self.offsetGap = self.geometry[2] / 4
+        gap = (self.geometry[2] - 3 * self.keeperSize[0] - 2 * self.offsetGap) / 4
+        self.keeperY = int((6.0 / 7) * self.geometry[3])
         self.keeperCenter = {}
         keeper_pos = ['left', 'middle', 'right']
         for n in range(3):
@@ -719,7 +715,7 @@ class GoalKeeper(PygameFeedback):
 
         # init classifier bar frame
         self.frameSize = (self.keeperRange * 2 + self.keeperSize[0], barHeight)
-        self.barCenter = (self.screenSize[0] / 2, int(self.screenSize[1] * (6.5 / 7)))
+        self.barCenter = (self.geometry[2] / 2, int(self.geometry[3] * (6.5 / 7)))
         self.frame = pygame.transform.scale(self.frame, self.frameSize)
         self.frame.set_colorkey((255, 255, 255))
         self.frameRect = self.frame.get_rect(center=self.barCenter, size=self.frameSize)
@@ -746,10 +742,10 @@ class GoalKeeper(PygameFeedback):
         # init ball
         diameter = self.keeperSize[0] / 5
         self.ballSize = (diameter, diameter)
-        ballOffsetY = int(0.05 * self.screenSize[1])
+        ballOffsetY = int(0.05 * self.geometry[3])
         self.ball = pygame.transform.scale(self.ball, self.ballSize)
         self.ball_miss = pygame.transform.scale(self.ball_miss, self.ballSize)
-        self.ballRect = self.ball.get_rect(midtop=(self.screenSize[0] / 2, ballOffsetY))
+        self.ballRect = self.ball.get_rect(midtop=(self.geometry[2] / 2, ballOffsetY))
         self.ballX, self.ballY = self.ballRect.centerx, self.ballRect.bottom
         self.distBallKeeper = self.keeperRect.top - self.ballRect.bottom
         self.ball.set_colorkey((0,0,0))
@@ -757,14 +753,14 @@ class GoalKeeper(PygameFeedback):
         # init hbs
         if self.showTrialStartAnimation:
             self.hbSize = (diameter / 2, diameter)
-            self.hbOffset = self.screenSize[0] * (self.distanceBetweenHalfBalls / 2) / 100
+            self.hbOffset = self.geometry[2] * (self.distanceBetweenHalfBalls / 2) / 100
             self.hbLeft = pygame.transform.scale(self.hbLeft, self.hbSize)
             self.hbLeftRect = self.hbLeft.get_rect(midright=(self.ballRect.centerx - self.hbOffset, self.ballRect.centery))
             self.hbRight = pygame.transform.scale(self.hbRight, self.hbSize)
             self.hbRightRect = self.hbRight.get_rect(midleft=(self.ballRect.centerx + self.hbOffset, self.ballRect.centery))
 
         self.counterCenter = (self.frameRect.right * self.x_transl, self.size / 20)
-        self.counterSize = self.screenSize[1] / 15
+        self.counterSize = self.geometry[3] / 15
 
         # Calculate stepsize in x- and y-direction of the ball dependend on the ball speed
         if not self.waitBeforeTrial:
