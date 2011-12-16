@@ -95,8 +95,7 @@ class FeedbackCursorArrow(PygameFeedback):
         self.availableDirections =  ['right', 'foot']
         self.FPS =  50
         self.fullscreen =  False
-        self.screenWidth =  1000
-        self.screenHeight =  700
+        self.geometry = [0, 0, 1000, 700]
         self.countdownFrom = 2
         self.hitMissDuration =  1000
         self.dampedMovement = False
@@ -414,11 +413,11 @@ class FeedbackCursorArrow(PygameFeedback):
             if self.hitIfLateral:
                 self.hit = True
                 if self.availableDirections[self.targetDirection] == self.direction:
-                    if self.pos<0 and self.punchline1Rect.centerx>self.screenWidth/2+self.pos:
+                    if self.pos<0 and self.punchline1Rect.centerx>self.geometry[2]/2+self.pos:
                         self.punchline1Rect = self.update_punchline(self.punchline1, self.pos, self.availableDirections[0])
                         self.punchlinePos1 = abs(self.pos+self.innerRect.width/2.0)/self.borderWidth
                         self.punchline1.fill(self.punchLineColorImpr)
-                    elif self.pos>0 and self.punchline2Rect.centerx<self.screenWidth/2+self.pos:
+                    elif self.pos>0 and self.punchline2Rect.centerx<self.geometry[2]/2+self.pos:
                         self.punchline2Rect = self.update_punchline(self.punchline2, self.pos, self.availableDirections[1])
                         self.punchlinePos2 = abs(self.pos-self.innerRect.width/2.0)/self.borderWidth
                         self.punchline2.fill(self.punchLineColorImpr)
@@ -433,13 +432,13 @@ class FeedbackCursorArrow(PygameFeedback):
     def update_punchline(self, punchline, newpos, direction):
         newpos = abs(newpos)
         if direction==self.LEFT:
-            return punchline.get_rect(midtop=(self.screenWidth/2-newpos, 0))
+            return punchline.get_rect(midtop=(self.geometry[2]/2-newpos, 0))
         elif direction==self.RIGHT:
-            return punchline.get_rect(midtop=(self.screenWidth/2+newpos, 0))
+            return punchline.get_rect(midtop=(self.geometry[2]/2+newpos, 0))
         elif direction==self.UP:
-            return punchline.get_rect(midleft=(self.borderRect.left,self.screenHeight/2-newpos))
+            return punchline.get_rect(midleft=(self.borderRect.left,self.geometry[3]/2-newpos))
         elif direction==self.DOWN:
-            return punchline.get_rect(midleft=(self.borderRect.left,self.screenHeight/2+newpos))
+            return punchline.get_rect(midleft=(self.borderRect.left,self.geometry[3]/2+newpos))
 
     def reset_punchline_color(self):
         self.punchline1.fill(self.punchLineColor)
@@ -482,7 +481,7 @@ class FeedbackCursorArrow(PygameFeedback):
             top = -(2*len(text)-1)*height/2
             for t in range(len(text)):
                 surface = font.render(text[t], 1, color)
-                self.screen.blit(surface, surface.get_rect(midtop=(self.screenWidth/2, self.screenHeight/2+top+t*2*height)))
+                self.screen.blit(surface, surface.get_rect(midtop=(self.geometry[2]/2, self.geometry[3]/2+top+t*2*height)))
         else:
             surface = font.render(text, 1, color)
             self.screen.blit(surface, surface.get_rect(center=self.screen.get_rect().center))
@@ -498,10 +497,10 @@ class FeedbackCursorArrow(PygameFeedback):
         except:
             pass
         self.screen = pygame.display.get_surface()
-        (self.screenWidth, self.screenHeight) = (self.screen.get_width(), self.screen.get_height())
+        (self.geometry[2], self.geometry[3]) = (self.screen.get_width(), self.screen.get_height())
         self.size = min(self.screen.get_height(), self.screen.get_width())
         self.borderWidth = int(self.size*self.borderWidthRatio/2)
-        self.offsetX = (self.screenWidth-self.size)/2
+        self.offsetX = (self.geometry[2]-self.size)/2
         self.s1 = self.size/2-self.borderWidth
         self.s2 = self.borderWidth
 
@@ -541,8 +540,8 @@ class FeedbackCursorArrow(PygameFeedback):
         self.innerRect = self.inner.get_rect(center=self.screen.get_rect().center)
 
         # punchline
-        self.punchlineSize = {self.LEFT:  (self.punchlineThickness, self.screenHeight),
-                              self.RIGHT: (self.punchlineThickness, self.screenHeight),
+        self.punchlineSize = {self.LEFT:  (self.punchlineThickness, self.geometry[3]),
+                              self.RIGHT: (self.punchlineThickness, self.geometry[3]),
                               self.UP:    (self.borderRect.width, self.punchlineThickness),
                               self.DOWN:  (self.borderRect.width, self.punchlineThickness)}
         self.sign = {self.LEFT: -1,
