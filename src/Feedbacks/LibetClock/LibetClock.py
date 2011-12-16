@@ -62,9 +62,9 @@ class LibetClock(PygameFeedback):
         PygameFeedback.init(self)
 
         if __name__ == '__main__':
-            self.screenPos = [200, 200, 600, 400]
+            self.geometry = [200, 200, 600, 400]
         else:
-            self.screenPos = [0, 0, 1280, 800] #[0, 0, 1920, 1200]
+            self.geometry = [0, 0, 1280, 800] #[0, 0, 1920, 1200]
 
         self.TODAY_DIR = 'l:/data/bbciRaw/'
         self.writeClassifierLog = 1
@@ -84,8 +84,8 @@ class LibetClock(PygameFeedback):
         self.kp_perfect_tol = 15       # (in ms)
         self.FPS = 50
         self.fullscreen =  False
-        self.screenWidth =  self.screenPos[2]#900
-        self.screenHeight =  self.screenPos[3]#600
+        self.screenWidth =  self.geometry[2]#900
+        self.screenHeight =  self.geometry[3]#600
         self.countdownFrom = 3
         self.threshold = 0
         self.redClockDuration = self.revolutionTime/8
@@ -134,7 +134,7 @@ class LibetClock(PygameFeedback):
     def post_mainloop(self):
         self.logger.debug("on_quit")
         self.send_parallel(self.GAME_OVER)
-        PygameFeedback.post_mainloop()
+        PygameFeedback.post_mainloop(self)
 
     def on_control_event(self, data):
         self.f = data["cl_output"]
@@ -640,13 +640,13 @@ class LibetClock(PygameFeedback):
         """
         Set up pygame and the screen and the clock.
         """
-        os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (self.screenPos[0], self.screenPos[1])
+        os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (self.geometry[0], self.geometry[1])
         pygame.init()
         pygame.display.set_caption('LibetClock')
         if self.fullscreen:
-            self.screen = pygame.display.set_mode((self.screenPos[2], self.screenPos[3]), pygame.FULLSCREEN)
+            self.screen = pygame.display.set_mode((self.geometry[2], self.geometry[3]), pygame.FULLSCREEN)
         else:
-            self.screen = pygame.display.set_mode((self.screenPos[2], self.screenPos[3]), pygame.NOFRAME)
+            self.screen = pygame.display.set_mode((self.geometry[2], self.geometry[3]), pygame.NOFRAME)
         self.w = self.screen.get_width()
         self.h = self.screen.get_height()
         pygame.mouse.set_visible(False)
