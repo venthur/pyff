@@ -28,10 +28,10 @@ import math
 
 import pygame
 
-from FeedbackBase.MainloopFeedback import MainloopFeedback
+from FeedbackBase.PygameFeedback import PygameFeedback
 
 
-class FeedbackCursorArrow(MainloopFeedback):
+class FeedbackCursorArrow(PygameFeedback):
 
 ################################################################################
 # Derived from Feedback
@@ -76,16 +76,17 @@ class FeedbackCursorArrow(MainloopFeedback):
     GAME_STATUS_PLAY = 210
     GAME_STATUS_PAUSE = 211
     GAME_OVER = 254
-    
-    
-    def on_init(self):
+
+
+    def init(self):
         """
         Initializes the variables and stuff, but not pygame itself.
         """
-        MainloopFeedback.on_init(self)
+        PygameFeedback.init(self)
         self.logger.debug("on_init")
+        self.caption = 'Cursor Arrow Feedback'
         self.send_parallel(self.INIT_FEEDBACK)
-        
+
         self.durationUntilBorder = 1000
         self.durationPerTrial = 4000
         self.durationIndicateGoal = 1000
@@ -103,34 +104,34 @@ class FeedbackCursorArrow(MainloopFeedback):
         self.showPunchline = True
         #self.damping = 'linear'
         self.damping = 'distance'
-            
+
         self.pause = False
         self.quit = True
         self.quitting = True
-        
+
         self.gameover = False
         self.countdown = True
         self.hit = False
         self.miss = False
         self.shortPause = False
         self.indicateGoal = False
-        
+
         self.firstTickOfTrial = True
-        
+
         self.showsPause, self.showsShortPause = False, False
         self.showsHitMiss, self.showsGameover = False, False
-        
+
         self.elapsed, self.trialElapsed, self.countdownElapsed = 0,0,0
         self.hitMissElapsed, self.shortPauseElapsed, self.indicateGoalElapsed = 0,0,0
-        
+
         self.completedTrials = 0
-        
+
         self.f = 0
         self.hitMiss = [0,0]
         self.resized = False
         self.pos = 0
         self.targetDirection = 0
-        
+
         self.arrowPointlist = [(.5,0), (.5,.33), (1,.33), (1,.66), (.5,.66), (.5,1), (0,.5)]
         self.arrowColor = (127, 127, 127)
         self.borderColor = self.arrowColor
@@ -140,45 +141,47 @@ class FeedbackCursorArrow(MainloopFeedback):
         self.countdownColor = (237, 100, 148)
         self.punchLineColor = self.cursorColor
         self.punchLineColorImpr = (100, 200 , 100)  # if punchline is improved
-        
-        self.punchlineThickness = 5   # in pixels 
+
+        self.punchlineThickness = 5   # in pixels
         self.borderWidthRatio = 0.4     # in pixels
         self.punchlinePos1, self.punchlinePos2 = 0,0
-        
+
         #=============
         # NOTE: only one of the following variables should be True
-        self.hitIfLateral = True  
+        self.hitIfLateral = True
         self.reject = False
         #=============
-        
-        
-        # How many degrees counter clockwise to turn an arrow pointing to the 
+
+
+        # How many degrees counter clockwise to turn an arrow pointing to the
         # left to point at left, right and foot
         self.LEFT, self.RIGHT, self.DOWN, self.UP = 'left', 'right', 'foot', 'up'
         self.directions = {self.LEFT: 0, self.RIGHT: 180, self.DOWN: 90, self.UP: 270}
-        
-        
+
+
     def pre_mainloop(self):
+        PygameFeedback.pre_mainloop(self)
         self.logger.debug("on_play")
-        self.init_pygame()
-        self.init_graphics()
         self.send_parallel(self.GAME_STATUS_PLAY)
 
 
     def post_mainloop(self):
         self.logger.debug("on_quit")
+        PygameFeedback.post_mainloop(self)
         self.send_parallel(self.GAME_OVER)
-        pygame.quit()
 
 
     def tick(self):
         self.process_pygame_events()
+        if self.keypressed:
+            step = 0
+            if self.lastkey_unicode == u"a": step = -0.1
+            elif self.lastkey_unicode == u"d" : step = 0.1
+            self.f += step
+            if self.f < -1: self.f = -1
+            if self.f > 1: self.f = 1
         pygame.time.wait(10)
         self.elapsed = self.clock.tick(self.FPS)
-
-
-    def pause_tick(self):
-        self.do_print("Pause", self.fontColor, self.size / 4)
 
 
     def play_tick(self):
@@ -204,9 +207,9 @@ class FeedbackCursorArrow(MainloopFeedback):
 
     def on_control_event(self, data):
         #self.logger.debug("on_control_event: %s" % str(data))
-        self.f = data["data"][ - 1]    
-        
-    
+        self.f = data["data"][ - 1]
+
+
     def trial_tick(self):
         """
         One tick of the trial loop.
@@ -220,41 +223,41 @@ class FeedbackCursorArrow(MainloopFeedback):
             self.trialElapsed = 0
             self.pos = 0
             self.counter = 1
-            self.nDampTicks = 0            
+            self.nDampTicks = 0
             self.reset_punchline_color()
-            self.cursorTransition = False           
-            
+            self.cursorTransition = False
+
         # Teste ob zeit fuer alten Trial abgelaufen ist
         if self.trialElapsed >= self.durationPerTrial:
             self.check_for_hit_miss(); return
-        
+
         # Calculate motion of cursor
         self.f = (self.targetDirection-0.5)*2   #TODO: remove HACK
-        
-        if not self.dampedMovement:        
-            v = self.f * self.v0 
-        else:       
+
+        if not self.dampedMovement:
+            v = self.f * self.v0
+        else:
             v = self.damp_movement()
-            
-        self.pos += self.f * v 
-            
+
+        self.pos += self.f * v
+
         # send marker if cursor hits the border for the first time
         if abs(self.pos)>self.s1 and not self.cursorTransition:
             self.cursorTransition = True
             if self.pos<0 and self.targetDirection==0:
                 self.send_parallel(self.HIT_FT_CURSOR_LEFT)
             elif self.pos>0 and self.targetDirection==1:
-                self.send_parallel(self.HIT_FT_CURSOR_RIGHT)    
-            elif self.pos<0 and self.targetDirection==1:    
+                self.send_parallel(self.HIT_FT_CURSOR_RIGHT)
+            elif self.pos<0 and self.targetDirection==1:
                 self.send_parallel(self.MISS_FT_CURSOR_LEFT)
             else:
-                self.send_parallel(self.MISS_FT_CURSOR_RIGHT)   
-                                     
+                self.send_parallel(self.MISS_FT_CURSOR_RIGHT)
+
         self.update_cursor()
-        
+
         if abs(self.pos) >= self.size/2:
             self.check_for_hit_miss(); return
-        
+
         self.draw_all()
 
 
@@ -268,20 +271,20 @@ class FeedbackCursorArrow(MainloopFeedback):
             self.myarrowRect = self.myarrow.get_rect(center=self.screen.get_rect().center)
             self.cursorRect.center = self.screen.get_rect().center
             self.reset_punchline_color()
-            
+
             if self.targetDirection==0:
                 self.send_parallel(self.TARGET_LEFT)
             else:
                 self.send_parallel(self.TARGET_RIGHT)
-                
+
         self.indicateGoalElapsed += self.elapsed
         if self.durationIndicateGoal<self.indicateGoalElapsed:
             self.indicateGoalElapsed = 0
             self.indicateGoal = False
         self.draw_all()
-        
-        
-    
+
+
+
     def pause_tick(self):
         """
         One tick of the pause loop.
@@ -291,7 +294,7 @@ class FeedbackCursorArrow(MainloopFeedback):
         self.do_print("Pause", self.fontColor, self.size/4)
         self.showsPause = True
 
-        
+
     def short_pause_tick(self):
         """
         One tick of the short pause loop.
@@ -309,14 +312,14 @@ class FeedbackCursorArrow(MainloopFeedback):
         self.do_print("Short Break...", self.fontColor)
         self.showsShortPause = True
 
-    
+
     def countdown_tick(self):
         """
         One tick of the countdown loop.
         """
         if self.countdownElapsed==0:
             self.send_parallel(self.COUNTDOWN_START)
-            
+
         self.countdownElapsed += self.elapsed
         if self.countdownElapsed >= self.countdownFrom * 1000:
             self.countdown = False
@@ -331,7 +334,7 @@ class FeedbackCursorArrow(MainloopFeedback):
         self.draw_init()
         self.do_print(str(t), self.countdownColor, self.size/3, True)
 
-        
+
     def gameover_tick(self):
         """
         One tick of the game over loop.
@@ -343,7 +346,7 @@ class FeedbackCursorArrow(MainloopFeedback):
                        self.fontColor, self.size/15)
         self.showsGameover = True
 
-        
+
     def hit_miss_tick(self):
         """
         One tick of the Hit/Miss loop.
@@ -351,13 +354,13 @@ class FeedbackCursorArrow(MainloopFeedback):
         self.hitMissElapsed += self.elapsed
         if self.hitMissElapsed >= self.hitMissDuration:
             self.hitMissElapsed = 0
-            self.hit, self.miss, self.reject = False, False, False            
+            self.hit, self.miss, self.reject = False, False, False
             self.showsHitMiss = False
             self.indicateGoal = True
             return
         if self.showsHitMiss:
             return
-        
+
         self.completedTrials += 1
         self.firstTickOfTrial = True
         s = ""
@@ -374,12 +377,12 @@ class FeedbackCursorArrow(MainloopFeedback):
             self.shortPause = True
         if self.completedTrials >= self.trials:
             self.gameover = True
-        
+
         self.draw_all()
         self.do_print(s, None, None, True)
         pygame.display.update()
         self.showsHitMiss = True
-    
+
     def damp_movement(self):
         if self.damping == 'linear':
             if abs(self.pos)>self.s1:
@@ -396,19 +399,19 @@ class FeedbackCursorArrow(MainloopFeedback):
                 return (1.0*(self.borderWidth-s)/self.borderWidth)*self.v0
             else:
                 return self.v0
-            
+
     def check_for_hit_miss(self):
         if self.reject:
             if abs(self.pos) <= self.arrowRect.width/2:
                 self.send_parallel(self.TRIAL_END_REJECT)
                 self.reject = True; return
-                
+
         if (self.pos<0 and self.targetDirection==0) or (self.pos>0 and self.targetDirection==1):
             if (self.pos<0 and self.targetDirection==0):
-                self.send_parallel(self.HIT_CURSOR_LEFT) 
+                self.send_parallel(self.HIT_CURSOR_LEFT)
             else:
                 self.send_parallel(self.HIT_CURSOR_RIGHT)
-                 
+
             if self.hitIfLateral:
                 self.hit = True
                 if self.availableDirections[self.targetDirection] == self.direction:
@@ -423,11 +426,11 @@ class FeedbackCursorArrow(MainloopFeedback):
         else:
             self.miss = True
             if self.pos<0:
-                self.send_parallel(self.MISS_CURSOR_LEFT) 
+                self.send_parallel(self.MISS_CURSOR_LEFT)
             else:
                 self.send_parallel(self.MISS_CURSOR_RIGHT)
-                 
-    
+
+
     def update_punchline(self, punchline, newpos, direction):
         newpos = abs(newpos)
         if direction==self.LEFT:
@@ -438,11 +441,11 @@ class FeedbackCursorArrow(MainloopFeedback):
             return punchline.get_rect(midleft=(self.borderRect.left,self.screenHeight/2-newpos))
         elif direction==self.DOWN:
             return punchline.get_rect(midleft=(self.borderRect.left,self.screenHeight/2+newpos))
-        
+
     def reset_punchline_color(self):
         self.punchline1.fill(self.punchLineColor)
         self.punchline2.fill(self.punchLineColor)
-    
+
     def update_cursor(self):
         """
         Update the cursor position.
@@ -459,8 +462,8 @@ class FeedbackCursorArrow(MainloopFeedback):
                      self.UP    : (0,-abs(self.pos))
                    }[self.direction]
         self.cursorRect.move_ip(arrowPos)
-        
-    
+
+
     def do_print(self, text, color=None, size=None, superimpose=False):
         """
         Print the given text in the given color and size on the screen.
@@ -470,11 +473,11 @@ class FeedbackCursorArrow(MainloopFeedback):
             color = self.fontColor
         if not size:
             size = self.size/10
-        
+
         font = pygame.font.Font(None, size)
         if not superimpose:
             self.draw_init()
-        
+
         if type(text) is list:
             height = pygame.font.Font.get_linesize(font)
             top = -(2*len(text)-1)*height/2
@@ -485,8 +488,8 @@ class FeedbackCursorArrow(MainloopFeedback):
             surface = font.render(text, 1, color)
             self.screen.blit(surface, surface.get_rect(center=self.screen.get_rect().center))
         pygame.display.update()
-        
-        
+
+
     def init_graphics(self):
         """
         Initialize the surfaces and fonts depending on the screen size.
@@ -498,7 +501,7 @@ class FeedbackCursorArrow(MainloopFeedback):
         self.offsetX = (self.screenWidth-self.size)/2
         self.s1 = self.size/2-self.borderWidth
         self.s2 = self.borderWidth
-            
+
         if self.dampedMovement:
             self.v0 = self.s2/(1.0*self.t2) + self.s1/(2.0*self.t1)
             self.dampingTime = self.durationPerTrial-self.durationUntilBorder
@@ -506,7 +509,7 @@ class FeedbackCursorArrow(MainloopFeedback):
             self.t2 = self.FPS * self.dampingTime/1000
         else:
             self.v0 = (self.size * 0.5) / (self.durationPerTrial*self.FPS/1000.0)
-        
+
         # arrow
         scale = self.size / 3
         scaledArrow = [(P[0]*scale, P[1]*scale) for P in self.arrowPointlist]
@@ -514,7 +517,7 @@ class FeedbackCursorArrow(MainloopFeedback):
         self.arrowRect = self.arrow.get_rect(center=self.screen.get_rect().center)
         self.arrow.fill(self.backgroundColor)
         pygame.draw.polygon(self.arrow, self.arrowColor, scaledArrow)
-        
+
         # cursor
         scale = self.size / 5
         self.cursor = pygame.Surface((scale, scale))
@@ -522,7 +525,7 @@ class FeedbackCursorArrow(MainloopFeedback):
         self.cursor.set_colorkey((0,0,0))
         pygame.draw.line(self.cursor, self.cursorColor, (0,scale/2),(scale,scale/2), 10)
         pygame.draw.line(self.cursor, self.cursorColor, (scale/2,0),(scale/2,scale), 10)
-        
+
         # background + border
         self.background = pygame.Surface((self.screen.get_width(), self.screen.get_height()))
         self.backgroundRect = self.background.get_rect(center=self.screen.get_rect().center)
@@ -543,15 +546,15 @@ class FeedbackCursorArrow(MainloopFeedback):
                      self.RIGHT: 1,
                      self.UP:   -1,
                      self.DOWN:  1}
-        
+
         self.punchline1 = pygame.Surface(self.punchlineSize[self.availableDirections[0]])
         self.punchline1Rect = self.update_punchline(self.punchline1, self.sign[self.availableDirections[0]]*self.innerRect.width/2, self.availableDirections[0])
         self.punchline1.fill(self.punchLineColor)
-        
+
         self.punchline2 = pygame.Surface(self.punchlineSize[self.availableDirections[1]])
         self.punchline2.fill(self.punchLineColor)
         self.punchline2Rect = self.update_punchline(self.punchline2, self.sign[self.availableDirections[1]]*self.innerRect.width/2, self.availableDirections[1])
-        
+
         if self.resized:
             self.resized = False
             target = self.availableDirections[self.targetDirection]
@@ -562,20 +565,6 @@ class FeedbackCursorArrow(MainloopFeedback):
             self.myarrow = pygame.transform.rotate(self.arrow, self.directions[target])
             self.myarrowRect = self.myarrow.get_rect(center=self.screen.get_rect().center)
             self.draw_all()
-        
-    def init_pygame(self):
-        """
-        Set up pygame and the screen and the clock.
-        """
-        pygame.init()
-        pygame.display.set_caption('CursorArrow Feedback')
-        if self.fullscreen:
-            self.screen = pygame.display.set_mode((self.screenWidth, self.screenHeight), pygame.FULLSCREEN)
-        else:
-            self.screen = pygame.display.set_mode((self.screenWidth, self.screenHeight), pygame.RESIZABLE)
-        self.w = self.screen.get_width()
-        self.h = self.screen.get_height()
-        self.clock = pygame.time.Clock()
 
 
     def draw_all(self):
@@ -590,7 +579,7 @@ class FeedbackCursorArrow(MainloopFeedback):
         self.screen.blit(self.punchline2, self.punchline2Rect)
         self.screen.blit(self.cursor, self.cursorRect)
         pygame.display.update()
-        
+
     def draw_init(self):
         """
         Draws the initial screen.
@@ -598,28 +587,7 @@ class FeedbackCursorArrow(MainloopFeedback):
         self.screen.blit(self.background, self.backgroundRect)
         self.screen.blit(self.border, self.borderRect)
         self.screen.blit(self.inner, self.innerRect)
-        
-        
-    def process_pygame_events(self):
-        """
-        Process the the pygame event queue and react on VIDEORESIZE.
-        """
-        for event in pygame.event.get():
-            if event.type == pygame.VIDEORESIZE:
-                self.resized = True
-                self.size_old = self.size
-                h = min(event.w, event.h)
-                self.screen = pygame.display.set_mode((event.w, h), pygame.RESIZABLE) 
-                self.init_graphics()
-            elif event.type == pygame.QUIT:
-                sys.exit()
-            elif event.type == pygame.KEYDOWN:
-                step = 0
-                if event.unicode == u"a": step = -0.1
-                elif event.unicode == u"d" : step = 0.1
-                self.f += step
-                if self.f < -1: self.f = -1
-                if self.f > 1: self.f = 1
+
 
 if __name__ == '__main__':
     ca = FeedbackCursorArrow(None)
