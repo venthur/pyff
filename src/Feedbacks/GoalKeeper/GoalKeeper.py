@@ -179,7 +179,7 @@ class GoalKeeper(PygameFeedback):
 
 
     def post_mainloop(self):
-        PygameFeedback.post_mainloop()
+        PygameFeedback.post_mainloop(self)
         self.send_parallel(self.END_EXP)
 
 
