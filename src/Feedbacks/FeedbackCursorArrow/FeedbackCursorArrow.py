@@ -23,7 +23,6 @@
 
 
 import random
-import sys
 import math
 
 import pygame
@@ -494,6 +493,10 @@ class FeedbackCursorArrow(PygameFeedback):
         """
         Initialize the surfaces and fonts depending on the screen size.
         """
+        try:
+            self.size_old = self.size
+        except:
+            pass
         self.screen = pygame.display.get_surface()
         (self.screenWidth, self.screenHeight) = (self.screen.get_width(), self.screen.get_height())
         self.size = min(self.screen.get_height(), self.screen.get_width())
