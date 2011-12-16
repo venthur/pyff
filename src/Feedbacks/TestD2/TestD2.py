@@ -57,7 +57,7 @@ class TestD2(PygameFeedback):
         self.e1 = 0
         self.e2 = 0
         # And here we go...
-        pygame.time.set_timer(pygame.QUIT, self.number_of_symbols * self.seconds_per_symbol * 1000)
+        pygame.time.set_timer(pygame.QUIT, int(self.number_of_symbols * self.seconds_per_symbol * 1000))
         self.clock.tick()
         self.present_stimulus()
 
