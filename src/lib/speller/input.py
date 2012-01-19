@@ -26,30 +26,12 @@ class InputHandler(object):
         self._trigger = control._trigger
         self._triggerer = triggerer
         self._symbol = ''
-        self._digits = ''
 
     def start_experiment(self, experiment):
         self._experiment = experiment
 
     def start_trial(self, trial):
-        self._digits = ''
-
-    def keyboard(self, event):
-        s = event.unicode
-        if self._digits:
-            if event.key == pygame.K_RETURN:
-                self._process_keyboard_input()
-                self._digits = ''
-            elif event.key == pygame.K_BACKSPACE:
-                self._digits = self._digits[:-1]
-        elif s.isdigit():
-            self._digits += s
-        else:
-            return False
-        return True
-
-    def _process_keyboard_input(self):
-        self._view.answered()
+        pass
 
 CalibrationInputHandler = InputHandler
 
@@ -63,12 +45,8 @@ class SpellingInputHandler(InputHandler):
 
     def keyboard(self, event):
         s = event.unicode
-        if (self._allow_keyboard and not InputHandler.keyboard(self, event) and
-            s in self._alphabet):
+        if (self._allow_keyboard and s in self._alphabet):
             self.eeg_select(self._alphabet.index(s))
-
-    def _process_keyboard_input(self):
-        self.eeg_select(int(self._digits) - 1)
 
     def eeg_select(self, cls):
         if 0 <= cls < len(self._alphabet):
