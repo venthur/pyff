@@ -53,6 +53,9 @@ class VisionEggView(object):
         """ Set pygame/VisionEgg event handler function. """
         self._event_handlers = event_handlers
 
+    def add_event_handlers(self, event_handlers):
+        self._event_handlers.extend(event_handlers)
+
     def set_iterator_semaphore(self, flag):
         """ Specify the object to be used as semaphore for iterators.
         See L{Switcherator} for more.
@@ -91,9 +94,11 @@ class VisionEggView(object):
         'font_color_name' and 'bg_color'.
         """
         params = { 'fullscreen': self._fullscreen, 'sync_swap': True }
-        if not self._fullscreen:
+        if self._fullscreen:
+            params['size'] = self._fullscreen_resolution
+        else:
             os.environ['SDL_VIDEO_WINDOW_POS'] = '%d, %d' % (self._geometry[0],
-                                                            self._geometry[1])
+                                                             self._geometry[1])
             params['size'] = self._geometry[2:]
         self.screen = Screen(**params)
         self._set_bg_color()
@@ -211,6 +216,18 @@ class VisionEggView(object):
         self._center_text.set(text=text)
         self._center_text.set(colors=color or (self._font_color for l in
                                            self._center_text))
+
+    def word(self, word):
+        pass
+
+    def eeg_letter(self, *a, **kw):
+        pass
+
+    def next_target(self):
+        pass
+
+    def previous_target(self):
+        pass
 
     def clear_center_word(self):
         """ Remove the center word from the screen. """

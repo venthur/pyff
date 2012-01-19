@@ -80,6 +80,7 @@ class VisionEggFeedback(MainloopFeedback):
         self.wait_style_fixed = True
         self.fullscreen = False
         self.geometry = [100, 100, 640, 480]
+        self.fullscreen_resolution = [1024, 768]
         self.bg_color = 'grey'
         self.font_color_name = 'black'
         self.font_size = 150
@@ -95,7 +96,7 @@ class VisionEggFeedback(MainloopFeedback):
                                  'fixation_cross_time',
                                  'fixation_cross_symbol',
                                  'countdown_symbol_duration',
-                                 'countdown_start']
+                                 'countdown_start', 'fullscreen_resolution']
 
     def init_parameters(self):
         pass
@@ -123,7 +124,8 @@ class VisionEggFeedback(MainloopFeedback):
         
     def __setup_events(self):
         """ Set L{keyboard_input} to serve as keyboard handler. """
-        handlers = [(pygame.KEYDOWN, self.keyboard_input)]
+        handlers = [(pygame.KEYDOWN, self.keyboard_input),
+                    (pygame.KEYUP, self.keyboard_input_up)]
         self._view.set_event_handlers(handlers)
 
     def __setup_stim_factory(self):
@@ -171,18 +173,21 @@ class VisionEggFeedback(MainloopFeedback):
         if event.key in quit_keys or event.type == pygame.QUIT:
             self.quit()
 
+    def keyboard_input_up(self, event):
+        pass
+
     def pre_mainloop(self):
         """ Reset the iterator semaphore and initialize the screen. """
         self._flag.reset()
         try:
             self._view.acquire()
-            self.update_parameters()
+            self._update_parameters()
         except pygame.error, e:
             self.logger.error(e)
 
     def on_interaction_event(self, data):
         if not self._running:
-            self.update_parameters()
+            self._update_parameters()
 
     def _mainloop(self):
         self._running = True
@@ -203,12 +208,16 @@ class VisionEggFeedback(MainloopFeedback):
     def on_quit(self):
         self.quit()
 
-    def update_parameters(self):
+    def _update_parameters(self):
+        self.update_parameters()
         """ Apply new parameters set from pyff. """
         params = dict([[p, getattr(self, p, None)] for p in
                         self._view_parameters])
         self.__setup_stim_factory()
         self._view.update_parameters(**params)
+
+    def update_parameters(self):
+        pass
 
     def quit(self):
         self._flag.off()
@@ -268,3 +277,10 @@ class VisionEggFeedback(MainloopFeedback):
         and example 1.
         """
         return self._view.add_image_stimulus(**kw)
+
+    @property
+    def screen_size(self):
+        """ Convenience property for obtaining the effective size of the
+        VisionEgg window.
+        """
+        return self._view.screen.size
