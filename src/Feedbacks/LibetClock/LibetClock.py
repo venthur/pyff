@@ -27,56 +27,56 @@ import os
 
 import pygame
 
-from FeedbackBase.MainloopFeedback import MainloopFeedback
+from FeedbackBase.PygameFeedback import PygameFeedback
 
 
-class LibetClock(MainloopFeedback):
+class LibetClock(PygameFeedback):
 
     # TRIGGER VALUES FOR THE PARALLEL PORT (MARKERS)
     # 1st QUARTER: 9    (cf. end of 'trial_tick()')
     # 2nd QUARTER: 18   (cf. end of 'trial_tick()')
     # 3rd QUARTER: 27   (cf. end of 'trial_tick()')
     # 4th QUARTER: 36   (cf. end of 'trial_tick()')
-    
+
     GAME_START, GAME_OVER = 252, 253
-    COUNTDOWN_START = 30 
-    SHORTPAUSE_START = 249   
+    COUNTDOWN_START = 30
+    SHORTPAUSE_START = 249
     TRIAL_START = 40
     KEY_PRESS = 128
     # Trial end markers
     TE_VALID, TE_VALID_NOKP, TE_VALID_CLS_BEFORE_KP = 41, 42, 47
     TE_INVALID_MOREKP, TE_INVALID_TOOEARLY = 43, 44
     TE_INVALID_UNPRECISE, TE_INVALID_NOKP = 45, 46
-    CLASSIFIER_MOVE = 100       
-    CLASSIFIER_NOMOVE = 110     
+    CLASSIFIER_MOVE = 100
+    CLASSIFIER_NOMOVE = 110
     GAME_STATUS_PAUSE = 211
-    
-    
+
+
 ################################################################################
 
 
-    def on_init(self):
+    def init(self):
         """
         Initializes the variables and stuff, but not pygame itself.
         """
-        MainloopFeedback.on_init(self)
-        
+        PygameFeedback.init(self)
+
         if __name__ == '__main__':
             self.screenPos = [200, 200, 600, 400]
         else:
             self.screenPos = [0, 0, 1280, 800] #[0, 0, 1920, 1200]
-            
+
         self.TODAY_DIR = 'l:/data/bbciRaw/'
         self.writeClassifierLog = 1
         self.classifier_log = []
         self.cls_evolution_log = []
-        
+
         self.revolutionTime = 4000  # time the clock hand needs for one revolution (in ms)
         self.quarterTime = self.revolutionTime/4
         self.nRev = 2               # number of clockhand revolutions per trial
         self.intertrialInterval = [2500, 3500]     # (in ms)
         self.showClassifier = 'random'   # 'none', 'random', 'feedback'
-        self.cls_move_prob = 0.25  # probability that classifier is true at a target 
+        self.cls_move_prob = 0.25  # probability that classifier is true at a target
                                   # (only applies  if self.showClassifier=='random')
         self.trials = 50
         self.pauseAfter = 10
@@ -91,13 +91,13 @@ class LibetClock(MainloopFeedback):
         self.redClockDuration = self.revolutionTime/8
         self.SADuration = 1000
         self.cls_ival = (-400, -200)
-        self.keypress_tolerance = 50     # time deviation tolerate (in ms) of the keypress from 
+        self.keypress_tolerance = 50     # time deviation tolerate (in ms) of the keypress from
                                          # when the clockhand actually is at the target
-        
+
         self.pause = False
         self.quit = True
         self.quitting = True
-        
+
         self.gameover = False
         self.countdown = True
         self.hit = False
@@ -106,17 +106,17 @@ class LibetClock(MainloopFeedback):
         self.end_of_trial = False
         self.start_animation = False
         self.firstTickOfTrial = True
-        
+
         self.showsPause, self.showsShortPause = False, False
         self.showsHitMiss, self.showsGameover = False, False
-        
+
         self.elapsed, self.trialElapsed, self.countdownElapsed, self.redClockElapsed = 0,0,0,0
         self.shortPauseElapsed, self.trialSAElapsed, self.endOfTrialElapsed = 0,0,0
-        
+
         self.f = 0
         self.hitMiss = [0,0]
         self.it = 0
-        
+
         self.backgroundColor = (64,64,100)
         self.clockColor = (50,50,200)
         self.redClockColor = (200,0,0)
@@ -124,28 +124,32 @@ class LibetClock(MainloopFeedback):
         self.fb_color_good = (0, 180, 0)
         self.fb_color_bad = (200, 0, 0)
         self.countdownColor = (237, 100, 148)
-        
+
         self.completedTrials = 0
         self.validTrials = 0
         self.infostr = ''
         self.infocolor = self.fb_color_good
-        
-        
-    def pre_mainloop(self):
-        self.logger.debug("on_play")
-        self.init_pygame()
-        self.init_graphics()
+
 
     def post_mainloop(self):
         self.logger.debug("on_quit")
         self.send_parallel(self.GAME_OVER)
-        pygame.quit()
-    
+        PygameFeedback.post_mainloop()
+
     def on_control_event(self, data):
-        self.f = data["cl_output"]  
-        
+        self.f = data["cl_output"]
+
     def tick(self):
         self.process_pygame_events()
+        if self.keypressed:
+            if self.lastkey_unicode == u"j":
+                if self.trialElapsed != 0:
+                    self.send_parallel(self.KEY_PRESS)
+                    if self.buttonPressed:
+                        self.buttonPressError = True
+                    else:
+                        self.buttonPressed = True
+                        self.buttonPressTime = self.trialElapsed
         pygame.time.wait(10)
         self.elapsed = self.cpu_clock.tick(self.FPS)
 
@@ -153,7 +157,7 @@ class LibetClock(MainloopFeedback):
     def play_tick(self):
         """
         One tick of the main loop.
-        
+
         Decides in wich state the feedback currently is and calls the apropriate
         tick method.
         """
@@ -171,11 +175,11 @@ class LibetClock(MainloopFeedback):
             self.end_of_trial_tick()
         else:
             self.trial_tick()
-    
+
     def trial_start_animation(self):
-                    
+
         self.trialSAElapsed += self.elapsed
-        
+
         if self.SADuration<self.trialSAElapsed:
             self.start_animation = False
             self.trialSAElapsed = 0
@@ -186,19 +190,19 @@ class LibetClock(MainloopFeedback):
             pygame.draw.arc(self.arc, self.arcColor, self.arcRect, math.radians(90), math.radians(angle), self.arcWidth)
             self.arcRect.center = self.screencenter
             self.draw_all()
-        
-    
+
+
     def trial_tick(self):
         """
         One tick of the trial loop.
-        """        
+        """
         self.trialElapsed += self.elapsed
-        
+
         # Teste ob erster Tick im Trial
         if self.firstTickOfTrial:
             if self.completedTrials == 0:
-                self.send_parallel(self.GAME_START)  # sending this in pre_mainloop is too early for bbci_bet_apply 
-                                                # (cf. variable start_marker_received in bbci_bet_apply) 
+                self.send_parallel(self.GAME_START)  # sending this in pre_mainloop is too early for bbci_bet_apply
+                                                # (cf. variable start_marker_received in bbci_bet_apply)
             print 'showClassifier: ' + str(self.showClassifier)
             print 'cls_ival: ' + str(self.cls_ival)
             print 'threshold: ' + str(self.threshold)
@@ -215,7 +219,7 @@ class LibetClock(MainloopFeedback):
             self.target = 0
             self.clockhandAngle = 0
             self.classified = False
-            #self.targetTransitionTimes = []  
+            #self.targetTransitionTimes = []
             self.classifierTime = 0
             if self.nRev == 1:
                 self.durationPerTrial = self.revolutionTime + 200
@@ -225,14 +229,14 @@ class LibetClock(MainloopFeedback):
                 self.durationPerTrial = self.revolutionTime*self.nRev
                 totAn = self.nRev*360
                 self.currTargetAngle = (totAn-360, totAn-270, totAn-180, totAn-90)
-                self.TARGET_MARKER = (1, 9, 18, 27)              
+                self.TARGET_MARKER = (1, 9, 18, 27)
             self.nTargets = len(self.currTargetAngle)
             self.set_classification_time()
-        
+
         # classifier evolution log
         self.cls_evolution_log[self.completedTrials].append(self.trialElapsed)
         self.cls_evolution_log[self.completedTrials].append(self.f)
-        
+
         # Teste ob zeit fuer alten Trial abgelaufen ist
         if self.trialElapsed >= self.durationPerTrial:
                 self.trialElapsed = 0
@@ -240,9 +244,9 @@ class LibetClock(MainloopFeedback):
                 self.arcRect.topleft = self.screen.get_rect().topleft
                 pygame.draw.arc(self.arc, self.arcColor, self.arcRect, math.radians(90), math.radians(self.arcAngle), self.arcWidth)
                 self.arcRect.center = self.screencenter
-                self.firstTickOfTrial = True 
-                self.end_of_trial = True       
-        
+                self.firstTickOfTrial = True
+                self.end_of_trial = True
+
         # draw red 'no-move' clock
         if self.redClock:
             self.redClockElapsed += self.elapsed
@@ -250,7 +254,7 @@ class LibetClock(MainloopFeedback):
                 pygame.draw.circle(self.clock, self.clockColor, (self.diameter/2,self.diameter/2), self.diameter/2)
                 self.redClockElapsed = 0
                 self.redClock = False
-        
+
         if self.showClassifier != 'none':
             # evalute classifier if classifier should be evalutated
             t = (self.trialElapsed%self.quarterTime)-self.quarterTime # time the clockhand needs to the next target
@@ -260,7 +264,7 @@ class LibetClock(MainloopFeedback):
                     self.classifier_log[self.completedTrials].append(self.f)
                 else:
                     self.classifier_log[self.completedTrials].append('NaN')
-                
+
 #===============================================================================
 #                if self.mrk_log:
 #                    self.mrk_log = False
@@ -272,10 +276,10 @@ class LibetClock(MainloopFeedback):
 #                else:
 #                    self.marker_log[self.completedTrials].append('NaN')
 #===============================================================================
-                    
-                if not self.buttonPressed and self.classifierTime==0:          
+
+                if not self.buttonPressed and self.classifierTime==0:
                     if self.showClassifier == 'random':
-                        p = random.random()                    
+                        p = random.random()
                         if p>(1.0-self.cls_move_prob):
                             f = self.threshold-1
                         else:
@@ -294,7 +298,7 @@ class LibetClock(MainloopFeedback):
                         self.classifierTime = self.trialElapsed
                     else:
                         self.send_parallel(self.CLASSIFIER_NOMOVE)
-        
+
         # calculate new position of the clock hand
         angle_t0 = -self.clockhandAngle-self.currTargetAngle[self.target]
         self.clockhandAngle = self.nRev * max(-360, -360 * (1.0*self.trialElapsed/(self.nRev*self.revolutionTime)))
@@ -302,7 +306,7 @@ class LibetClock(MainloopFeedback):
         self.clockhandRect_rotated = self.clockhand_rotated.get_rect(center=self.screencenter)
         self.clockhandRect_rotated.center = self.clockhandRect.center
         angle_t1 = -self.clockhandAngle-self.currTargetAngle[self.target]
-        
+
         # check when the clockhand target transition actually occurs
         if angle_t0<0 and angle_t1>=0:
             self.send_parallel(self.TARGET_MARKER[self.target])
@@ -310,25 +314,25 @@ class LibetClock(MainloopFeedback):
             #self.f += 1   # for 'classifier log' testing purposes
             self.set_classification_time()
             #self.targetTransitionTimes.append(self.trialElapsed)
-            self.target += 1 
+            self.target += 1
             if self.target==4:
                 self.target = 0
         self.draw_all_rotating()
-        
+
     def is_within_cls_interval(self,t):
         lastRevolution = self.trialElapsed>self.revolutionTime*(self.nRev-1)-self.quarterTime
         return t>self.cls_time and self.durationPerTrial-self.quarterTime>self.trialElapsed and lastRevolution
-    
+
     def end_of_trial_tick(self):
         if self.endOfTrialElapsed == 0:
             #print 'self.targetTransitionTimes: ' + str(self.targetTransitionTimes)
             print 'trial ' + str(self.completedTrials)
             print 'valid trial ' + str(self.validTrials)
             self.time_accuracy()
-            endTrialTime =  [self.intertrialInterval[0]-self.SADuration, self.intertrialInterval[0]-self.SADuration] 
+            endTrialTime =  [self.intertrialInterval[0]-self.SADuration, self.intertrialInterval[0]-self.SADuration]
             nu = random.random()
-            self.endOfTrialDuration = nu*endTrialTime[0] + (1-nu) * endTrialTime[1] 
-            
+            self.endOfTrialDuration = nu*endTrialTime[0] + (1-nu) * endTrialTime[1]
+
         self.endOfTrialElapsed += self.elapsed
         if self.endOfTrialElapsed>self.endOfTrialDuration:
             self.end_of_trial = False
@@ -343,29 +347,29 @@ class LibetClock(MainloopFeedback):
                 self.start_animation = True
         self.draw_all(False)
         center = (self.screencenter[0], self.screencenter[1]/2)
-        self.do_print(self.infostr, self.infocolor, self.size/20, True)#, center)  
-    
-    
+        self.do_print(self.infostr, self.infocolor, self.size/20, True)#, center)
+
+
     def time_accuracy(self):
         if self.buttonPressError:         # key was pressed more than once
             self.infocolor = self.fb_color_bad
-            self.infostr = ['More than one keypress!', 'Please press only once per trial!']   
+            self.infostr = ['More than one keypress!', 'Please press only once per trial!']
             self.validTrials -= 1
             self.send_parallel(self.TE_INVALID_MOREKP)
             self.classifier_log[self.completedTrials].append(0.1)
         elif self.buttonPressed:           # calculate time difference between optimal and actual keypress
             t = self.buttonPressTime%(self.quarterTime)
-            timediff = min(t, abs(t-(self.quarterTime))) 
+            timediff = min(t, abs(t-(self.quarterTime)))
             if self.buttonPressTime <= self.durationPerTrial-self.revolutionTime-(self.quarterTime/2):
                     self.infocolor = self.fb_color_bad
                     self.infostr = ['Press key only during', 'the last revolution.']
                     self.validTrials -= 1
                     self.send_parallel(self.TE_INVALID_TOOEARLY)
                     self.classifier_log[self.completedTrials].append(0.2)
-            else: 
+            else:
                 if timediff > self.keypress_tolerance:
                     self.infocolor = self.fb_color_bad
-                    str1 = 'Time of keypress to unprecise!'   
+                    str1 = 'Time of keypress to unprecise!'
                     self.validTrials -= 1
                     self.send_parallel(self.TE_INVALID_UNPRECISE)
                     self.classifier_log[self.completedTrials].append(0.3)
@@ -395,7 +399,7 @@ class LibetClock(MainloopFeedback):
                 self.infostr = ''
                 self.send_parallel(self.TE_VALID_NOKP)
                 self.classifier_log[self.completedTrials].append(0.9)
-        
+
         # save time difference between classifier keypress prediction and actual keypress
         if self.buttonPressed and self.classifierTime!=0: # both red clock and button press during trial
             self.classifier_log[self.completedTrials].append(self.buttonPressTime-self.classifierTime)
@@ -403,13 +407,13 @@ class LibetClock(MainloopFeedback):
             self.classifier_log[self.completedTrials].append(0.2)
         else: # FN (button press and no red clock)
             self.classifier_log[self.completedTrials].append(0.3)
-            
+
     def write_classifier_log(self):
         print 'Writing classifier log.'
         subdir = '/python_classifier_logs/'
         if not os.access(self.TODAY_DIR + subdir, os.F_OK):
             os.mkdir(self.TODAY_DIR + subdir)
-        if self.showClassifier == 'feedback':    
+        if self.showClassifier == 'feedback':
             file = self.TODAY_DIR + subdir + 'fb'
         else:
             file = self.TODAY_DIR + subdir + 'train'
@@ -434,7 +438,7 @@ class LibetClock(MainloopFeedback):
         subdir = '/python_clsev_logs/'
         if not os.access(self.TODAY_DIR + subdir, os.F_OK):
             os.mkdir(self.TODAY_DIR + subdir)
-        if self.showClassifier == 'feedback':    
+        if self.showClassifier == 'feedback':
             file = self.TODAY_DIR + subdir + 'fb'
         else:
             file = self.TODAY_DIR + subdir + 'train'
@@ -443,7 +447,7 @@ class LibetClock(MainloopFeedback):
             file_number += 1
         f = open(file + str(file_number) + '.csv', 'w')
         for trial in range(len(self.cls_evolution_log)):
-            l =len(self.cls_evolution_log[trial])            
+            l =len(self.cls_evolution_log[trial])
             for target in range(l):
                 if target == l-1:
                     f.write(str(self.cls_evolution_log[trial][target]))
@@ -451,8 +455,8 @@ class LibetClock(MainloopFeedback):
                     f.write(str(self.cls_evolution_log[trial][target]) + ',')
             f.write('\n')
         f.close()
-        
-        
+
+
     def set_classification_time(self):
         nu = random.random()
         self.cls_time = nu * self.cls_ival[0] + (1-nu) * self.cls_ival[1]
@@ -468,14 +472,14 @@ class LibetClock(MainloopFeedback):
         self.do_print("Pause", self.fontColor, self.size/4)
         self.showsPause = True
 
-        
+
     def short_pause_tick(self):
         """
         One tick of the short pause loop.
         """
         if self.shortPauseElapsed == 0:
             self.send_parallel(self.SHORTPAUSE_START)
-        
+
         self.shortPauseElapsed += self.elapsed
         if self.shortPauseElapsed >= self.pauseDuration:
             self.showsShortPause = False
@@ -490,14 +494,14 @@ class LibetClock(MainloopFeedback):
         self.do_print("Short Break", self.fontColor)
         self.showsShortPause = True
 
-    
+
     def countdown_tick(self):
         """
         One tick of the countdown loop.
         """
         if self.countdownElapsed==0:
             self.send_parallel(self.COUNTDOWN_START)
-        
+
         self.countdownElapsed += self.elapsed
         if self.countdownElapsed >= self.countdownFrom * 1000:
             self.firstTickOfTrial = True
@@ -522,8 +526,8 @@ class LibetClock(MainloopFeedback):
             self.write_classifier_log()
         self.write_clsev_log()
         self.send_parallel(self.GAME_OVER)
-        
-    
+
+
     def do_print(self, text, color=None, size=None, superimpose=False, pos=None):
         """
         Print the given text in the given color and size on the screen.
@@ -535,25 +539,25 @@ class LibetClock(MainloopFeedback):
             size = self.size/10
         if not pos:
             pos = self.screencenter
-        
+
         size = size*0.6
         font = pygame.font.Font(None, int(size))
         if not superimpose:
             self.draw_all()
-        
+
         if type(text) is list:
             height = pygame.font.Font.get_linesize(font)
             top = -(2*len(text)-1)*height/2
             for t in range(len(text)):
                 surface = font.render(text[t], 1, color)
-                
+
                 self.screen.blit(surface, surface.get_rect(midtop=(pos[0], pos[1]+top+t*1.5*height)))
         else:
             surface = font.render(text, 1, color)
             self.screen.blit(surface, surface.get_rect(center=pos))
         pygame.display.update()
-        
-        
+
+
     def init_graphics(self):
         """
         Initialize the surfaces and fonts depending on the screen size.
@@ -563,25 +567,25 @@ class LibetClock(MainloopFeedback):
         (self.screenWidth, self.screenHeight) = (self.screen.get_width(), self.screen.get_height())
         self.size = min(self.screen.get_height(), self.screen.get_width())
         self.screencenter = self.screen.get_rect().center
-        
+
         img = pygame.image.load(os.path.join(path, 'background.jpg')).convert()
         self.background = pygame.transform.scale(img, (self.screenWidth, self.screenHeight))
-        
+
         #self.background = pygame.Surface((self.screenWidth, self.screenHeight))
         self.backgroundRect = self.background.get_rect(center=self.screencenter)
         self.background.fill(self.backgroundColor)
-        
+
         # init clock
         self.diameter = int(self.size/5)*2
         #img = pygame.image.load(os.path.join(path, 'clockface.bmp')).convert_alpha()
         #self.clock = pygame.Surface((self.diameter,self.diameter))
         #self.clock = pygame.transform.scale(img, (self.diameter,self.diameter))
-        
+
         self.clock = pygame.Surface((self.diameter,self.diameter))
         self.clock.set_colorkey((0,0,0))
-        pygame.draw.circle(self.clock, self.clockColor, (self.diameter/2,self.diameter/2), self.diameter/2) 
+        pygame.draw.circle(self.clock, self.clockColor, (self.diameter/2,self.diameter/2), self.diameter/2)
         self.clockRect = self.clock.get_rect(center=self.screencenter, size=(self.diameter, self.diameter))
-        
+
         # fixation points
         fp_dia = int(self.diameter/40)*2
         fp_color = (1,1,1)
@@ -591,9 +595,9 @@ class LibetClock(MainloopFeedback):
         for fp in range(len(self.fixpoint_pos)):
             self.fixpoints.append(pygame.Surface((fp_dia,fp_dia)))
             self.fixpoints[fp].set_colorkey((0,0,0))
-            pygame.draw.circle(self.fixpoints[fp], fp_color, (fp_dia/2,fp_dia/2), fp_dia/2) 
+            pygame.draw.circle(self.fixpoints[fp], fp_color, (fp_dia/2,fp_dia/2), fp_dia/2)
             self.fpRect.append(self.fixpoints[fp].get_rect(center=self.fixpoint_pos[fp], size=(fp_dia, fp_dia)))
-            
+
         # init clock dial
         dialColor = (0,0,0)
         dialThickness = 2
@@ -603,7 +607,7 @@ class LibetClock(MainloopFeedback):
         self.dialHorizontal = pygame.Surface((self.diameter, dialThickness))
         self.dialHorizontal.fill(dialColor)
         self.dialHorizontalRect = self.dialHorizontal.get_rect(center=self.screencenter)
-        
+
         # init clock hand
         img = pygame.image.load(os.path.join(path, 'clockhand_straight.bmp')).convert_alpha()
         #self.clockhand = pygame.Surface((self.diameter, self.diameter))
@@ -615,10 +619,10 @@ class LibetClock(MainloopFeedback):
         self.clockhandRect = self.clockhand.get_rect(center=self.screencenter)
         #self.hideRect = pygame.Rect(self.clockhandRect.midleft,(self.clockhandRect.width, self.clockhandRect.height/2))
         self.drawRect = pygame.Rect(self.clockhandRect.topleft,(self.clockhandRect.width,self.clockhandRect.height/2))
-        
+
         #self.hideRect = pygame.Rect(0,0,self.clockhandRect.width, self.clockhandRect.height/2)
         #self.hideRect.midtop = self.screencenter
-        
+
         # init start animation arc
         self.arcAngle = 451
         self.arcWidth = 5
@@ -631,12 +635,12 @@ class LibetClock(MainloopFeedback):
         pygame.draw.arc(self.arc, self.arcColor, self.arcRect, math.radians(90), math.radians(self.arcAngle), self.arcWidth)
         self.arcRect.center = self.screencenter
         self.draw_all()
-        
+
     def init_pygame(self):
         """
         Set up pygame and the screen and the clock.
         """
-        os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (self.screenPos[0], self.screenPos[1])        
+        os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (self.screenPos[0], self.screenPos[1])
         pygame.init()
         pygame.display.set_caption('LibetClock')
         if self.fullscreen:
@@ -647,8 +651,8 @@ class LibetClock(MainloopFeedback):
         self.h = self.screen.get_height()
         pygame.mouse.set_visible(False)
         self.cpu_clock = pygame.time.Clock()
-        
-        
+
+
     def draw_all_rotating(self, draw=True):
         self.screen.blit(self.background, self.backgroundRect)
         self.screen.blit(self.clock, self.clockRect)
@@ -656,10 +660,10 @@ class LibetClock(MainloopFeedback):
         self.screen.blit(self.dialHorizontal, self.dialHorizontalRect)
         for fp in range(len(self.fixpoint_pos)):
             self.screen.blit(self.fixpoints[fp], self.fpRect[fp])
-        self.screen.blit(self.clockhand_rotated, self.clockhandRect_rotated)        
+        self.screen.blit(self.clockhand_rotated, self.clockhandRect_rotated)
         if draw:
-            pygame.display.flip()      
-        
+            pygame.display.flip()
+
     def draw_all(self, draw=True):
         self.screen.blit(self.background, self.backgroundRect)
         rect = pygame.Rect(self.arcRect.topleft, (self.arcRect.width*4, self.arcRect.height*4))
@@ -672,7 +676,7 @@ class LibetClock(MainloopFeedback):
         self.screen.blit(self.clockhand, self.clockhandRect) #, self.drawRect)
         if draw:
             pygame.display.flip()
-        
+
     def draw_init(self, draw=False):
         """
         Draws the initial screen.
@@ -680,35 +684,11 @@ class LibetClock(MainloopFeedback):
         self.screen.blit(self.background, self.backgroundRect)
         if draw:
             pygame.display.update()
-        
-    def process_pygame_events(self):
-        """
-        Process the the pygame event queue and react on VIDEORESIZE.
-        """
-        for event in pygame.event.get():
-            if event.type == pygame.VIDEORESIZE:
-                pass
-                #self.screen = pygame.display.set_mode((event.w, h), pygame.RESIZABLE) 
-                #self.init_graphics()
-            elif event.type == pygame.QUIT:
-                sys.exit()
-            elif event.type == pygame.KEYDOWN:
-                if event.unicode == u"j":
-                    if self.trialElapsed != 0:
-                        self.send_parallel(self.KEY_PRESS)
-                        if self.buttonPressed:
-                            self.buttonPressError = True
-                        else:
-                            self.buttonPressed = True
-                            self.buttonPressTime = self.trialElapsed
-                                    
-    def on_interaction_event(self, data):
-        print str(data)
-        
+
 
 if __name__ == '__main__':
     ca = LibetClock(None)
     ca.on_init()
     ca.on_play()
-    
-    
+
+

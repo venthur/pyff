@@ -139,7 +139,7 @@ class PygameFeedback(MainloopFeedback):
             e = max(event.w, int(round(event.h * 0.9)))
             self.screen = pygame.display.set_mode((e, event.h), pygame.RESIZABLE)
             self.resized = True
-            self.screenSize = [self.screen.get_height(), self.screen.get_width()]
+            self.screenSize = [self.screen.get_width(), self.screen.get_height()]
             self.init_graphics()
         elif event.type == pygame.QUIT:
             self.on_stop()
