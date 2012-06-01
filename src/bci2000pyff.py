@@ -63,7 +63,6 @@ class Bci2000PyffAdapter(object):
 
     """
 
-
     def __init__(self):
         self._error_reported = False
         self._writeable_params = []
@@ -84,7 +83,7 @@ class Bci2000PyffAdapter(object):
         try:
             pass
         except Exception, e:
-            self._handle_error( str( e ) )
+            self._handle_error(str(e))
         return copy.deepcopy(in_signal_props)
 
     def _Initialize(self, in_signal_dim, out_signal_dim):
@@ -103,7 +102,7 @@ class Bci2000PyffAdapter(object):
             pass
             # OnControlEvent
         except Exception, e:
-            self._handle_error( str( e ) )
+            self._handle_error(str(e))
         return copy.deepcopy(in_signal)
 
     def _StopRun(self):
@@ -123,10 +122,10 @@ class Bci2000PyffAdapter(object):
     def _call_hook(self, method, *pargs, **kwargs):
         logger.debug('_call_hook(%s, %s, %s)' % (method, pargs, kwargs))
         try:
-            retval = method( *pargs, **kwargs )
+            retval = method(*pargs, **kwargs)
         except Exception, e:
             retval = None
-            self._handle_error( str( e ) );
+            self._handle_error(str(e))
         return retval
 
     def _sharing_setup(self, indims, outdims, statelist):
@@ -154,7 +153,7 @@ class Bci2000PyffAdapter(object):
     def _handle_error(self, error):
         self._errors = self._errors + "\n" + error
         self._error_reported = True
-        
+
     def _flush_error_info(self):
         errors = self._errors
         self._errors = ""
@@ -163,12 +162,9 @@ class Bci2000PyffAdapter(object):
 
     def _enable_shell(self):
         pass
-    
+
     def _start(self):
         pass
 
     def _zeros(self, nrows, ncols):
-        return numpy.asmatrix( numpy.zeros( ( nrows, ncols ), dtype = numpy.float64, order = 'C' ) )
-    
-
-    
+        return numpy.asmatrix(numpy.zeros((nrows, ncols), dtype=numpy.float64, order='C'))
