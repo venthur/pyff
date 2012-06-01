@@ -25,6 +25,9 @@ Feedback- and Stimulus applications.
 
 
 import logging
+import copy
+
+import numpy
 
 
 LOGLEVEL = logging.NOTSET
@@ -60,9 +63,17 @@ class Bci2000PyffAdapter(object):
 
     """
 
+
+    def __init__(self):
+        self._error_reported = False
+        self._writeable_params = []
+        self._errors = ""
+
     def _Construct(self):
         logger.debug('_Construct')
-        pass
+        # OnInit
+        # returns variables of the feedback in form of parameter lines
+	return [], []
 
     def _Halt(self):
         logger.debug('_Halt')
@@ -70,22 +81,33 @@ class Bci2000PyffAdapter(object):
 
     def _Preflight(self, in_signal_props):
         logger.debug('_Preflight')
-        pass
+        try:
+            pass
+        except Exception, e:
+            self._handle_error( str( e ) )
+        return copy.deepcopy(in_signal_props)
 
     def _Initialize(self, in_signal_dim, out_signal_dim):
         logger.debug('_Initialize')
+        # set variables from parameters
         pass
 
     def _StartRun(self):
         logger.debug('_StartRun')
+        # OnPlay
         pass
 
     def _Process(self, in_signal):
         logger.debug('_Process')
-        pass
+        try:
+            # OnControlEvent
+        except Exception, e:
+            self._handle_error( str( e ) )
+        return copy.deepcopy(in_signal)
 
     def _StopRun(self):
         logger.debug('_StopRun')
+        # OnStop
         pass
 
     def _Resting(self):
@@ -94,30 +116,58 @@ class Bci2000PyffAdapter(object):
 
     def _Destruct(self):
         logger.debug('_Destruct')
+        # OnQuit
         pass
 
     def _call_hook(self, method, *pargs, **kwargs):
         logger.debug('_call_hook(%s, %s, %s)' % (method, pargs, kwargs))
+        try:
+            retval = method( *pargs, **kwargs )
+        except Exception, e:
+            retval = None
+            self._handle_error( str( e ) );
+        return retval
 
     def _sharing_setup(self, indims, outdims, statelist):
         logger.debug('_sharing_setup')
-        return (None, None, None, None)
+        return ()
 
     def _set_state_precisions(self, bits):
         pass
 
     def _set_states(self, states):
-        pass
+        self._states = states
 
     def _get_states(self):
-        pass
+        return self._states
 
     def _set_parameters(self, params):
-        pass
+        self._parameters = params
 
     def _get_parameters(self):
-        pass
+        return {}
 
     def _param_labels(self, param_name, row_labels, column_labels):
         pass
 
+    def _handle_error(self, error):
+        self._errors = self._errors + "\n" + error
+        self._error_reported = True
+        
+    def _flush_error_info(self):
+        errors = self._errors
+        self._errors = ""
+        self._error_reported = False
+        return errors, True
+
+    def _enable_shell(self):
+        pass
+    
+    def _start(self):
+        pass
+
+    def _zeros(self, nrows, ncols):
+        return numpy.asmatrix( numpy.zeros( ( nrows, ncols ), dtype = numpy.float64, order = 'C' ) )
+    
+
+    
