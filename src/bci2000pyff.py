@@ -100,6 +100,7 @@ class Bci2000PyffAdapter(object):
     def _Process(self, in_signal):
         logger.debug('_Process')
         try:
+            pass
             # OnControlEvent
         except Exception, e:
             self._handle_error( str( e ) )
