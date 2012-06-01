@@ -73,7 +73,7 @@ class Bci2000PyffAdapter(object):
         logger.debug('_Construct')
         # OnInit
         # returns variables of the feedback in form of parameter lines
-	return [], []
+        return [], []
 
     def _Halt(self):
         logger.debug('_Halt')
