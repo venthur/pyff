@@ -26,6 +26,9 @@ Feedback- and Stimulus applications.
 
 import logging
 import copy
+import multiprocessing
+import threading
+import time
 
 import numpy
 
@@ -71,6 +74,9 @@ class Bci2000PyffAdapter(object):
     def _Construct(self):
         logger.debug('_Construct')
         # OnInit
+        self.mycon, childcon = multiprocessing.Pipe()
+        self.feedback_proc = multiprocessing.Process(target=feedback_process_loop, args=(self.fbmod, self.fbclassname, childcon,))
+        self.feedback_proc.start()
         # returns variables of the feedback in form of parameter lines
         return [], []
 
@@ -93,8 +99,7 @@ class Bci2000PyffAdapter(object):
 
     def _StartRun(self):
         logger.debug('_StartRun')
-        # OnPlay
-        pass
+        self.mycon.send('play')
 
     def _Process(self, in_signal):
         logger.debug('_Process')
@@ -107,8 +112,7 @@ class Bci2000PyffAdapter(object):
 
     def _StopRun(self):
         logger.debug('_StopRun')
-        # OnStop
-        pass
+        self.mycon.send('stop')
 
     def _Resting(self):
         logger.debug('_Resting')
@@ -116,8 +120,9 @@ class Bci2000PyffAdapter(object):
 
     def _Destruct(self):
         logger.debug('_Destruct')
-        # OnQuit
-        pass
+        self.mycon.send('quit')
+        self.mycon.close()
+        self.feedback_proc.join()
 
     def _call_hook(self, method, *pargs, **kwargs):
         logger.debug('_call_hook(%s, %s, %s)' % (method, pargs, kwargs))
@@ -168,3 +173,46 @@ class Bci2000PyffAdapter(object):
 
     def _zeros(self, nrows, ncols):
         return numpy.asmatrix(numpy.zeros((nrows, ncols), dtype=numpy.float64, order='C'))
+
+
+
+def feedback_process_loop(fbmodule, classname, con):
+    mod = __import__(fbmodule, fromlist=[classname])
+    fbclass = getattr(mod, classname)
+    fb = fbclass()
+    fb_ipc_thread = threading.Thread(target=feedback_ipc_loop, args=(fb, con))
+    fb_ipc_thread.start()
+    try:
+        fb.on_init()
+        fb._playloop()
+    finally:
+        con.close()
+        fb_ipc_thread.join()
+
+
+def feedback_ipc_loop(fb, con):
+    while 1:
+        data = con.recv()
+        logger.debug('Received %s message' % data)
+        if data == 'quit':
+            fb._on_quit()
+            break
+        if data == 'play':
+            fb._playEvent.set()
+        elif data == 'pause':
+            fb._on_pause()
+        elif data == 'stop':
+            fb._on_stop()
+
+
+if __name__ == '__main__':
+    adapter = Bci2000PyffAdapter()
+    adapter.fbmod = 'Feedbacks.TrivialPong.TrivialPong'
+    adapter.fbclassname = 'TrivialPong'
+    adapter._Construct()
+    adapter._StartRun()
+    time.sleep(2)
+    adapter._StopRun()
+    time.sleep(2)
+    adapter._Destruct()
+
