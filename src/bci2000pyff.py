@@ -73,10 +73,17 @@ class Bci2000PyffAdapter(object):
 
     def _Construct(self):
         logger.debug('_Construct')
+        self.fbmod = 'Feedbacks.TrivialPong.TrivialPong'
+        self.fbclassname = 'TrivialPong'
         # OnInit
+        import sys
+        import os
+        multiprocessing.set_executable(os.path.join(sys.exec_prefix, 'pythonw.exe'))
+        sys.argv = [""]
         self.mycon, childcon = multiprocessing.Pipe()
         self.feedback_proc = multiprocessing.Process(target=feedback_process_loop, args=(self.fbmod, self.fbclassname, childcon,))
         self.feedback_proc.start()
+        print "helloConstruct"
         # returns variables of the feedback in form of parameter lines
         return [], []
 
@@ -167,6 +174,12 @@ class Bci2000PyffAdapter(object):
 
 
 def feedback_process_loop(fbmodule, classname, con):
+    import sys
+    sys.argv = [""]
+    print "hello"
+    fh = open('test', 'w')
+    fh.write('est')
+    fh.close()
     mod = __import__(fbmodule, fromlist=[classname])
     fbclass = getattr(mod, classname)
     fb = fbclass()
