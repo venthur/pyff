@@ -23,14 +23,11 @@ Feedback- and Stimulus applications.
 
 """
 
-
 import logging
 import copy
 import multiprocessing
 import threading
 import time
-
-import numpy
 
 
 LOGLEVEL = logging.NOTSET
