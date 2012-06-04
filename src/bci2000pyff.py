@@ -133,10 +133,6 @@ class Bci2000PyffAdapter(object):
             self._handle_error(str(e))
         return retval
 
-    def _sharing_setup(self, indims, outdims, statelist):
-        logger.debug('_sharing_setup')
-        return ()
-
     def _set_state_precisions(self, bits):
         pass
 
@@ -164,12 +160,6 @@ class Bci2000PyffAdapter(object):
         self._errors = ""
         self._error_reported = False
         return errors, True
-
-    def _enable_shell(self):
-        pass
-
-    def _start(self):
-        pass
 
     def _zeros(self, nrows, ncols):
         return numpy.asmatrix(numpy.zeros((nrows, ncols), dtype=numpy.float64, order='C'))
