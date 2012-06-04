@@ -41,21 +41,6 @@ logger = logging.getLogger(__name__)
 logger.info('Logger started')
 
 
-def register_framework_dir():
-    logger.debug('Register Framework')
-    pass
-
-
-def register_working_dir():
-    logger.debug('Register Working Dir')
-    pass
-
-
-def search_for_file(filename):
-    logger.debug('Search For File')
-    pass
-
-
 class Bci2000PyffAdapter(object):
     """BCI2000 to Pyff Feedback adapter.
 
@@ -167,10 +152,6 @@ class Bci2000PyffAdapter(object):
         self._errors = ""
         self._error_reported = False
         return errors, True
-
-    def _zeros(self, nrows, ncols):
-        return numpy.asmatrix(numpy.zeros((nrows, ncols), dtype=numpy.float64, order='C'))
-
 
 
 def feedback_process_loop(fbmodule, classname, con):
