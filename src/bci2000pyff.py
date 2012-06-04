@@ -55,11 +55,14 @@ class Bci2000PyffAdapter(object):
 
     def _Construct(self):
         logger.debug('_Construct')
+        # Fixme this is just an example and should be set by the BCI2000
         self.fbmod = 'Feedbacks.TrivialPong.TrivialPong'
         self.fbclassname = 'TrivialPong'
         # OnInit
         import sys
         import os
+        # needed because we run processes from within an embedded python
+        # interpreter
         multiprocessing.set_executable(os.path.join(sys.exec_prefix, 'pythonw.exe'))
         sys.argv = [""]
         self.mycon, childcon = multiprocessing.Pipe()
@@ -151,7 +154,6 @@ class Bci2000PyffAdapter(object):
 
 
 def feedback_process_loop(fbmodule, classname, con):
-
     mod = __import__(fbmodule, fromlist=[classname])
     fbclass = getattr(mod, classname)
     fb = fbclass()
