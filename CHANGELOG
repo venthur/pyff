@@ -1,5 +1,5 @@
-Changes in ???
-==============
+Changes in 2012.6
+=================
 
   * Replaced prints in Feedback base class with logger messages
   * -a/--addition-feedback-path can be used several times to add more than one 
@@ -10,6 +10,10 @@ Changes in ???
   * Automatic Subclass finding finally removed
   * Replaced all print-stacktraces with logging.exception
   * Shutdown logger properly to flush all buffers before exiting
+  * Several Feedbacks migrated to PygameFeedback base class
+  * Several Fixes on PygameFeedback base class
+  * Preliminary BCI2000 support
+  * Major documentation overhaul
 
 Changes in 2011.5
 =================
