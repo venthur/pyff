@@ -38,18 +38,34 @@ class Feedback(object):
     This class provides methods which are called by the FeedbackController on
     certain events. Override the methods as needed.
 
-    As a bare minimum you should override the on_play method in your derived
-    class to do anything useful.
+    As a bare minimum you should override the :func:`on_play` method in your
+    derived class to do anything useful.
 
-    To get the data from control signals, you can use the "_data" variable
+    To get the data from control signals, you can use the `_data` variable
     in your feedback which will always hold the latest control signal.
 
-    To get the data from the interaction signals, you can use the variable names
-    just as sent by the GUI.
+    To get the data from the interaction signals, you can use the variable
+    names just as sent by the GUI.
 
-    This class provides the send_parallel method which you can use to send
-    arbitrary data to the parallel port. You don't have to override this
+    This class provides the :func:`send_parallel` method which you can use to
+    send arbitrary data to the parallel port. You don't have to override this
     method in your feedback.
+
+    Example::
+
+        from FeedbackBase.Feedback import Feedback
+
+        class MyFeedback(Feedback):
+
+        def on_init(self):
+            self.logger.debug("Feedback successfully loaded.")
+
+        def on_play(self):
+            self.logger.debug("Feedback started.")
+
+        def on_quit(self):
+            self.logger.debug("Feedback quit.")
+
     """
 
     def __init__(self, port_num=None):
@@ -57,12 +73,15 @@ class Feedback(object):
         Initializes the feedback.
 
         You should not override this method, override on_init instead. If you
-        must override this method, make sure to call Feedback.__init__(self, pp)
-        before anything else in your overridden __init__ method.
+        must override this method, make sure to call
+        ``Feedback.__init__(self, pp)`` before anything else in your overridden
+        __init__ method.
         """
 
         self._data = None
         self.logger = logging.getLogger("FB." + self.__class__.__name__)
+        """Inherited by all sub classes. Use this for logging."""
+
         self.logger.debug("Loaded my logger.")
         # Setup the parallel port
         self._pport = None
@@ -213,7 +232,7 @@ class Feedback(object):
         "Stop" event.
 
         Override this method to stop your feedback. It should be possible to
-        start again when receiving the on_start event.
+        start again when receiving the :func:`on_start` event.
         """
         self.logger.debug("on_stop not implemented yet!")
 
@@ -238,13 +257,18 @@ class Feedback(object):
         feedback and calls this method.
 
         If the FeedbackController detects a "play", "pause" or "quit"
-        signal, it calls the appropriate on_-method after this method has
+        signal, it calls the appropriate ``on-method`` after this method has
         returned.
 
-        If the FeedbackController detects an "init" signal, it calls "on_init"
-        before "on_interaction_event"!
+        If the FeedbackController detects an "init" signal, it calls
+        :func:`on_init` before :func:`on_interaction_event`!
 
         Override this method if you want to react on interaction events.
+
+
+        :param data: The content of the interaction signal.
+        :type data: dict
+
         """
         self.logger.debug("on_interaction_event not implemented yet!")
 
@@ -257,6 +281,10 @@ class Feedback(object):
         method.
 
         Override this method if you want to react on control events.
+
+        :param data: The content of the control signal
+        :type data: dict
+
         """
         self.logger.debug("on_control_event not implemented yet!")
 
@@ -265,7 +293,15 @@ class Feedback(object):
     # Common routines for all feedbacks
     #
     def send_parallel(self, data, reset=True):
-        """Sends the data to the parallel port."""
+        """Sends the data to the parallel port.
+
+        The data is sent to the parallel port. After a short amount of time the
+        parallel port is reset automatically.
+
+        :param data: Data to be sent to the parallel port
+        :type data: int
+
+        """
         self.logger.info("Trigger: %s :%s" % (str(datetime.datetime.now()), str(data)))
         if reset == True:
             # A new trigger arrived before we could reset the old one
@@ -283,7 +319,15 @@ class Feedback(object):
 
 
     def send_udp(self, data):
-        """Sends the data to UDP"""
+        """Sends the data to UDP.
+
+        Similar to :func:`send_parallel`. The data is send through UDP.
+
+
+        :param data: Data to be sent to the UDP port.
+        :type data: int
+
+        """
         self._udp_markers_socket.sendto("S%3d" % data,
                                         (self.udp_markers_host, self.udp_markers_port) )
 
@@ -309,7 +353,9 @@ class Feedback(object):
     def save_variables(self, filename):
         """Save all variables which are pickleable in JSON format.
 
-        filename -- the file where to store the variables.
+        :param filename: The file where to store the variables.
+        :type filename: str
+
         """
         # the json pickler cannot pickle everything the python pickler can,
         # prune away the variables which are not pickable, to avoid exception
@@ -330,7 +376,8 @@ class Feedback(object):
         """Load variables from file and (over)write object attributes with
         their values.
 
-        filename -- the file where the variables are stored.
+        :param filename: The file where the variables are stored.
+        :type filename: str
 
         This method expects the file to be in the same format as the
         save_variables method produces (currently JSON).

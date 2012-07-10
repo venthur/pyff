@@ -1,4 +1,4 @@
-# PluginController.py - 
+# PluginController.py -
 # Copyright (C) 2009  Bastian Venthur
 #
 # This program is free software; you can redistribute it and/or modify
@@ -22,14 +22,21 @@ import logging
 
 
 def import_module_and_get_class(modname, classname):
-    """Import the module and return modname.classname."""
+    """Import the module and return modname.classname.
+
+    :param modname: Module name
+    :type modname: str
+    :param classname: Class name
+    :type classname: str
+
+    """
     mod = __import__(modname, fromlist=[None])
     return getattr(mod, classname)
 
 
 class PluginController(object):
     """Finds, loads and unloads plugins."""
-    
+
 
     def __init__(self, plugindirs, baseclass):
         self.logger = logging.getLogger("PluginController")
@@ -37,7 +44,7 @@ class PluginController(object):
         self.baseclass = baseclass
         self.availablePlugins = dict()
         self.oldModules = None
-        
+
         for dir in plugindirs:
             if os.path.exists(dir):
                 sys.path.append(dir)
@@ -46,7 +53,11 @@ class PluginController(object):
 
 
     def find_plugins(self):
-        """Returns a list of available plugins."""
+        """Find Plugins.
+
+        :returns: list of available plugins.
+
+        """
         for plugindir in self.plugindirs:
             for root, dirs, files in os.walk(plugindir):
                 if 'feedbacks.list' in files:
@@ -61,8 +72,13 @@ class PluginController(object):
     def load_feedback_list(self, filename, plugindir):
         """Load classnames from file and construct modulename relative to
         plugindir from plugindir, filename and file entries.
-        
-        Returns a dictionary: classname -> module.
+
+        :param filename: filename
+        :type filename: str
+        :param plugindir: Plugin directory
+        :type plugindir: str
+        :returns: dictionary: classname -> module.
+
         """
         # Read the lines from file
         fh = open(filename, "r")
@@ -94,14 +110,14 @@ class PluginController(object):
                     del sys.modules[mod]
             self.oldModules = None
 
-        
+
 def main():
     import sys
     #sys.path.append("../")
     import FeedbackBase.Feedback
     pc = PluginController(["../Feedbacks", "../../../pyff-tu/src/Feedbacks"], FeedbackBase.Feedback.Feedback)
     pc.find_plugins()
-    for key in pc.availablePlugins: 
+    for key in pc.availablePlugins:
         print key, pc.availablePlugins[key]
 
 if __name__ == "__main__":

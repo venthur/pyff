@@ -26,46 +26,45 @@ from MainloopFeedback import MainloopFeedback
 
 class PygameFeedback(MainloopFeedback):
     """Baseclass for Pygame based Feedbacks.
-    
-    This class is derived from MainloopFeedback and brings some common 
+
+    This class is derived from MainloopFeedback and brings some common
     functinality shared by most Feedbacks using Pygame.
 
     Upon start it initializes pygame and calls initialize_graphics which can be
-    overwritten by derived classes.
+    overwritten by derived classes.  It also takes care of shutting down pygame
+    automatically upon stop, quit or crash of the feedback.
 
-    It also takes care of shutting down pygame automatically upon stop, quit or 
-    crash of the feedback.
-
-    After initialization of the feedback, it has some object variables which 
-    influence the Feedback's behaviour:
-    
-    * FPS: (frames per second) influencees how much the Feedback advances in \
-            time during a tick call.
-    * screenPos: List of integers holding the initial position of the pygame \
-            window.
-    * screenSize: List of intigers holding the initial size of the pygame \
-            window.
-    * fullscreen: Boolean
-    * caption: String holding the initial value of the window caption.
-    * elapsed: Fload holding the elapsed second since the last tick
-    * backgroundColor: List of three integers holding the initial background \
-            colour
-    * keypressed: Boolean holding if a key was pressed
-    * lastkey: Last key
     """
 
     def init(self):
         """Set some PygameFeedback variables to default values."""
         self.FPS = 30
+        """Frames per Second. Influences how much the Feedback advances in time during a :func:`tick` call."""
+
         self.screenPos = [0, 0]
+        """Initial position (x, y) of the pygame window."""
+
         self.screenSize = [800, 600]
+        """Width and height of the pygame window."""
+
         self.fullscreen = False
+        """Start pygame in fullscreen mode or not."""
+
         self.caption = "PygameFeedback"
+        """Pygame window caption."""
+
         self.elapsed = 0
+        """Seconds since the last :func:`tick`."""
+
         self.backgroundColor = [0, 0, 0]
+        """RGB values for the background color."""
+
         # For keys
         self.keypressed = False
+        """Was a key pressed?"""
+
         self.lastkey = None
+        """What was the last key?"""
 
 
     def pre_mainloop(self):
@@ -113,6 +112,7 @@ class PygameFeedback(MainloopFeedback):
 
 
     def quit_pygame(self):
+        """Quit Pygame."""
         pygame.quit()
 
 
@@ -132,9 +132,13 @@ class PygameFeedback(MainloopFeedback):
         for event in pygame.event.get():
             self.process_pygame_event(event)
 
-            
+
     def process_pygame_event(self, event):
-        """Process a signle pygame event."""
+        """Process a signle pygame event.
+
+        :param event: Pygame Event.
+
+        """
         if event.type == pygame.VIDEORESIZE:
             e = max(event.w, int(round(event.h * 0.9)))
             self.screen = pygame.display.set_mode((e, event.h), pygame.RESIZABLE)
@@ -147,8 +151,8 @@ class PygameFeedback(MainloopFeedback):
             self.keypressed = True
             self.lastkey = event.key
             self.lastkey_unicode = event.unicode
-                
-    
+
+
     def wait_for_pygame_event(self):
         """Wait until a pygame event orcurs and process it."""
         event = pygame.event.wait()

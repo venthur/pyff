@@ -4,6 +4,7 @@
 .. automodule:: FeedbackBase.MainloopFeedback
     :synopsis: Provides mainloop functionality for Feedbacks.
     :members:
+    :show-inheritance:
 
 .. moduleauthor:: Bastian Venthur <venthur@cs.tu-berlin.de>
 

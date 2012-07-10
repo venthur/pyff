@@ -91,7 +91,13 @@ class FeedbackProcessController(object):
 
 
     def start_feedback(self, name, port):
-        """Starts the given Feedback in a new process."""
+        """Starts the given Feedback in a new process.
+
+        :param name: Feedback
+        :type name: str
+        :param port: Parallel Port
+
+        """
         self.logger.debug("Starting new Process...",)
         if self.currentProc:
             self.logger.warning("Trying to start feedback but another one is still running. Killing the old one now and proceed.")
@@ -132,6 +138,10 @@ class FeedbackProcessController(object):
 
 
     def get_feedbacks(self):
-        """Return a list of available Feedbacks."""
+        """Return a list of available Feedbacks.
+
+        :returns: List of available feedbacks
+
+        """
         return self.pluginController.availablePlugins.keys()
 

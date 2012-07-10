@@ -1,4 +1,4 @@
-# eyetracker.py - 
+# eyetracker.py -
 # Copyright (C) 2009  Bastian Venthur
 #
 # This program is free software; you can redistribute it and/or modify
@@ -61,6 +61,18 @@ calibrationStatus = 'Excellent' , 'Good' , 'Average' , 'Poor' , 'Failed'
 
 
 class EyeTracker(object):
+    """EyeTracker.
+
+    Example::
+
+        import time
+        et = EyeTracker()
+        et.start()
+        time.sleep(60)
+        # read something
+        et.stop()
+
+    """
 
     def __init__(self):
         self.logger = logging.getLogger("EyeTracker")
@@ -87,7 +99,7 @@ class EyeTracker(object):
         else:
             self.logger.debug("Could not open API")
             return False
-        #API open?        
+        #API open?
         isOpen = c_short()
         result = self.api.IsOpen(byref(isOpen))
         if(result == 0):
@@ -116,6 +128,7 @@ class EyeTracker(object):
 
 
     def start(self):
+        """Start the Eyetracker."""
         self.logger.debug('Starting Eye Tracker')
         self.thread = threading.Thread(target=self.listen)
         self.stopping = False
@@ -123,6 +136,7 @@ class EyeTracker(object):
 
 
     def stop(self):
+        """Stop the Eyetracker."""
         self.logger.debug('Stopping Eye Tracker')
         self.stopping = True
         self.thread.join(1)
@@ -133,8 +147,8 @@ class EyeTracker(object):
         try:
             ## initailise the api
             if not self.initialise_api():
-				self.logger.debug("Can't initialise api")
-				return
+                self.logger.debug("Can't initialise api")
+                return
             #Start DataStreaming
             result = self.api.DataStreaming(True)
             if(result == 0):

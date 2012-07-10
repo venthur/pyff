@@ -5,5 +5,5 @@
     :synopsis: Networking between the different Pyff components.
     :members:
 
-.. moduleauthor:: Bastian Venthur <venthur@cs.tu-berlin.de>
+.. moduleauthor:: Bastian Venthur <bastian.venthur@tu-berlin.de>
 

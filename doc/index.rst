@@ -12,10 +12,10 @@ the documentation of :ref:`Feedback base classes <FeedbackBase>`
 Contents:
 
 .. toctree::
-    :maxdepth: 1
+    :maxdepth: 2
 
-    lib/index
     FeedbackBase/index
+    lib/index
 
 Indices and tables
 ==================

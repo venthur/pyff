@@ -73,13 +73,15 @@ CMD_QUIT_FEEDBACK_CONTROLLER = 'quitfeedbackcontroller'
 class XmlDecoder(object):
     """Parses XML strings and returns BciSignal containing the data of the
     signal.
-    
-    Usage:
+
+    Usage::
+
         decoder = XmlDecoder()
         try:
             bcisignal = decoder.decode_packet(xml)
         except DecodingError:
             ...
+
     """
 
 
@@ -89,8 +91,12 @@ class XmlDecoder(object):
 
     def decode_packet(self, packet):
         """Parse the XML string and return a BciSignal.
-        
-        A DecodingError is raised when the parsing of the packet failed.
+
+        :param packet: XML Packet
+        :type packet: str
+        :returns: BciSignal
+        :raises: A DecodingError is raised when the parsing of the packet failed.
+
         """
         dom = None
         try:
@@ -118,15 +124,15 @@ class XmlDecoder(object):
                         else:
                             raise DecodingError("Unknown type (%s)" % str(type))
         return BciSignal(dict(l), c, t)
-    
-    
+
+
     def __parse_element(self, element):
         """Parse the element and return a dictionary with the data."""
 
         type = element.nodeName
         name = self.__get(element, NAME)
         value = self.__get(element, VALUE)
-        
+
         if type in BOOLEAN_TYPE:
             if value in TRUE_VALUE:
                 return VARIABLE, (name, bool(True))
@@ -134,17 +140,17 @@ class XmlDecoder(object):
                 return VARIABLE, (name, bool(False))
             else:
                 raise DecodingError("Unknown boolean value: %s" % str(value))
-        elif type in INTEGER_TYPE: 
+        elif type in INTEGER_TYPE:
             return VARIABLE, (name, int(value))
-        elif type in FLOAT_TYPE: 
+        elif type in FLOAT_TYPE:
             return VARIABLE, (name, float(value))
-        elif type in LONG_TYPE: 
+        elif type in LONG_TYPE:
             return VARIABLE, (name, long(value))
         elif type in COMPLEX_TYPE:
             if value.startswith("(") and value.endswith(")"):
                 value = value[1:-1]
             return VARIABLE, (name, complex(value))
-        elif type in STRING_TYPE: 
+        elif type in STRING_TYPE:
             return VARIABLE, (name, str(value))
         elif type in UNICODE_TYPE:
             return VARIABLE, (name, unicode(value))
@@ -193,7 +199,7 @@ class XmlDecoder(object):
             return COMMAND, (value, d)
         raise DecodingError("Unknown type: %s" % str(type))
 
-        
+
     def __get(self, element, what):
         """Return the 'what' of the element or throw exception if no name given."""
         if element.hasAttribute(what):
@@ -208,22 +214,30 @@ class XmlDecoder(object):
                     return content
 
         return None
-        
+
 class TobiXmlDecoder(XmlDecoder):
+    """TobiXmlDecoder.
+
+    Decode packets in TOBI format.
+
+    """
+
     def __init__(self):
         XmlDecoder.__init__(self)
 
     def decode_packet(self, packet):
         """Parse the XML string and return a BciSignal.
-        
-        A DecodingError is raised when the parsing of the packet failed.
+
+        :param packet: Packet in TOBO format
+        :returns: decoded packet
+        :raises: A DecodingError is raised when the parsing of the packet failed.
         """
         dom = None
         try:
             dom = minidom.parseString(packet)
         except:
             raise DecodingError("Not XML at all! (%s)" % str(packet))
-        
+
         # the root element name will be "messagec" for TOBI interface C packets,
         # if it is anything else, pass it on to the normal pyff decoder
         if dom.documentElement.nodeName == "messagec":
@@ -253,42 +267,46 @@ class TobiXmlDecoder(XmlDecoder):
                 # is this the correct way to pass the data value on to pyff??
                 values.append(class_data.GetValue())
             l.append((u'cl_output', values))
-            break 
+            break
 
         t = CONTROL_SIGNAL
         return BciSignal(dict(l), c, t)
 
 class XmlEncoder(object):
     """Generates an XML string from a BciSignal object.
-    
-    Usage:
+
+    Usage::
+
         enc = XmlEncoder()
         try:
             xml = enc.encode_packet(bcisignal)
         except EncodingError:
             ...
+
     """
-    
+
     def __init__(self):
         self.logger = logging.getLogger("XmlEncoder")
-    
+
     def encode_packet(self, signal):
         """Generates an XML packet from a BciSignal object.
-        
-        An EncodingError is raised if the encoding failed.
+
+        :param signal: Signal
+        :type signal: BciSignal
+        :raises: An EncodingError is raised if the encoding failed.
         """
-        
+
         dom = minidom.Document()
         root = dom.createElement(XML_ROOT)
         root.setAttribute(VERSION, CURRENT_VERSION)
         dom.appendChild(root)
-        
+
         # Write the type
         if signal.type not in [CONTROL_SIGNAL, INTERACTION_SIGNAL, REPLY_SIGNAL]:
             raise EncodingError("Unknown signal type: %s" % str(signal.type))
         root2 = dom.createElement(signal.type)
         root.appendChild(root2)
-        
+
         # Write the commands
         # each element of the command list is a tuple (command, **kwargs)
         for command, args in signal.commands:
@@ -297,7 +315,7 @@ class XmlEncoder(object):
             if args:
                 self.__write_element(None, args, dom, cmd)
             root2.appendChild(cmd)
-            
+
         # Write the data
         for d in signal.data:
             try:
@@ -306,8 +324,8 @@ class XmlEncoder(object):
                 # Ignore elements which are unkknown, just print a warning
                 self.logger.warning("Unable to write element (%s)" % str(e))
         return dom.toxml('utf-8')
-    
-    
+
+
     def __get_type(self, value):
         if isinstance(value, bool):
             type = BOOLEAN_TYPE
@@ -338,8 +356,8 @@ class XmlEncoder(object):
         else:
             type = UNSUPPORTED_TYPE
         return type
-        
-        
+
+
     def __write_element(self, name, value, dom, root):
         type = self.__get_type(value)
 
@@ -363,21 +381,25 @@ class XmlEncoder(object):
         elif value != None:
             e.setAttribute(VALUE, unicode(value))
         root.appendChild(e)
-        
+
 
 class BciSignal(object):
-    """Represents a signal from the BCI network. 
-    
+    """Represents a signal from the BCI network.
+
     A BciSignal object can be translated to XML and vice-versa.
+
     """
-    
+
     def __init__(self, data, commands, type):
         """
         Initialize a BciSignal object.
 
-        data -- dictionary of variables or None
-        commands -- list of tuples (commandname (str), dictionary (kwargs)) or None
-        type -- CONTROL_ or INTERACTION_SIGNAL
+        :param data: variables or None
+        :type data: dict
+        :param commands: tuples (commandname (str), dictionary (kwargs)) or None
+        :type commands: list
+        :param type: `CONTROL_` or `INTERACTION_SIGNAL`
+
         """
         # if data or commands == None, convert to empty lists
         if not data:
@@ -388,21 +410,21 @@ class BciSignal(object):
         self.type = type
         self.data = data
         self.commands = commands
-        
+
     def __str__(self):
         return 'Type: %s\nData: %s\nCommands: %s\n' % (self.type, self.data, self.commands)
 
 
 class Error(Exception):
     """Our own exception type."""
-    
+
     def __init__(self, value):
         self.value = value
-        
+
     def __str__(self):
         return repr(self.value)
-    
-        
+
+
 class EncodingError(Error):
     """Something message cound not be encoded."""
     pass
@@ -416,7 +438,7 @@ def main():
 #    if len(sys.argv) < 2:
 #        print 'usage: %s infile.xml' % sys.argv[0]
 #        sys.exit(-1)
-#    
+#
 #    file = open(sys.argv[1], "r")
 #    packet = file.read()
 #    file.close()
@@ -449,19 +471,19 @@ def main():
     encoder = XmlEncoder()
     xml = encoder.encode_packet(signal)
     print xml
-    
+
     decoder = XmlDecoder()
     signal2 = decoder.decode_packet(xml)
     d2 = signal2.data
-    
+
     print "*** Elements of the original dictionary:"
     for i in d.items():
         print i
-    
+
     print "*** Elements of the second dictionary:"
     for i in d2.items():
         print i
-        
+
     print d == d2
     print signal
     print signal2
@@ -470,9 +492,9 @@ if __name__ == "__main__":
     #from timeit import Timer
     #t = Timer("main()")
     #print t.timeit(10)/10
-    
+
     #main()
-    
+
     import profile
     import pstats
 #    profile.run("main()", "stats")

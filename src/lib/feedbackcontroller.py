@@ -64,7 +64,11 @@ class FeedbackController(object):
 
 
     def handle_signal(self, signal):
-        """Handle incoming signal."""
+        """Handle incoming signal.
+
+        :param signal: signal
+
+        """
         # check our signal if it contains anything useful, if not drop it and
         # print a warning
         try:
@@ -118,7 +122,11 @@ class FeedbackController(object):
 
 
     def send_to_feedback(self, signal):
-        """Send data to the feedback."""
+        """Send data to the feedback.
+
+        :param signal: signal
+
+        """
         try:
             self.ipcchannel.send_message(signal)
         except:
@@ -126,12 +134,16 @@ class FeedbackController(object):
 
 
     def send_to_peer(self, signal):
-        """Send signal to peer."""
+        """Send signal to peer.
+
+        :param signal: signal
+
+        """
         self.udpconnectionhandler.send_signal(signal)
 
 
 class UDPDispatcher(asyncore.dispatcher):
-    """UDP Message Hanldeer of the Feedback Controller."""
+    """UDP Message Hanlder of the Feedback Controller."""
 
     def __init__(self, fc, protocol):
         asyncore.dispatcher.__init__(self)
