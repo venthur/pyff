@@ -16,9 +16,10 @@ may have to rebuild the gui.py:
 How to use the parallel port under linux
 ========================================
 
-sudo modprobe -r lp
-sudo chmod 666 /dev/parport0
-
+```bash
+$ sudo modprobe -r lp
+$ sudo chmod 666 /dev/parport0
+```
 
  -- Bastian Venthur <venthur@cs.tu-berlin.de>  2008-09-16
 
