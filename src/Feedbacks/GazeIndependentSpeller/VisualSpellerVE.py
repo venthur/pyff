@@ -105,6 +105,7 @@ class VisualSpellerVE(MainloopFeedback):
         self.wait_before_classify = 1.
         self.feedback_duration = 1.
         self.feedback_ErrP_duration = 1.0
+        self.wait_after_start = 0.
 
 
         # Countdown options
@@ -211,6 +212,10 @@ class VisualSpellerVE(MainloopFeedback):
             Start listener for abort_trial event eg. 
             '''
 
+        ## delay after play (might be useful for filters...)
+        pygame.time.wait(int(self.wait_after_start * 1000))
+        self.logger.info("waiting %d seconds after play." % self.wait_after_start)
+        
         ## send start trigger:
         self.send_parallel(marker.RUN_START)
         self.logger.info("[TRIGGER] %d" % marker.RUN_START)
