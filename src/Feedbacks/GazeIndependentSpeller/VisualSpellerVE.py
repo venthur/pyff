@@ -35,6 +35,7 @@ from VisionEgg.FlowControl import Presentation
 from VisionEgg.MoreStimuli import Target2D, FilledCircle
 from VEShapes import  FilledHexagon
 from VisionEgg.Text import Text
+from VisionEgg.WrappedText import WrappedText
 from VisionEgg import logger
 
 import numpy as NP
@@ -279,11 +280,17 @@ class VisualSpellerVE(MainloopFeedback):
                                        anchor='right')
 
         # if we're in free spelling mode, we hide all text fields but
-        # the _ve_spelled_phrase. we also center the text there
+        # the _ve_spelled_phrase. we also need a multiline
+        # _ve_spelled_phrase instead of the single lined one
         if self.offline == self.copy_spelling == False:
-            self._ve_spelled_phrase.set(anchor = 'center')
+            self._spelled_phrase = "   "
+            self._ve_spelled_phrase = WrappedText(position=(0, self._current_letter_position[1]),
+                                       text=(len(self._spelled_phrase)==0 and " " or self._spelled_phrase),
+                                       font_size=self.font_size_phrase,
+                                       color=self.phrase_color,
+                                       size=(float(self.geometry[2]), float(self.geometry[3])))
             for i in self._ve_letterbox, self._ve_innerbox, self._ve_current_letter, self._ve_desired_letters:
-                i.set(on = False)
+                i.set(on=False)
 
         ## add word box to elementlist:
         self._ve_elements.extend([self._ve_letterbox, self._ve_innerbox, self._ve_current_letter, self._ve_desired_letters, self._ve_spelled_phrase])
@@ -706,6 +713,8 @@ class VisualSpellerVE(MainloopFeedback):
                 self._spelled_phrase += spelled_letter
 
             ## update screen phrases:
+            self.logger.info('Current Phrase:')
+            self.logger.info(self._spelled_phrase)
             self._ve_spelled_phrase.set(text=(len(self._spelled_phrase)==0 and " " or self._spelled_phrase))
             self._ve_current_letter.set(text=(len(self._desired_letters[:1])==0 and " " or self._desired_letters[:1]))
             self._ve_desired_letters.set(text=(len(self._desired_letters[1:])==0 and " " or self._desired_letters[1:]))
@@ -802,12 +811,13 @@ class VisualSpellerVE(MainloopFeedback):
             self.on_control_event({'print':0}) # print desired phrase
             self.on_control_event({'print':1}) # print spelled phrase
             self.on_control_event({'print':2}) # print all spelled letters
-        elif event.key == pygame.K_0:
-            # The key 0 (zero) empties the spelled text shown
-            # this works only in free spelling mode (i.e. offline and
-            # copy_spelling are set to False)
+        elif event.key == pygame.K_DELETE:
+            # The DELETE key empties the spelled text shown this works
+            # only in free spelling mode (i.e. offline and copy_spelling
+            # are set to False)
             if self.offline == self.copy_spelling == False:
-                self._spelled_phrase = ""
+                self.logger.info('Clearing Text.')
+                self._spelled_phrase = "   "
         elif self.debug:
             if ((event.key >= pygame.K_a and event.key <= pygame.K_z) or
                 (event.key == pygame.K_LESS) or
