@@ -682,6 +682,7 @@ class VisualSpellerVE(MainloopFeedback):
         if ((self._current_level == 2) and # only update, if we are at the end of level 2,
            (self._classified_letter != self._idx_backdoor or self.copy_spelling) and # if copyspelling off, we have no backdoor selected
            (self._ErrP_classifier is None or not self._ErrP_classifier)): # no ErrP was detected (or ErrP detection is off)
+            spelled_letter = ""
             if self.copy_spelling:
                 ## in copy spelling we force the desired letter to be spelled
                 if len(self._desired_letters) > 0:
