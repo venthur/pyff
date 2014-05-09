@@ -278,6 +278,13 @@ class VisualSpellerVE(MainloopFeedback):
                                        color=self.phrase_color,
                                        anchor='right')
 
+        # if we're in free spelling mode, we hide all text fields but
+        # the _ve_spelled_phrase. we also center the text there
+        if self.offline == self.copy_spelling == False:
+            self._ve_spelled_phrase.set(anchor = 'center')
+            for i in self._ve_letterbox, self._ve_innerbox, self._ve_current_letter, self._ve_desired_letters:
+                i.set(on = False)
+
         ## add word box to elementlist:
         self._ve_elements.extend([self._ve_letterbox, self._ve_innerbox, self._ve_current_letter, self._ve_desired_letters, self._ve_spelled_phrase])
 
