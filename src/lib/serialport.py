@@ -44,7 +44,7 @@ class SerialPort(object):
         self.port = serial.Serial(port=port, baudrate=baudrate)
 
 
-    def send_serial(self, data):
+    def send(self, data):
         """Send data to serial port.
 
         Parameters
