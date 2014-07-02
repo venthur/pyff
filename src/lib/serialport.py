@@ -1,5 +1,5 @@
 # pyffserial.py -
-# Copyright (C) 2010  Chris Hausler
+# Copyright (C) 2010 - 2014  Chris Hausler, Bastian Venthur
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -26,49 +26,57 @@
 # useful test python files on the sourceforge site for testing the serial port
 # functionality
 
-# author: Chris Hausler
-# 13.4.10
 
 import serial
 
-PORT = 0
-TIMEOUT = 1
-BYTESIZE = 8
-BAUDRATE = 2400
-PARITY = 'N'
-STOPBITS = 2
+
+class SerialPort(object):
+
+    def __init__(self, port, baudrate=57600):
+        """Open the serial port.
+
+        Parameters
+        ----------
+        port : int
+        baudrate : int
+
+        """
+        self.port = serial.Serial(port=port, baudrate=baudrate)
 
 
-class pyffserial:
-    
-    def __init__(self, _port=PORT, _timeout=TIMEOUT, _bytesize=BYTESIZE, 
-                 _baudrate = BAUDRATE, _parity=PARITY, _stopbits = STOPBITS):
-        """init. can set all of the serial port parameters here otherwise defaults used """
-        self.s_port = serial.Serial(port=_port, timeout=_timeout, 
-                                            bytesize=_bytesize, baudrate=_baudrate, 
-                                            parity=_parity, stopbits=_stopbits)
-        
-    def send_serial(self,data):
-        """ Send data to serial port """
-        self.s_port.write(chr(data))
-        
-        
-    def read_serial(self,numBytes=1):
-        """ Read a given number of Bytes from the serial port. default is 1"""
-        res =self.s_port.read()
-        return res
-    
+    def send_serial(self, data):
+        """Send data to serial port.
+
+        Parameters
+        ----------
+        data : bytevalue
+
+        """
+        self.port.write(chr(data))
+
+
     def close(self):
-        self.s_port.close()
-    
+        self.port.close()
+
+
 def scan():
-    """scan for available ports. return a list of tuples (num, name)"""
+    """Scan for available ports.
+
+    Returns
+    -------
+
+    ports : list of (int, str)
+        the elements of the tuples are the number and the name of the
+        port.
+
+    """
     available = []
     for i in range(256):
         try:
             s = serial.Serial(i)
             available.append( (i, s.portstr))
-            s.close()   # explicit close 'cause of delayed GC in java
+            s.close()
         except serial.SerialException:
             pass
     return available
+
