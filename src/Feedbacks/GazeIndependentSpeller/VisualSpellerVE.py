@@ -45,6 +45,8 @@ import logging
 from sys import platform, maxint
 
 from lib import marker
+from lib import serialport
+
 
 class VisualSpellerVE(MainloopFeedback):
     '''
@@ -132,6 +134,9 @@ class VisualSpellerVE(MainloopFeedback):
         self.output_per_stimulus=True
         self.use_ErrP_detection = False
 
+        self.serialtrigger = False
+        self.serialport = serialport.SerialPort(13)
+        self.send_parallel_bak = self.send_parallel
 
         if self.debug:
             msg = "!!! YOU\'RE IN DEBUG MODE! CLASSIFICATION WILL BE RANDOM OR KEYBOARD CONTROLLED !!!"
@@ -223,6 +228,20 @@ class VisualSpellerVE(MainloopFeedback):
 
         ## error potential classifier:
         self._ErrP_classifier = None
+
+
+    def on_interaction_event(self, data):
+        self.logger.debug('interaction event')
+        serial = data.get('serialtrigger', None)
+        if serial is None:
+            return
+        if serial:
+            self.logger.debug('using serial port')
+            self.send_parallel = self.serialport.send
+        else:
+            self.logger.debug('using parallel port')
+            self.send_parallel = self.send_parallel_bak
+
 
     def post_mainloop(self):
         """
