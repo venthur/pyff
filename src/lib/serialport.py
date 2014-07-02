@@ -28,6 +28,7 @@
 
 
 import serial
+from threading import Timer
 
 
 class SerialPort(object):
@@ -42,9 +43,11 @@ class SerialPort(object):
 
         """
         self.port = serial.Serial(port=port, baudrate=baudrate)
+        self.trigger_reset_time = 0.01
+        self.reset_timer = Timer(0, None)
 
 
-    def send(self, data):
+    def send(self, data, reset=True):
         """Send data to serial port.
 
         Parameters
@@ -52,8 +55,11 @@ class SerialPort(object):
         data : bytevalue
 
         """
+        if reset == True:
+            self.reset_timer.cancel()
         self.port.write(chr(data))
-
+        if reset == True:
+            self.resete_timer = Timer(self.trigger_reset_time, self.send, (0, False))
 
     def close(self):
         self.port.close()
