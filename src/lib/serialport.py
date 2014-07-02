@@ -59,7 +59,8 @@ class SerialPort(object):
             self.reset_timer.cancel()
         self.port.write(chr(data))
         if reset == True:
-            self.resete_timer = Timer(self.trigger_reset_time, self.send, (0, False))
+            self.reset_timer = Timer(self.trigger_reset_time, self.send, (0, False))
+            self.reset_timer.start()
 
     def close(self):
         self.port.close()
