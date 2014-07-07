@@ -50,6 +50,7 @@ import pygame
 
 from FeedbackBase.MainloopFeedback import MainloopFeedback
 from lib import marker
+from lib import serialport
 
 class Oddball(MainloopFeedback):
     
@@ -113,7 +114,11 @@ class Oddball(MainloopFeedback):
         self.last_response = ''
         self.stimuliShown = 0
         self.hitstr, self.missstr, self.falsestr = 'H: ', '  M: ', '  F: '
-                                                
+ 
+        self.serialtrigger = False
+        self.serialport = serialport.SerialPort(13)
+        self.send_parallel_bak = self.send_parallel
+                                               
                                     
     def get_stimuli(self):
         if self.stimuli == 'load':              # load stimuli from files
@@ -198,6 +203,19 @@ class Oddball(MainloopFeedback):
         self.init_graphics()
         #self.init_run()
         self.gameover = False
+
+
+    def on_interaction_event(self, data):
+        self.logger.debug('interaction event')
+        serial = data.get('serialtrigger', None)
+        if serial is None:
+            return
+        if serial:
+            self.logger.debug('using serial port')
+            self.send_parallel = self.serialport.send
+        else:
+            self.logger.debug('using parallel port')
+            self.send_parallel = self.send_parallel_bak
 
 
     def post_mainloop(self):
