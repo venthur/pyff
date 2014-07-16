@@ -1,5 +1,5 @@
 # bcixml.py -
-# Copyright (C) 2007-2009  Bastian Venthur
+# Copyright (C) 2007-2014  Bastian Venthur
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 import logging
 import sys
 from xml.dom import minidom, Node
+import json
 
 from lib import pylibtobiic
 
@@ -384,6 +385,107 @@ class XmlEncoder(object):
         root.appendChild(e)
 
 
+class JsonDecoder(object):
+    """Decode JSON strings into BciSignal objects."""
+
+    def __init__(self):
+        self.logger = logging.getLogger('JsonDecoder')
+
+
+    def decode_packet(self, signal):
+        """Decode JSON strings into a `BciSignal` object.
+
+        Paramters
+        ---------
+        signal : str
+            a string formatted as valid JSON
+
+        Returns
+        -------
+        sig : BciSignal
+            a BciSignal object
+
+        Raises
+        ------
+        DecodingError : if the decoder is unable to parse the JSON.
+
+        """
+        try:
+            signaldict = json.loads(signal)
+        except ValueError:
+            self.logger.error('Unable to parse JSON:')
+            self.logger.error(signal)
+            raise DecodingError()
+        data = signaldict['data']
+        commands = signaldict['commands']
+        type = signaldict['type']
+        if type not in [INTERACTION_SIGNAL, CONTROL_SIGNAL, REPLY_SIGNAL]:
+            raise DecodingError("Signal type is %s is not supported" % type)
+        return BciSignal(data, commands, type)
+
+
+# TODO: this really does not belong into this module. We have three
+# De/Encoders now, we should also have a base class or eliminate the
+# other two after a grace period of testing
+class JsonEncoder(object):
+    """Encode BciSignal objects into JSON."""
+
+    def __init__(self):
+        self.logger = logging.getLogger('JsonEncoder')
+
+    def strip(self, bcisignal):
+        """Strip the items we cannot convert.
+
+        This method strips off the items from the BciSignal which cannot
+        be converted into JSON (e.g. objects)
+
+        Parameters
+        ----------
+        bcisignal : BciSignal
+            the BciSignal object to strip
+
+        Returns
+        -------
+        bcisignal : BciSignal
+            the stripped BciSignal object
+
+        """
+        d2 = dict()
+        for k, v in bcisignal.data.iteritems():
+            try:
+                json.dumps((k, v))
+            except:
+                self.logger.warning("Unable to convert %s to JSON, ignoring it." % (str((k, v))))
+            else:
+                d2[k] = v
+        c2 = bcisignal.commands
+        t2 = bcisignal.type
+        return BciSignal(d2, c2, t2)
+
+    def encode_packet(self, bcisignal):
+        """Encode BciSignal objects into JSON.
+
+        Parameters
+        ----------
+        bcisignal : BciSignal
+            a BciSignal object
+
+        Returns
+        -------
+        sig : str
+            a JSON formatted string.
+
+        """
+        bcisignal_stripped = self.strip(bcisignal)
+        signaldict = dict()
+        signaldict['data'] = bcisignal_stripped.data
+        signaldict['commands'] = bcisignal_stripped.commands
+        signaldict['type'] = bcisignal_stripped.type
+        if signaldict['type'] not in [INTERACTION_SIGNAL, CONTROL_SIGNAL, REPLY_SIGNAL]:
+            raise EncodingError("Signal type is %s is not supported" % signaldict['type'])
+        return json.dumps(signaldict)
+
+
 class BciSignal(object):
     """Represents a signal from the BCI network.
 
@@ -463,7 +565,7 @@ def main():
          "dict" : {"foo" : 1, "bar" : 2, "baz" : 3},
          "ddict" : {"key" : "value", "d-in-" : {"foo" : 1, "bar" : 2, "baz" : 3}}
          }
-    d = dict()
+    #d = dict()
     t = "interaction-signal"
     c = [("start", {"foo" : 1}), ("stop", {1 : 2, "l" : [1,2,3]}), ("init", dict())]
 
@@ -488,6 +590,36 @@ def main():
     print d == d2
     print signal
     print signal2
+
+    print '***'
+
+    # the following types are not supported by JSON
+    d.pop('set')
+    d.pop('frozenset')
+    d.pop('complex')
+    d.pop('tuple')
+    d.pop('ttuple')
+
+    encoder = JsonEncoder()
+    xml = encoder.encode_packet(signal)
+    print xml
+
+    decoder = JsonDecoder()
+    signal2 = decoder.decode_packet(xml)
+    d2 = signal2.data
+
+    print "*** Elements of the original dictionary:"
+    for i in d.items():
+        print i
+
+    print "*** Elements of the second dictionary:"
+    for i in d2.items():
+        print i
+
+    print d == d2
+    print signal
+    print signal2
+
 
 if __name__ == "__main__":
     #from timeit import Timer

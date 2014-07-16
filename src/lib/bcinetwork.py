@@ -32,7 +32,7 @@ TIMEOUT = 2.0        # seconds to wait for reply
 class BciNetwork(object):
     """Wrapper for Communication between Feedback Controller and GUI."""
 
-    def __init__(self, ip, port, myport=None):
+    def __init__(self, ip, port, myport=None, protocol='bcixml'):
         """
         Initialize BciNetwork instance.
 
@@ -58,8 +58,13 @@ class BciNetwork(object):
             self.srvsocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             self.srvsocket.bind((ip, myport))
 
-        self.xmlencoder = bcixml.XmlEncoder()
-        self.xmldecoder = bcixml.XmlDecoder()
+        if protocol == 'json':
+            self.xmlencoder = bcixml.JsonEncoder()
+            self.xmldecoder = bcixml.JsonDecoder()
+        else:
+            # tobi and bcixml share the same encoder
+            self.xmlencoder = bcixml.XmlEncoder()
+            self.xmldecoder = bcixml.XmlDecoder()
 
 
     def getAvailableFeedbacks(self):

@@ -32,11 +32,11 @@ NORMAL_COLOR = QtCore.Qt.black
 MODIFIED_COLOR = QtCore.Qt.gray
 
 class BciGui(QtGui.QMainWindow, Ui_MainWindow):
-    
-    def __init__(self):
+
+    def __init__(self, protocol='bcixml'):
         QtGui.QMainWindow.__init__(self)
         self.setupUi(self)
-        
+
 #        self.model = TableModel(self.tableView)
 #        self.tableView.setModel(self.model)
 
@@ -79,6 +79,7 @@ class BciGui(QtGui.QMainWindow, Ui_MainWindow):
         QtCore.QObject.connect(self.lineEdit, QtCore.SIGNAL("textChanged(const QString&)"), self.filter)
         QtCore.QObject.connect(self.model, QtCore.SIGNAL("dataChanged(const QModelIndex&, const QModelIndex&)"), self.dataChanged)
         self.feedbacks = []
+        self.protocol = protocol
         self.setFeedbackController(bcinetwork.LOCALHOST, bcinetwork.FC_PORT)
 
 
@@ -186,7 +187,7 @@ class BciGui(QtGui.QMainWindow, Ui_MainWindow):
 
     def setFeedbackController(self, ip, port):
         # ask feedback controller under given ip for available feedbacks
-        bcinet = bcinetwork.BciNetwork(ip, port, bcinetwork.GUI_PORT)
+        bcinet = bcinetwork.BciNetwork(ip, port, bcinetwork.GUI_PORT, self.protocol)
         feedbacks = bcinet.getAvailableFeedbacks()
 
         if not feedbacks:
@@ -344,12 +345,13 @@ class Entry(object):
         except:
             self.value = oldValue
 
-def main():
+
+def main(protocol='bcixml'):
     loglevel = logging.DEBUG
     logging.basicConfig(level=loglevel, format='%(name)-12s %(levelname)-8s %(message)s')
 
     app = QtGui.QApplication(sys.argv)
-    gui = BciGui()
+    gui = BciGui(protocol)
     gui.show()
 
     sys.exit(app.exec_())

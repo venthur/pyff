@@ -1,5 +1,5 @@
 # feedbackcontroller.py -
-# Copyright (C) 2007-2011  Bastian Venthur
+# Copyright (C) 2007-2014  Bastian Venthur
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -148,11 +148,16 @@ class UDPDispatcher(asyncore.dispatcher):
     def __init__(self, fc, protocol):
         asyncore.dispatcher.__init__(self)
         self.fc = fc
-        if protocol == 'tobixml':
+        if protocol == 'json':
+            self.decoder = bcixml.JsonDecoder()
+            self.encoder = bcixml.JsonEncoder()
+        elif protocol == 'tobixml':
+            # tobi and bcixml share the same encoder
             self.decoder = bcixml.TobiXmlDecoder()
+            self.encoder = bcixml.XmlEncoder()
         else:
             self.decoder = bcixml.XmlDecoder()
-        self.encoder = bcixml.XmlEncoder()
+            self.encoder = bcixml.XmlEncoder()
         self.create_socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.bind((bcinetwork.LOCALHOST, bcinetwork.FC_PORT))
 

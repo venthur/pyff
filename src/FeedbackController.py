@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # FeedbackController.py -
-# Copyright (C) 2007-2011  Bastian Venthur
+# Copyright (C) 2007-2014  Bastian Venthur
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -37,7 +37,7 @@ def main():
     description = """Feedback Controller"""
     usage = "%prog [Options]"
     version = """
-Copyright (C) 2007-2011 Bastian Venthur <bastian.venthur at tu-berlin de>
+Copyright (C) 2007-2014 Bastian Venthur <bastian.venthur at tu-berlin de>
 
 Homepage: http://bbci.de/pyff
 
@@ -70,7 +70,8 @@ the Free Software Foundation; either version 2 of the License, or
     parser.add_option("--nogui", action="store_true", default=False,
                       help="Start without GUI.")
     parser.add_option("--protocol", dest='protocol', type='choice',
-                        choices=['bcixml', 'tobixml'], default='bcixml')
+                      help="Set the protocol to which Pyff listens to. Options are: json, bcixml and tobixml.",
+                        choices=['bcixml', 'json', 'tobixml'], default='bcixml')
 
     options, args = parser.parse_args()
 
@@ -101,7 +102,7 @@ the Free Software Foundation; either version 2 of the License, or
     fbpath = options.fbpath
     guiproc = None
     if not options.nogui:
-        guiproc = Process(target=GUI.main)
+        guiproc = Process(target=GUI.main, args=(options.protocol,))
         guiproc.start()
 
     port = None
