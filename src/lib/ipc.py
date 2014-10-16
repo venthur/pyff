@@ -65,6 +65,7 @@ class IPCConnectionHandler(asyncore.dispatcher):
         self.ipcchan = None
         self.fc = fc
         self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.bind((LOCALHOST, IPC_PORT))
         self.listen(5)
 
