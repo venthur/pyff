@@ -24,6 +24,7 @@ from xml.dom import minidom, Node
 
 from lib import pylibtobiic
 
+
 XML_ROOT = "bci-signal"
 VERSION = "version"
 CURRENT_VERSION = "1.0"

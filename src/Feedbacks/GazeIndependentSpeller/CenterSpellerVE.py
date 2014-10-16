@@ -149,7 +149,7 @@ class CenterSpellerVE(VisualSpellerVE):
         '''
         Initializing screen elements
         '''
-        
+
         ## create shapes:
         if self.do_animation:
             for i in xrange(self._nr_elements):
@@ -173,7 +173,7 @@ class CenterSpellerVE(VisualSpellerVE):
                 # store countdown position:
                 self._countdown_shape_positions.append((self._centerPos[0] + circle_layout.positions[i][0],
                     self._centerPos[1] + circle_layout.positions[i][1]))
-                
+
                 # put shape in container:
                 self._ve_elements.append(self._ve_shapes[i])
 
@@ -185,7 +185,7 @@ class CenterSpellerVE(VisualSpellerVE):
                     # store countdown position:
                     self._countdown_letter_positions.append((self._letter_layout.positions[j][0] + self._countdown_shape_positions[-1][0],
                         self._letter_layout.positions[j][1] + self._countdown_shape_positions[-1][1]))
-                    
+
                     # add letter:
                     self._ve_letters.append(Text(position=self._letter_positions[-1],
                         text=self.letter_set[i][j],
@@ -204,7 +204,7 @@ class CenterSpellerVE(VisualSpellerVE):
                     color=(self.level_2_letter_colors and self.stimuli_colors[i] or self.letter_color),
                     anchor='center',
                     on=False))
-                
+
                 # put letters in container:
             self._ve_elements.extend(self._ve_letters)
 
@@ -245,7 +245,7 @@ class CenterSpellerVE(VisualSpellerVE):
                     position=self._centerPos,
                     color=self.fixationpoint_color,
                     on=False)
-            
+
             ##################### IF NOT DO ANIMATION #########################
         else:
             ## add letters of level 1:
@@ -306,7 +306,7 @@ class CenterSpellerVE(VisualSpellerVE):
                     color=(self.level_2_letter_colors and self.stimuli_colors[i] or self.letter_color),
                     anchor='center',
                     on=False))
-                
+
             # put letters in container:
             self._ve_elements.extend(self._ve_letters)
 
@@ -390,7 +390,7 @@ class CenterSpellerVE(VisualSpellerVE):
             for i in xrange(self._nr_letters):
                 pos = animate_sigmoid(self._letter_positions[i], self._countdown_letter_positions[i], dt)
                 self._ve_letters[i].set(position=pos) # level 1 letters
-                
+
         def update2(t): # if not do animation
             for i in xrange(self._nr_elements):
                 self._ve_shapes[i].set(position=self._countdown_shape_positions[i])# shapes
@@ -552,12 +552,6 @@ class CenterSpellerVE(VisualSpellerVE):
 
     def switch_level(self):
 
-        ## turn on written and desired words:
-        self._ve_spelled_phrase.set(on=True)
-        self._ve_current_letter.set(on=True)
-        self._ve_desired_letters.set(on=True)
-        self._ve_letterbox.set(on=True)
-
         if self.use_ErrP_detection and self._ErrP_classifier:
             self._ve_feedback_ErrP.set(on=True)
             self._show_feedback(True)
@@ -661,17 +655,9 @@ class CenterSpellerVE(VisualSpellerVE):
 
     def pre__classify(self):
         self._ve_fixationpoint.set(on=True)
-        self._ve_spelled_phrase.set(on=True)
-        self._ve_current_letter.set(on=True)
-        self._ve_desired_letters.set(on=True)
-        self._ve_letterbox.set(on=True)
 
     def post__classify(self):
         self._ve_fixationpoint.set(on=False)
-        self._ve_spelled_phrase.set(on=True)
-        self._ve_current_letter.set(on=True)
-        self._ve_desired_letters.set(on=True)
-        self._ve_letterbox.set(on=True)
 
 if __name__ == '__main__':
     fb = CenterSpeller()
