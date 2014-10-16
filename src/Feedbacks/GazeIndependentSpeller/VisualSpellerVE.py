@@ -135,7 +135,12 @@ class VisualSpellerVE(MainloopFeedback):
         self.use_ErrP_detection = False
 
         self.serialtrigger = False
-        self.serialport = serialport.SerialPort(13)
+
+        # FIXME: this should be fixed properly
+        try:
+            self.serialport = serialport.SerialPort(13)
+        except:
+            self.serialport = None
         self.send_parallel_bak = self.send_parallel
 
         if self.debug:
