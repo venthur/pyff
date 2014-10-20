@@ -108,9 +108,8 @@ class Feedback(object):
         self._triggerResetTimer = Timer(0, None)
         self._triggerResetTime = 0.01
 
-        self.udp_markers_enable = False
         self.udp_markers_host = '127.0.0.1'
-        self.udp_markers_port = 1206
+        self.udp_markers_port = 12344
 
         #self.tcp_markers_enable = False
         #self.tcp_markers_host = '127.0.0.1'
@@ -165,9 +164,7 @@ class Feedback(object):
 
         You should not override this method, use on_play instead.
         """
-        if self.udp_markers_enable:
-            self._udp_markers_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            self.logger.info("Sending markers via UDP enabled.")
+        self._udp_markers_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         #if self.tcp_markers_enable:
         #    self.logger.info("Connecting to " + self.tcp_markers_host + ":" + str(self.tcp_markers_port))
         #    self._tcp_markers_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -307,8 +304,8 @@ class Feedback(object):
     def send_parallel(self, data, reset=True):
         """Sends the data to the parallel port.
 
-        The data is sent to the parallel port. After a short amount of time the
-        parallel port is reset automatically.
+        The data is sent to the parallel port. After a short amount of
+        time the parallel port is reset automatically.
 
         :param data: Data to be sent to the parallel port
         :type data: int
@@ -318,8 +315,6 @@ class Feedback(object):
         if reset == True:
             # A new trigger arrived before we could reset the old one
             self._triggerResetTimer.cancel()
-        if self.udp_markers_enable and reset:
-            self.send_udp(data)
         if self._pport:
             if sys.platform == 'win32':
                 self._pport.Out32(self._port_num, data)
@@ -334,14 +329,16 @@ class Feedback(object):
         """Sends the data to UDP.
 
         Similar to :func:`send_parallel`. The data is send through UDP.
-
+        ``send_udp`` will append an ``'\n'`` character to the end of
+        ``data`` before sending it.
 
         :param data: Data to be sent to the UDP port.
-        :type data: int
+        :type data: str
+            the marker.
 
         """
-        self._udp_markers_socket.sendto("S%3d" % data,
-                                        (self.udp_markers_host, self.udp_markers_port) )
+        self._udp_markers_socket.sendto(data + '\n',
+                                        (self.udp_markers_host, self.udp_markers_port))
 
     #def send_tcp(self, data):
     #    """Sends marker via TCP/IP.
