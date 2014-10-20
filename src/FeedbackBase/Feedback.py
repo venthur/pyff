@@ -112,9 +112,9 @@ class Feedback(object):
         self.udp_markers_host = '127.0.0.1'
         self.udp_markers_port = 1206
 
-        self.tcp_markers_enable = False
-        self.tcp_markers_host = '127.0.0.1'
-        self.tcp_markers_port = 12344
+        #self.tcp_markers_enable = False
+        #self.tcp_markers_host = '127.0.0.1'
+        #self.tcp_markers_port = 12344
 
 
     #
@@ -168,12 +168,13 @@ class Feedback(object):
         if self.udp_markers_enable:
             self._udp_markers_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             self.logger.info("Sending markers via UDP enabled.")
-        if self.tcp_markers_enable:
-            self.logger.info("Connecting to " + self.tcp_markers_host + ":" + str(self.tcp_markers_port))
-            self._tcp_markers_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self._tcp_markers_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            self._tcp_markers_socket.connect((self.tcp_markers_host, self.tcp_markers_port))
-            self.logger.info("Sending markers via TCP/IP enabled.")
+        #if self.tcp_markers_enable:
+        #    self.logger.info("Connecting to " + self.tcp_markers_host + ":" + str(self.tcp_markers_port))
+        #    self._tcp_markers_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        #    self._tcp_markers_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        #    self._tcp_markers_socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+        #    self._tcp_markers_socket.connect((self.tcp_markers_host, self.tcp_markers_port))
+        #    self.logger.info("Sending markers via TCP/IP enabled.")
         self.on_play()
 
     def _on_pause(self):
@@ -342,16 +343,16 @@ class Feedback(object):
         self._udp_markers_socket.sendto("S%3d" % data,
                                         (self.udp_markers_host, self.udp_markers_port) )
 
-    def send_tcp(self, data):
-        """Sends marker via TCP/IP.
-
-        Parameters
-        ----------
-        data : str
-            the marker. The string must end with '\n'.
-
-        """
-        self._tcp_markers_socket.send(data)
+    #def send_tcp(self, data):
+    #    """Sends marker via TCP/IP.
+    #
+    #    Parameters
+    #    ----------
+    #    data : str
+    #        the marker. The string must end with '\n'.
+    #
+    #    """
+    #    self._tcp_markers_socket.send(data)
 
 
     def _get_variables(self):
