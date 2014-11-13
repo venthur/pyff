@@ -24,7 +24,7 @@ from lib import bcixml
 
 
 class BcixmlTestCase(unittest.TestCase):
-    
+
     def setUp(self):
         self.encoder = bcixml.XmlEncoder()
         self.decoder = bcixml.XmlDecoder()
@@ -67,7 +67,7 @@ class BcixmlTestCase(unittest.TestCase):
         self.__convert_and_compare("somename", [1,2,3,4,5])
         self.__convert_and_compare("somename", [])
         self.__convert_and_compare("somename", [1])
-        
+
     def testTuple(self):
         """Should correctly en/decode Tuple."""
         self.__convert_and_compare("somename", (1,2,3,4,5))
@@ -97,8 +97,8 @@ class BcixmlTestCase(unittest.TestCase):
     def testNestedDicts(self):
         """Should correctly en/decode nested Dicts."""
         self.__convert_and_compare("somename", {"foo" : 1, "bratwurst" : {"bar" : 2, "baz" : 3}})
-        
-    
+
+
     def testUnsupported(self):
         """Should ignore unsupported Datatypes."""
         class Foo(object):
@@ -108,7 +108,7 @@ class BcixmlTestCase(unittest.TestCase):
         d2 = {}
         self.__convert_and_compare("somename", d, d2)
         #self.__convert_and_compare("somename", [f], [])
-        
+
     def testEncodeUnsupportedSignalType(self):
         """Should throw an Exception on encoding an unknown signal type."""
         signal = bcixml.BciSignal(None, None, "foo")
@@ -122,7 +122,7 @@ class BcixmlTestCase(unittest.TestCase):
 
 #
 # some pitfalls...
-#    
+#
     def testFalseBoolean(self):
         """Should correctly detect booleans with value "False"."""
         xml = '<boolean name="foo" value="False"/>'
@@ -130,8 +130,8 @@ class BcixmlTestCase(unittest.TestCase):
         type, (name, value) = self.decoder._XmlDecoder__parse_element(dom.documentElement)
         self.assertEqual(name, "foo")
         self.assertEqual(value, False)
-        
-        
+
+
     def __convert_and_compare(self, name, value, value2=None):
         signal = bcixml.BciSignal({name : value}, None, bcixml.INTERACTION_SIGNAL)
         xml = self.encoder.encode_packet(signal)
@@ -142,7 +142,7 @@ class BcixmlTestCase(unittest.TestCase):
         self.assertEqual(signal2.data[name], value2)
         self.assertEqual(type(signal2.data[name]), type(value2))
 
-        
+
     def testInteraction_Signal(self):
         """Should support Interaction Signal type."""
         data = {"foo" : "bar", "baz" : 3}
@@ -161,7 +161,7 @@ class BcixmlTestCase(unittest.TestCase):
         signal2 = self.decoder.decode_packet(xml)
         self.assertEqual(signal2.type, signal.type)
         self.assertEqual(signal2.data, data)
-        
+
     def test_Reply_Signal(self):
         """Should support Reply Signal type."""
         signal = bcixml.BciSignal(None, None, bcixml.REPLY_SIGNAL)
@@ -184,7 +184,7 @@ def suite():
 def main():
     runner = unittest.TextTestRunner()
     runner.run(suite())
-    
+
 if __name__ == "__main__":
     main()
-    
+
