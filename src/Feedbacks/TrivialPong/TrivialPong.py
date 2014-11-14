@@ -24,56 +24,53 @@ import os
 
 import pygame
 
-from FeedbackBase.MainloopFeedback import MainloopFeedback
+from FeedbackBase.PygameFeedback import PygameFeedback
 
 
-class TrivialPong(MainloopFeedback):
+class TrivialPong(PygameFeedback):
 
     def on_control_event(self, data):
-        self.val = self._data["data"][-1]
-        
+        self.val = data["clout"]
+
     def init(self):
-        self.FPS = 60
-        self.val = 0.0
-        
-    def pre_mainloop(self):
-        pygame.init()
-        self.size = self.width, self.height = 800, 600
+        PygameFeedback.init(self)
+        self.caption = "Trivial Pong"
+        # set the initial speeds for ball and bar
+        self.barspeed = [3, 0]
         self.speed = [2, 2]
-        black = 0, 0, 0
-        path = os.path.dirname( globals()["__file__"] ) 
-        self.screen = pygame.display.set_mode(self.size)
+        # set initial value for cl output
+        self.val = 0.0
+
+    def init_graphics(self):
+        # load graphics
+        path = os.path.dirname( globals()["__file__"] )
         self.ball = pygame.image.load(os.path.join(path, "ball.png"))
         self.ballrect = self.ball.get_rect()
         self.bar = pygame.image.load(os.path.join(path, "bar.png"))
         self.barrect = self.bar.get_rect()
-        self.barspeed = [3, 0]
-        self.clock = pygame.time.Clock()
-    
-    def post_mainloop(self):
-        pygame.quit()
-        
-    def tick(self):
-        self.clock.tick(self.FPS)
-        pygame.event.pump()
-            
+
     def play_tick(self):
-        w_half = self.screen.get_width() / 2
+        width, height = self.screenSize
+        w_half = width / 2.
+        # move bar and ball
         pos = w_half + w_half * self.val
-        self.barrect.center = pos, self.height - 20
+        self.barrect.center = pos, height - 20
         self.ballrect = self.ballrect.move(self.speed)
-        if self.ballrect.left < 0 or self.ballrect.right > self.width:
+        # collision detection walls
+        if self.ballrect.left < 0 or self.ballrect.right > width:
             self.speed[0] = -self.speed[0]
-        if self.ballrect.top < 0 or self.ballrect.bottom > self.height:
+        if self.ballrect.top < 0 or self.ballrect.bottom > height:
             self.speed[1] = -self.speed[1]
-        if self.barrect.left < 0 or self.barrect.right > self.width:
+        if self.barrect.left < 0 or self.barrect.right > width:
             self.barspeed[0] = -self.barspeed[0]
-        if self.barrect.top < 0 or self.barrect.bottom > self.height:
+        if self.barrect.top < 0 or self.barrect.bottom > height:
             self.barspeed[1] = -self.barspeed[1]
+        # collision detection for bar vs ball
         if self.barrect.colliderect(self.ballrect):
             self.speed[0] = -self.speed[0]
             self.speed[1] = -self.speed[1]
-        self.screen.fill( (0,0,0) )
+        # update the screen
+        self.screen.fill(self.backgroundColor)
         self.screen.blit(self.ball, self.ballrect)
         self.screen.blit(self.bar, self.barrect)
         pygame.display.flip()
