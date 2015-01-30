@@ -1,3 +1,10 @@
+# The official repository has moved!
+
+The official Pyff repository has a new home at the [BBCI github account][bbci].
+Please use the new one for forks, issues, etc.
+
+  [bbci]: https://github.com/bbci/pyff
+
 How to use the FeedbackController
 =================================
 
